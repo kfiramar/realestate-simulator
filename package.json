@@ -1,0 +1,20 @@
+{
+  "name": "morgage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "integration_test.js",
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.2.0"
+  },
+  "dependencies": {
+    "jsdom": "^27.2.0"
+  }
+}

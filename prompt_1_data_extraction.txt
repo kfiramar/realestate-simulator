@@ -1,0 +1,57 @@
+Act as a Senior Macro-Economist and Chief Actuary for an Israeli Family Office.
+Your task is to conduct a deep-dive financial research analysis to parameterize a 20-year Monte Carlo simulation model comparing:
+A) **Israeli Residential Real Estate (Gush Dan/Center)**
+B) **S&P 500 Equity Index (ILS Hedged & Unhedged)**
+
+I require three robust, internally consistent economic scenarios for the period 2025-2045:
+1.  **Bear Case (Stagflation/Geopolitical Stress):** High inflation, high BoI rates, sluggish growth, potential currency devaluation.
+2.  **Base Case (Normalization):** Convergence to long-term averages, moderate growth, 2-3% inflation target achieved.
+3.  **Bull Case (Tech Boom/Peace Dividend):** Low inflation, low rates, strong Shekel, high productivity growth.
+
+### **Required Deep-Dive Data Points (Annualized Averages):**
+
+For each scenario, provide the following parameters. Do NOT just guess; use historical precedence (2000-2024 data), demographic trends (Haredi/Arab population growth), and housing supply constraints to justify your numbers.
+
+**1. Israel CPI (Madad):**
+*   *Context:* Historical average is ~2%, but recent years hit 5%+. Consider the impact of war deficits on long-term inflation.
+
+**2. Israel Real Estate Appreciation (Nominal):**
+*   *Context:* Israeli RE has historically decoupled from global trends due to chronic supply shortage and high fertility rates. Does this continue?
+*   *Formula:* `Inflation + Real_Growth`.
+
+**3. Gross Rental Yield (Center TLV/Givatayim):**
+*   *Context:* Currently very low (~2.5-3.0%). In a high-rate environment, does this expand or do prices fall?
+
+**4. Bank of Israel (BoI) Base Rate:**
+*   *Context:* The anchor for Prime mortgages. Correlated strongly with CPI + Real Neutral Rate.
+
+**5. S&P 500 Nominal Return (USD):**
+*   *Context:* Current CAPE ratios are high. Adjust forward-looking returns accordingly (don't just use the 10% historical average blindly).
+
+**6. USD/ILS Exchange Rate Drift:**
+*   *Context:* Critical for unhedged S&P comparisons.
+*   *Positive %:* USD strengthens (Shekel weakens - e.g., geopolitical risk).
+*   *Negative %:* Shekel strengthens (Tech sector export boom).
+
+### **Output Format:**
+
+Provide a detailed reasoning section for EACH scenario explaining the "Why" behind your numbers, followed by this exact JSON structure:
+
+```json
+{
+  "bear": {
+    "cpi": 0.0,    // Annual Inflation %
+    "re_app": 0.0, // Nominal Home Price Increase %
+    "rent_yld": 0.0, // Gross Yield %
+    "boi_rate": 0.0, // Bank of Israel Base Rate %
+    "sp_return": 0.0, // S&P 500 Nominal USD %
+    "usd_ils_drift": 0.0 // Annual % change in Exchange Rate
+  },
+  "base": {
+    "cpi": 0.0, "re_app": 0.0, "rent_yld": 0.0, "boi_rate": 0.0, "sp_return": 0.0, "usd_ils_drift": 0.0
+  },
+  "bull": {
+    "cpi": 0.0, "re_app": 0.0, "rent_yld": 0.0, "boi_rate": 0.0, "sp_return": 0.0, "usd_ils_drift": 0.0
+  }
+}
+```

@@ -1,0 +1,57 @@
+Act as a Quantitative Financial Developer.
+Your task is to write the mathematical simulation engine (JavaScript) for an Israeli Mortgage Simulator ("Tamheel").
+
+**Context:**
+Israeli mortgages are unique because they are composed of multiple independent "tracks" (sub-loans), each with different interest rate mechanisms and indexation rules.
+
+**Objective:**
+Write a JavaScript function `calculateTamheelAmortization(loanAmount, mix, mortgageDurationYears, economicData)` that simulates the monthly cash flows of a mortgage over time.
+
+### **Input Parameters:**
+
+1.  `loanAmount` (Number): Total loan principal (e.g., 1,000,000 NIS).
+2.  `mix` (Object): The composition of the loan.
+    *   `primePct`: % of loan in Prime track.
+    *   `kalatsPct`: % of loan in Kalats track.
+    *   `katzPct`: % of loan in Katz track.
+    *   *Constraint:* Sum must be 100.
+3.  `mortgageDurationYears` (Number): Loan term (e.g., 20 years).
+4.  `economicData` (Object - Arrays of monthly data):
+    *   `boiRate[]`: Array of monthly Bank of Israel base rates.
+    *   `cpi[]`: Array of monthly inflation indices (e.g., 1.002 for 0.2% inflation).
+
+### **The Mathematical Model (The Tracks):**
+
+You must simulate 3 parallel amortization schedules:
+
+**Track 1: Prime (P)**
+*   **Principal:** Unlinked (Nominal).
+*   **Interest Rate:** Variable. `Rate_t = BOI_Rate_t + 1.5%`.
+*   **Payment Calculation:** Standard Spitzer (PMT) formula, re-calculated **every month** based on the *current* interest rate and *remaining* principal/term.
+    *   `Pmt_t = PMT(Rate_t, RemainingTerms, CurrentPrincipal)`
+
+**Track 2: Kalats (K) - "Kavua Lo Tzmud"**
+*   **Principal:** Unlinked (Nominal).
+*   **Interest Rate:** Fixed at inception (e.g., 5.0%). Constant throughout the loan.
+*   **Payment Calculation:** Standard Spitzer. Calculated once at start, remains constant (unless you want to model refinancing, but ignore that for now).
+
+**Track 3: Katz (Z) - "Kavua Tzmud"**
+*   **Principal:** **LINKED to CPI.**
+*   **Interest Rate:** Fixed at inception (e.g., 3.0%).
+*   **Mechanism:**
+    1.  At the start of Month `t`, adjust the Remaining Principal by the Monthly CPI: `Principal_t = Principal_(t-1) * (1 + CPI_t)`.
+    2.  Calculate Interest for the month on the *new* Principal.
+    3.  Re-calculate the PMT based on the *new* Principal and the fixed rate.
+    *   *Result:* The monthly payment nominal value rises over time with inflation.
+
+### **Output:**
+Return an object containing:
+*   `monthlyPayments`: Array of total monthly outflows (P+K+Z).
+*   `totalInterestPaid`: Sum of interest from all tracks.
+*   `totalLinkageCost`: Sum of principal adjustments due to CPI (specifically for Katz track).
+*   `amortizationSchedule`: Array of objects `{ month, balanceP, balanceK, balanceZ, totalBalance }`.
+
+**Constraints:**
+*   Use precise floating point arithmetic.
+*   Handle edge cases where `BOI_Rate` changes drastically.
+*   Ensure `RemainingTerm` decreases by 1 each month.

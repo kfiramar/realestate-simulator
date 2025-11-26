@@ -1,0 +1,28 @@
+Act as a Senior Israeli Mortgage Consultant (Yoetz Mashkanta) and Financial Risk Analyst.
+I need a comprehensive, deep-dive research report on the most common and effective "Tamheel" (Mortgage Mix) structures currently being executed in the Israeli market for late 2024/2025.
+
+**Context:**
+We are in a high-interest rate environment (BoI Base Rate ~4.5%), with uncertainty regarding inflation and potential future rate cuts. The standard "1/3 Prime, 1/3 Kalats, 1/3 Tzamud" mix is likely outdated or suboptimal.
+
+**Research Objectives:**
+
+1.  **The "Standard" Benchmark:**
+    *   What is the default mix banks are offering to average borrowers today?
+    *   Why do banks prefer this mix? (Profitability vs. Risk).
+
+2.  **Strategic Borrower Profiles (The "Smart" Mixes):**
+    *   **The "Aggressive Payer":** For a borrower who plans to close the loan in <10 years. How high should the Prime component go?
+    *   **The "Inflation Hater":** For a risk-averse borrower fearing a "Lost Decade" of inflation. What is the optimal ratio of Kalats (Fixed Unlinked) vs. Prime?
+    *   **The "Cash Flow Optimizer":** For investors who need the lowest monthly payment *now* to pass DTI (Debt-to-Income) checks, even if it costs more later. How are they using the Katz (CPI-Linked) track to artificially lower initial payments?
+
+3.  **Optimization Mechanics:**
+    *   **"Pituys" (Lures):** How are consultants using the "Mishtana" (Variable every 5 years) track as a temporary "Lure" to lower the weighted average rate, intending to refinance it later?
+    *   **Regulatory Arbitrage:** How are sophisticated borrowers bypassing the "Prime Limit" (historically 1/3, now relaxed) using specific bank policies?
+
+4.  **Quantitative Data (Estimates):**
+    *   Provide the typical interest rate spreads for each track *relative* to the anchor.
+    *   Example: "Prime = P - 0.5%" vs "Prime = P + 0.0%".
+    *   Example: "Kalats 20Y = Bond Yield + 1.5%".
+
+**Output:**
+Provide 3 specific, detailed "Tamheel" compositions (percentages for Prime/Kalats/Katz/Mishtana) with a rationale for *why* this specific mix works mathematically in the current economy.
