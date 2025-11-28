@@ -1,0 +1,61 @@
+Tamheel Decision Intake – Please answer all questions
+
+1) Profile & Goals
+- Target decision? (Buy vs keep cash vs invest in S&P comparison)
+- Investment horizon (years)?
+- Target minimum annual ROI / risk tolerance (low/med/high)?
+- Preference on locking sliders: Down Payment / Mortgage Term / Horizon (lock/free)?
+
+2) Property Basics
+- Property price (₪)?
+- Location/segment (for yield realism)?
+- Expected annual appreciation (%) or use historical?
+- Current rent (₪/month) or expected gross yield (%)?
+
+3) Deal Structure
+- Down payment (₪ or %; min 25%)?
+- Mortgage term (years, step 1)?
+- Custom simulation horizon (years) or auto = term?
+- Buy costs (%): tax/agent/lawyer/indexation at entry?
+- Sell costs (%): agent/lawyer at exit?
+- Maintenance/vacancy (% of rent)?
+
+4) Tamheel Mix (tracks)
+- Prime % and annual rate (BoI + spread)?
+- Kalatz % and fixed rate?
+- Katz % and fixed real rate?
+- Any preset profile you prefer (Arbitrage/Shield/Investor) or fully custom?
+
+5) Market Assumptions
+- BoI base rate (%): fixed or historical?
+- Inflation CPI (%): fixed or historical?
+- Rent yield path: fixed or historical glide?
+- Property appreciation: fixed or historical?
+- S&P 500 return (%): fixed or historical?
+- FX drift (USD/ILS) if relevant for comparison?
+
+6) Taxes & Fees
+- Apply 25% capital gain tax? (yes/no)
+- Tax basis: real (vs CPI) or nominal (vs USD)?
+- Rent tax: apply 10% over threshold? (yes/no)
+- Threshold indexing: keep default 5.69k indexed to CPI? (yes/no)
+- S&P annual management fee (%) [default 0.15%]
+- Deposit/transaction fee on S&P (%)
+
+7) Scenario Preferences
+- Default scenario (Bear/Base/Bull) or custom?
+- If custom: set SP%, app%, int%, inf%, yield%, drift% for quick scenario buttons.
+- Should optimizer search all or lock specific dimensions (Down/Term/Horizon)?
+
+8) Cashflow & Edge Cases
+- Expect irregular injections/withdrawals? (details)
+- Allow negative cashflows to auto-invest into S&P? (yes/no)
+- Any rent exemptions or special tax treatments? (details)
+
+9) Outputs You Care Most About
+- Compare annual ROI RE vs S&P
+- Net wealth after horizon
+- Interest paid, rent collected
+- ROI difference (winner color-coded)
+
+Provide answers in clear numbers/percentages; note any “use historical” toggles.

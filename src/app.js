@@ -1,35 +1,31 @@
-// --- CONSTANTS ---
-const H_SP = [0.1088, 0.0491, 0.1579, 0.0549, -0.3700, 0.2646, 0.1506, 0.0211, 0.1600, 0.3239, 0.1369, 0.0138, 0.1196, 0.2183, -0.0438, 0.3149, 0.1840, 0.2871, -0.1811, 0.2629, 0.2400];
-const H_RE = [-0.02, 0.04, 0.00, 0.03, 0.06, 0.19, 0.15, 0.04, 0.05, 0.08, 0.06, 0.07, 0.05, 0.04, 0.01, 0.03, 0.04, 0.12, 0.18, 0.02, 0.05];
-const H_EX = [4.48, 4.49, 4.45, 4.11, 3.59, 3.93, 3.73, 3.58, 3.85, 3.61, 3.58, 3.88, 3.84, 3.60, 3.59, 3.56, 3.44, 3.23, 3.36, 3.68, 3.75];
-const H_CPI = [0.012, 0.024, -0.001, 0.034, 0.038, 0.039, 0.027, 0.022, 0.016, 0.018, -0.002, -0.010, -0.002, 0.004, 0.008, 0.006, -0.007, 0.028, 0.053, 0.030, 0.032];
-const H_BOI = [0.041, 0.035, 0.050, 0.040, 0.035, 0.010, 0.015, 0.030, 0.025, 0.015, 0.0075, 0.001, 0.001, 0.001, 0.0025, 0.001, 0.001, 0.035, 0.045, 0.045];
+const AppLogic = window.Logic || {};
 
 const SCENARIOS = {
-    bear: { sp: 6.0, app: 4.0, int: 5.5, inf: 4.5, yld: 4.8, drift: 2.5 },
-    base: { sp: 8.5, app: 5.5, int: 3.75, inf: 2.2, yld: 3.5, drift: -0.5 },
-    bull: { sp: 11.0, app: 8.0, int: 2.5, inf: 1.5, yld: 2.8, drift: -2.0 }
+    // Rates are BoI base; Prime will be base + 1.5%
+    bear: { sp: 5.5, app: -1.0, int: 5.0, inf: 3.5, yld: 3.8, drift: 1.5 },
+    base: { sp: 9.0, app: 3.5, int: 4.25, inf: 2.5, yld: 3.0, drift: 0.5 },
+    bull: { sp: 10.5, app: 6.0, int: 2.0, inf: 1.8, yld: 2.8, drift: -0.5 }
 };
 
 const TAMHEEL_PROFILES = {
-    arbitrage: { p: 45, k: 55, z: 0, rP: 5.60, rK: 4.83, rZ: 0 },
-    shield: { p: 35, k: 65, z: 0, rP: 5.70, rK: 5.13, rZ: 0 },
-    investor: { p: 33, k: 27, z: 40, rP: 5.90, rK: 4.90, rZ: 3.10 }
+    // Percent mix only; rates are driven by BoI + credit tier matrix
+    arbitrage: { p: 45, k: 55, z: 0 },
+    shield: { p: 35, k: 65, z: 0 },
+    investor: { p: 33, k: 27, z: 40 },
+    defaultEven: { p: 33, k: 33, z: 34 }
 };
 
-function getH(arr, i) { return i < arr.length ? arr[i] : arr[arr.length-1]; }
+// Underwriting matrix (tiers mapped from UI buckets)
+const CREDIT_MATRIX = {
+    A: { range: [850, 1000], spreadPrime: 1.15, spreadKalatz: 0.65, spreadKatz: -1.15, maxLTV: 0.75 },
+    B: { range: [780, 849],  spreadPrime: 1.25, spreadKalatz: 0.85, spreadKatz: -0.95, maxLTV: 0.75 },
+    C: { range: [720, 779],  spreadPrime: 1.45, spreadKalatz: 1.15, spreadKatz: -0.65, maxLTV: 0.70 },
+    D: { range: [660, 719],  spreadPrime: 1.95, spreadKalatz: 1.60, spreadKatz: -0.15, maxLTV: 0.65 },
+    F: { range: [0, 659],    spreadPrime: null, spreadKalatz: null, spreadKatz: null,  maxLTV: 0 }
+};
 
-// --- STATE ---
-let mode = 'percent';
-let exMode = 'hedged';
-let taxMode = 'real';
-let horMode = 'auto';
-let wealthChart = null;
-let flowChart = null;
-let lockDown = false;
-let lockTerm = false;
-let lockHor = true;
-
+// --- GLOBAL STATE ---
+const LTV_MIN = { first: 25, replacement: 30, investor: 50 };
 const cfg = {
     SP: {is:false, b:'bSP', s:'sSP', v:'vSP', p:'pSP'},
     App: {is:false, b:'bApp', s:'sApp', v:'vApp', p:'pApp'},
@@ -37,8 +33,101 @@ const cfg = {
     Yld: {is:false, b:'bYld', s:'sYld', v:'vYld', p:'pYld'},
     Inf: {is:false, b:'bInf', s:'sInf', v:'vInf', p:'pInf'}
 };
+const TERM_MIN = 10;
+const TERM_MAX = 30;
 
-// --- UI FUNCTIONS ---
+let mode = 'percent';
+let horMode = 'auto';
+let advancedTermMode = false;
+let lockDown = false;
+let lockTerm = false;
+let lockHor = true;
+let buyerType = 'first';
+let exMode = 'hedged'; // setEx removed as UI element removed, keeping exMode='hedged'
+let taxMode = 'real';
+let wealthChart = null;
+let flowChart = null;
+let creditScore = 900;
+let currentTamheel = 'defaultEven';
+
+function mapScoreToTierKey(score) {
+    const s = score || 0;
+    if (s >= 850) return 'A';
+    if (s >= 780) return 'B';
+    if (s >= 720) return 'C';
+    if (s >= 660) return 'D';
+    return 'F';
+}
+
+function getCreditTier(score) {
+    const key = mapScoreToTierKey(score);
+    const t = CREDIT_MATRIX[key];
+    return { tier: key, ...t };
+}
+
+function applyLtvCaps() {
+    const downSlider = document.getElementById('rDown');
+    if (!downSlider) return;
+    const tier = getCreditTier(creditScore);
+    const buyerMinDown = LTV_MIN[buyerType] || 25; // regulatory min down
+    if (tier.maxLTV === 0) return; // rejected state: no forced slider change
+
+    const regCap = 1 - (buyerMinDown/100); // regulatory max LTV
+    const tierCap = tier.maxLTV;           // credit-based max LTV
+    const finalCap = Math.min(regCap, tierCap);
+    const finalMinDown = 100 - (finalCap * 100);
+
+    downSlider.min = finalMinDown;
+    if (parseInt(downSlider.value, 10) < finalMinDown) {
+        downSlider.value = finalMinDown;
+    }
+}
+
+function updateCreditUI() {
+    const scoreEl = document.getElementById('creditScoreVal');
+    const tierEl = document.getElementById('creditTierLabel');
+    const warnEl = document.getElementById('creditWarn');
+    const tier = getCreditTier(creditScore);
+    const step = 50;
+    const lowRaw = creditScore;
+    const highRaw = creditScore >= 950 ? 1000 : creditScore + step;
+    const low = tier.maxLTV === 0 ? 660 : lowRaw;
+    const high = tier.maxLTV === 0 ? 700 : highRaw;
+    const displayScore = `${low}-${high}`;
+    if (scoreEl) scoreEl.innerText = displayScore;
+    if (tierEl) tierEl.innerText = `Risk Tier: ${tier.tier}`;
+    if (warnEl) warnEl.style.display = tier.maxLTV === 0 ? 'block' : 'none';
+}
+
+function applyTamheel(type) {
+    const t = TAMHEEL_PROFILES[type];
+    // Only adjust mix percentages; rates are driven by base rate + credit tier anchors
+    document.getElementById('pctPrime').value = t.p;
+    document.getElementById('pctKalats').value = t.k;
+    document.getElementById('pctKatz').value = t.z;
+    checkMix();
+}
+function refreshRatesForProfile() {
+    // Rates follow unified anchors (BoI + tier spreads), independent of Tamheel mix selection
+    const tier = getCreditTier(creditScore);
+    const base = parseFloat(document.getElementById('sInt').value) || 4.25;
+    const primeEl = document.getElementById('ratePrime');
+    const kalatsEl = document.getElementById('rateKalats');
+    const katzEl = document.getElementById('rateKatz');
+    const spreadP = tier.spreadPrime;
+    const spreadK = tier.spreadKalatz;
+    const spreadZ = tier.spreadKatz;
+    if (primeEl && spreadP !== null) primeEl.value = (base + spreadP).toFixed(2);
+    if (kalatsEl && spreadK !== null) kalatsEl.value = (base + spreadK).toFixed(2);
+    if (katzEl && spreadZ !== null) katzEl.value = (base + spreadZ).toFixed(2);
+}
+function setCreditScore(v) {
+    creditScore = parseInt(v, 10) || creditScore;
+    updateCreditUI();
+    applyLtvCaps();
+    refreshRatesForProfile();
+    runSim();
+}
 function setMode(m) {
     mode = m;
     document.getElementById('btnCurr').classList.toggle('active', m==='currency');
@@ -49,7 +138,8 @@ function setMode(m) {
 function tgl(k, h) {
     cfg[k].is = h;
     const pills = document.getElementById(cfg[k].p).children;
-    pills[0].classList.toggle('active', h); pills[1].classList.toggle('active', !h);
+    pills[0].classList.toggle('active', h);
+    pills[1].classList.toggle('active', !h);
     document.getElementById(cfg[k].b).classList.toggle('show', !h);
     if(k==='Inf') updMeter();
     runSim();
@@ -73,19 +163,9 @@ function applyScenario(type) {
     document.getElementById('scenBase').classList.toggle('active', type==='base');
     document.getElementById('scenBull').classList.toggle('active', type==='bull');
 
-    document.getElementById('ratePrime').value = (s.int + 1.5).toFixed(2); // Auto sync Prime
+    refreshRatesForProfile(); // Rates follow base + spread + credit tier
     updMeter();
     runSim();
-}
-function applyTamheel(type) {
-    const t = TAMHEEL_PROFILES[type];
-    document.getElementById('pctPrime').value = t.p;
-    document.getElementById('ratePrime').value = t.rP;
-    document.getElementById('pctKalats').value = t.k;
-    document.getElementById('rateKalats').value = t.rK;
-    document.getElementById('pctKatz').value = t.z;
-    document.getElementById('rateKatz').value = t.rZ;
-    checkMix();
 }
 function tglHor(isAuto) {
     horMode = isAuto ? 'auto' : 'custom';
@@ -135,7 +215,55 @@ function toggleLock(target) {
         lockHor = !lockHor;
     }
     updateLockUI();
+    // Skip chart re-render; locks influence optimizer but shouldn't redraw graphs immediately
+    runSim({ skipCharts: true });
+}
+
+function setBuyerType(type) {
+    buyerType = type;
+    applyLtvCaps();
     runSim();
+}
+
+function recommendMix() {
+    const baseRate = parseFloat(document.getElementById('sInt').value) || 4.25;
+    const cpi = parseFloat(document.getElementById('sInf').value) || 2.5;
+    if(baseRate >= 4.5 || cpi >= 3.5) applyTamheel('shield');
+    else if(baseRate >= 3.0 || cpi >= 2.5) applyTamheel('arbitrage');
+    else applyTamheel('investor');
+}
+
+function showTermVal(elId, v) {
+    const el = document.getElementById(elId);
+    if(el) el.innerText = `${v}y`;
+}
+
+function syncTrackTermsToMain() {
+    const dur = document.getElementById('rDur').value;
+    document.getElementById('termPrime').value = dur;
+    document.getElementById('termKalats').value = dur;
+    document.getElementById('termKatz').value = dur;
+    showTermVal('termPrimeVal', dur);
+    showTermVal('termKalatsVal', dur);
+    showTermVal('termKatzVal', dur);
+}
+
+function toggleAdvancedTerms() {
+    advancedTermMode = !advancedTermMode;
+    const advBox = document.getElementById('advancedTermBox');
+    const basicBox = document.getElementById('basicTermBox');
+    const btn = document.getElementById('btnAdvancedTerm');
+    if(advancedTermMode) {
+        advBox.style.display = 'block';
+        basicBox.style.display = 'none';
+        btn.classList.add('active');
+        syncTrackTermsToMain();
+    } else {
+        advBox.style.display = 'none';
+        basicBox.style.display = 'block';
+        btn.classList.remove('active');
+        syncTrackTermsToMain();
+    }
 }
 function updMeter() {
     let v = parseFloat(document.getElementById('sInf').value);
@@ -150,13 +278,23 @@ function fmt(v) {
     if(Math.abs(v)>=1000) return (v/1000).toFixed(0)+'k';
     return v.toFixed(0);
 }
+function fmtNum(v) { return v.toLocaleString('en-US', {maximumFractionDigits:0}); }
 function fmtVal(v) { return mode==='percent' ? v.toFixed(1)+'%' : fmt(v)+' ₪'; }
 
-function calcPmt(p, rAnn, m) {
-    if(p<=0.01) return 0;
-    if(rAnn===0) return p/m;
-    let r = rAnn/12;
-    return p * (r * Math.pow(1+r, m)) / (Math.pow(1+r, m) - 1);
+function updateTrackTermEnabled() {
+    const primePct = parseFloat(document.getElementById('pctPrime').value) || 0;
+    const kalatsPct = parseFloat(document.getElementById('pctKalats').value) || 0;
+    const katzPct = parseFloat(document.getElementById('pctKatz').value) || 0;
+
+    const setDisabled = (id, isDisabled) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.disabled = isDisabled;
+    };
+
+    setDisabled('termPrime', primePct <= 0);
+    setDisabled('termKalats', kalatsPct <= 0);
+    setDisabled('termKatz', katzPct <= 0);
 }
 
 function checkMix() {
@@ -166,141 +304,47 @@ function checkMix() {
     let sum = p+k+z;
     let el = document.getElementById('valMixSum');
     el.innerText = sum + "%";
+    el.style.display = sum===100 ? 'none' : 'block';
     el.style.color = sum===100 ? '#16a34a' : '#ef4444';
+    const warnEl = document.getElementById('mixWarn');
+    if(warnEl) {
+        warnEl.style.display = sum===100 ? 'none' : 'block';
+    }
+    const charts = document.getElementById('chartsContainer');
+    const chartsWarn = document.getElementById('chartsWarn');
+    const dimCharts = sum !== 100;
+    if(charts) charts.classList.toggle('charts-dim', dimCharts);
+    if(chartsWarn) chartsWarn.style.display = dimCharts ? 'block' : 'none';
+    updateTrackTermEnabled();
     runSim();
 }
 
 function syncPrime() {
     let base = parseFloat(document.getElementById('sInt').value);
-    document.getElementById('ratePrime').value = (base + 1.5).toFixed(2);
+    refreshRatesForProfile();
     runSim();
 }
 
-// --- CORE ENGINE ---
-function calcCAGR(eq, downPct, mortDur, simDur, useTax, tradeFee, merFee, exModeCalc, taxModeCalc, cfgCalc, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift) {
-    let assetPrice = eq / downPct;
-    let totalLoan = assetPrice - eq;
-    let assetVal = assetPrice;
+// Global Surplus Mode State
+let surplusMode = 'invest'; 
 
-    // Initialize 3 Tracks
-    let balP = totalLoan * (mix.prime/100);
-    let balK = totalLoan * (mix.kalats/100);
-    let balZ = totalLoan * (mix.katz/100);
-
-    // Apply Buying Friction (Entry)
-    let entryCosts = assetPrice * buyCostPct;
-    let totalCashInvested = eq + entryCosts;
-
-    let spUnits = 0;
-    let spBasisLinked = totalCashInvested;
-    let spBasisUSD = 0;
-    let spValueHedged = totalCashInvested;
-    let startEx = getH(H_EX,0);
-    let currentEx = startEx;
-    if(exModeCalc !== 'hedged') { spUnits = totalCashInvested / startEx; spBasisUSD = spUnits; }
-
-    let loanMonths = mortDur * 12;
-    let cpiIndex = 1.0;
-    let taxThreshold = 5690;
-
-    // FIX: Spread is always based on User Input vs User Base
-    let spreadPrime = (overrides.RateP - overrides.Int);
-
-    // Drift Setup
-    let driftFactor = 1 + (drift / 100);
-    let mDrift = Math.pow(driftFactor, 1/12) - 1;
-
-    for(let y=0; y<simDur; y++) {
-        let rSP = cfgCalc.SP.is ? getH(H_SP,y) : overrides.SP;
-        let rApp = cfgCalc.App.is ? getH(H_RE,y) : overrides.App;
-        let rInt = cfgCalc.Int.is ? (getH(H_BOI,y)+0.015) : overrides.Int;
-        let rInf = cfgCalc.Inf.is ? getH(H_CPI,y) : overrides.Inf;
-        let baseBoI = cfgCalc.Int.is ? getH(H_BOI,y) : overrides.Int;
-
-        let ratePrime = baseBoI + spreadPrime;
-        let rateKalats = overrides.RateK;
-        let rateKatz = overrides.RateZ;
-
-        let rYld = overrides.Yld;
-        if(cfgCalc.Yld.is) rYld = 0.042 - ((y/20)*(0.042-0.028));
-
-        let mSP = Math.pow(1 + rSP - merFee, 1/12) - 1;
-        let mApp = Math.pow(1+rApp, 1/12) - 1;
-        let mInf = Math.pow(1+rInf, 1/12) - 1;
-
-        for(let m=0; m<12; m++) {
-            let globalM = (y*12)+m;
-            let monthsLeft = loanMonths - globalM;
-            cpiIndex *= (1+mInf);
-            assetVal *= (1+mApp);
-            let taxLimit = taxThreshold * cpiIndex;
-
-            // Apply Drift
-            if(exModeCalc !== 'hist') {
-                currentEx *= (1+mDrift);
-            } else {
-                currentEx = getH(H_EX, y);
-            }
-
-            // --- MORTGAGE PAYMENT ---
-            let pmtP=0, pmtK=0, pmtZ=0;
-            if(monthsLeft > 0) {
-                if(balP > 10) {
-                    pmtP = calcPmt(balP, ratePrime, monthsLeft);
-                    let intP = balP * (ratePrime/12);
-                    let princP = pmtP - intP;
-                    if(princP>balP) { princP=balP; pmtP=balP+intP; }
-                    balP -= princP;
-                }
-                if(balK > 10) {
-                    pmtK = calcPmt(balK, rateKalats, monthsLeft);
-                    let intK = balK * (rateKalats/12);
-                    let princK = pmtK - intK;
-                    if(princK>balK) { princK=balK; pmtK=balK+intK; }
-                    balK -= princK;
-                }
-                if(balZ > 10) {
-                    balZ *= (1+mInf);
-                    pmtZ = calcPmt(balZ, rateKatz, monthsLeft);
-                    let intZ = balZ * (rateKatz/12);
-                    let princZ = pmtZ - intZ;
-                    if(princZ>balZ) { princZ=balZ; pmtZ=balZ+intZ; }
-                    balZ -= princZ;
-                }
-            } else { balP=0; balK=0; balZ=0; }
-
-            let totalPmt = pmtP + pmtK + pmtZ;
-            let grossRent = (assetVal * rYld) / 12;
-            let rentTaxVal = 0;
-            if(useRentTax && grossRent > taxLimit) rentTaxVal = grossRent * 0.10;
-
-            let netRent = (grossRent * (1 - maintPct)) - rentTaxVal;
-
-            let outOfPocket = totalPmt - netRent;
-            if(outOfPocket > 0) { totalCashInvested += outOfPocket; }
-
-            spBasisLinked *= (1+mInf);
-            if(Math.abs(outOfPocket) > 0.01) {
-                let netInject = outOfPocket;
-                if(outOfPocket > 0) {
-                    netInject = outOfPocket * (1 - tradeFee);
-                    spBasisLinked += outOfPocket;
-                    if(exModeCalc !== 'hedged') spBasisUSD += (outOfPocket / currentEx);
-                } else { spBasisLinked += outOfPocket; }
-
-                if(exModeCalc === 'hedged') spValueHedged += netInject;
-                else spUnits += (netInject / currentEx);
-            }
-            if(exModeCalc === 'hedged') spValueHedged *= (1+mSP);
-            else spUnits *= (1+mSP);
-        }
+function setSurplusMode(m) {
+    surplusMode = m;
+    
+    // Update UI
+    document.getElementById('surplusConsume').classList.toggle('active', m==='consume');
+    document.getElementById('surplusMatch').classList.toggle('active', m==='match');
+    document.getElementById('surplusInvest').classList.toggle('active', m==='invest');
+    
+    // Update Description
+    const descEl = document.getElementById('surplusDescText') || document.getElementById('surplusDesc');
+    if (descEl) {
+        if(m === 'invest') descEl.innerText = "Buy S&P (reinvests rent surplus into S&P 500)";
+        else if(m === 'consume') descEl.innerText = "Keeps rent surplus as cash (Uninvested)";
+        else if(m === 'match') descEl.innerText = "Sells S&P 500 to match rent surplus cashflow";
     }
-
-    let exitValue = assetVal * (1 - sellCostPct);
-    let netRE = exitValue - (balP + balK + balZ);
-
-    let cagr = (Math.pow(netRE / totalCashInvested, 1/simDur) - 1) * 100;
-    return cagr;
+    
+    runSim();
 }
 
 function updateSweetSpots() {
@@ -312,12 +356,10 @@ function updateSweetSpots() {
     let useRentTax = document.getElementById('cRentTax') ? document.getElementById('cRentTax').checked : false;
     let tradeFee = parseFloat(document.getElementById('rTrade').value)/100;
     let merFee = parseFloat(document.getElementById('rMer').value)/100;
-
+    
     let buyCostPct = parseFloat(document.getElementById('rBuyCost').value)/100;
     let maintPct = parseFloat(document.getElementById('rMaint').value)/100;
     let sellCostPct = parseFloat(document.getElementById('rSellCost').value)/100;
-
-    const cagrFn = window.__calcCagrOverride || calcCAGR;
 
     let overrides = {
         SP: parseFloat(document.getElementById('sSP').value)/100,
@@ -341,27 +383,34 @@ function updateSweetSpots() {
     if(document.getElementById('scenBear').classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
     if(document.getElementById('scenBull').classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
 
-    // Build search grids based on optimizer mode
-    const downVals = [];
+    const best = AppLogic.searchSweetSpots({
+        eq,
+        curDown,
+        curDur,
+        simDur,
+        useTax,
+        useRentTax,
+        tradeFee,
+        merFee,
+        buyCostPct,
+        maintPct,
+        sellCostPct,
+        overrides,
+        mix,
+        drift: activeDrift,
+        lockDown,
+        lockTerm,
+        lockHor,
+        horMode,
+        cfg,
+        exMode,
+        taxMode,
+        calcOverride: window.__calcCagrOverride || undefined,
+        surplusMode
+    });
+
     const downMin = 25;
     const downMax = 100;
-    const termVals = [];
-    const horVals = [];
-    if(lockDown) downVals.push(curDown*100); else for(let d=downMin; d<=downMax; d+=5) downVals.push(d);
-    if(lockTerm) termVals.push(curDur); else for(let t=10; t<=30; t+=1) termVals.push(t);
-    if(lockHor || horMode==='auto') horVals.push(simDur); else for(let h=5; h<=50; h+=2) horVals.push(h);
-
-    let best = { d: downVals[0], t: termVals[0], h: horVals[0], c: -Infinity };
-    for(let d of downVals) {
-        for(let t of termVals) {
-            for(let h of horVals) {
-                // respect auto/custom: if horMode auto, align sim horizon with term unless lockHor
-                const simH = horMode === 'auto' ? t : h;
-                let c = cagrFn(eq, d/100, t, simH, useTax, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, activeDrift);
-                if(c > best.c) best = { d, t, h: simH, c };
-            }
-        }
-    }
 
     let posDown = ((best.d - downMin) / (downMax - downMin)) * 100;
     document.getElementById('spotDown').style.left = `${posDown}%`;
@@ -383,12 +432,13 @@ function updateSweetSpots() {
 }
 
 
-function runSim() {
-    updateSweetSpots();
+function runSim(opts = {}) {
+    const skipCharts = !!opts.skipCharts;
 
     let eq = parseFloat(document.getElementById('inpEquity').value) || 400000;
     let downPct = parseInt(document.getElementById('rDown').value)/100;
-    let mortDur = parseInt(document.getElementById('rDur').value);
+    const mainTermSlider = document.getElementById('rDur');
+    let mortDur = parseInt(mainTermSlider.value);
     let simDur = horMode === 'auto' ? mortDur : parseInt(document.getElementById('rHor').value);
 
     let useTax = document.getElementById('cTax')?.checked ?? true;
@@ -400,6 +450,10 @@ function runSim() {
     let buyCostPct = parseFloat(document.getElementById('rBuyCost').value)/100;
     let maintPct = parseFloat(document.getElementById('rMaint').value)/100;
     let sellCostPct = parseFloat(document.getElementById('rSellCost').value)/100;
+    
+    // Logic Update: Use Global State
+    const useSPWithdrawal = (surplusMode === 'match');
+    const autoInvestSurplus = (surplusMode === 'invest');
 
     document.getElementById('dDown').innerText = (downPct*100).toFixed(0)+'%';
     document.getElementById('dDur').innerText = mortDur+' Yr';
@@ -416,6 +470,32 @@ function runSim() {
     document.getElementById('valAsset').innerText = fmt(assetPriceStart)+' ₪';
     document.getElementById('valLev').innerText = 'x'+lev.toFixed(1);
     document.getElementById('barLev').style.width = Math.min(((lev-1)/4)*100, 100) + '%';
+    let posCFEl = document.getElementById('valPosCF');
+    if (posCFEl) posCFEl.innerText = '--';
+    // Credit/LTV feasibility warning
+    const tierNow = getCreditTier(creditScore);
+    const warnEl = document.getElementById('creditWarn');
+    if (warnEl) {
+        if (tierNow.maxLTV === 0) {
+            warnEl.style.display = 'block';
+            warnEl.innerText = 'Application rejected: score below 660';
+        } else {
+            const buyerMinDown = LTV_MIN[buyerType] || 25;
+            const regCap = 1 - (buyerMinDown/100);
+            const finalCap = Math.min(regCap, tierNow.maxLTV);
+            const needDown = 100 - (finalCap*100);
+            if ((downPct*100) < needDown) {
+                warnEl.style.display = 'block';
+                warnEl.innerText = `Max LTV ${(finalCap*100).toFixed(0)}% → increase down to at least ${needDown.toFixed(0)}%`;
+            } else {
+                warnEl.style.display = 'none';
+            }
+        }
+    }
+    
+    let initialLoan = assetPriceStart - eq;
+    const valMortgageEl = document.getElementById('valMortgage');
+    if (valMortgageEl) valMortgageEl.innerText = fmt(initialLoan)+' ₪';
 
     for(let k in cfg) {
         let el = document.getElementById(cfg[k].v);
@@ -447,12 +527,17 @@ function runSim() {
     let spInvestedILS = totalCashInvested;
     let spValueHedged = totalCashInvested;
 
-    let startEx = getH(H_EX,0);
+    // RE Side Stock Portfolio (The Fix)
+    let reSideStockValue = 0;
+    let reSideStockBasis = 0;
+
+    let startEx = AppLogic.getH(AppLogic.H_EX,0);
     if(exMode === 'hedged') spValueHedged = totalCashInvested;
     else { spUnits = totalCashInvested / startEx; spBasisUSD = totalCashInvested / startEx; }
 
     let totalInterestWasted = 0;
     let totalRentCollected = 0;
+    let firstPosMonth = null;
 
     let labels=[], reDataPct=[], spDataPct=[], reDataVal=[], spDataVal=[];
     let flowMort=[], flowRent=[], flowNet=[], flowInt=[], flowPrinc=[];
@@ -465,56 +550,101 @@ function runSim() {
     let rateP = parseFloat(document.getElementById('ratePrime').value)/100;
     let rateK = parseFloat(document.getElementById('rateKalats').value)/100;
     let rateZ = parseFloat(document.getElementById('rateKatz').value)/100;
+    const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
+    let termPYears = clampTerm(parseInt(document.getElementById('termPrime').value) || mortDur);
+    let termKYears = clampTerm(parseInt(document.getElementById('termKalats').value) || mortDur);
+    let termZYears = clampTerm(parseInt(document.getElementById('termKatz').value) || mortDur);
 
-    // Tax Threshold
-    let taxThresholdBase = 5690;
+    if(!advancedTermMode) {
+        termPYears = termKYears = termZYears = clampTerm(mortDur);
+        document.getElementById('termPrime').value = termPYears;
+        document.getElementById('termKalats').value = termKYears;
+        document.getElementById('termKatz').value = termZYears;
+        showTermVal('termPrimeVal', termPYears);
+        showTermVal('termKalatsVal', termKYears);
+        showTermVal('termKatzVal', termZYears);
+    } else {
+        document.getElementById('termPrime').value = termPYears;
+        document.getElementById('termKalats').value = termKYears;
+        document.getElementById('termKatz').value = termZYears;
+    }
 
-    // Drift Logic
+    let termPMonths = termPYears * 12;
+    let termKMonths = termKYears * 12;
+    let termZMonths = termZYears * 12;
+
+    const activeTerms = [];
+    if ((mix.prime || 0) > 0) activeTerms.push(termPYears);
+    if ((mix.kalats || 0) > 0) activeTerms.push(termKYears);
+    if ((mix.katz || 0) > 0) activeTerms.push(termZYears);
+    if (activeTerms.length === 0) activeTerms.push(mortDur);
+
+    const maxTrackYears = Math.max(...activeTerms);
+    if (advancedTermMode) {
+        mortDur = maxTrackYears;
+        mainTermSlider.value = mortDur;
+        document.getElementById('dDur').innerText = mortDur + ' Yr';
+        document.getElementById('spotDur').style.left = ((mortDur - 10)/(30-10))*100 + '%';
+    }
+
+    const effectiveMax = Math.max(maxTrackYears, mortDur);
+    if (horMode === 'auto') {
+        document.getElementById('rHor').value = effectiveMax;
+        document.getElementById('dHor').innerText = 'Auto ('+effectiveMax+'Y)';
+        simDur = effectiveMax;
+    }
+
+    updateSweetSpots();
+
+    let taxThresholdBase = 5654;
+
     let activeDrift = -0.5;
     if(document.getElementById('scenBear').classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
     if(document.getElementById('scenBull').classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
 
     let currentEx = startEx;
     let mDrift = Math.pow(1 + (activeDrift/100), 1/12) - 1;
+    
+    // Track status for UI
+    let isCashflowPositive = false;
 
     for(let y=0; y<simDur; y++) {
-        // Factors
-        let rSP = cfg.SP.is ? getH(H_SP,y) : parseFloat(document.getElementById('sSP').value)/100;
-        let rApp = cfg.App.is ? getH(H_RE,y) : parseFloat(document.getElementById('sApp').value)/100;
-        let rInt = cfg.Int.is ? (getH(H_BOI,y)+0.015) : parseFloat(document.getElementById('sInt').value)/100;
-        let rInf = cfg.Inf.is ? getH(H_CPI,y) : parseFloat(document.getElementById('sInf').value)/100;
-        let exRate = exMode==='hist' ? getH(H_EX,y) : 3.7;
-        if(exMode === 'hist') exRate = getH(H_EX,y);
+        // ... (existing loop setup) ...
+        let rSP = cfg.SP.is ? AppLogic.getH(AppLogic.H_SP,y) : parseFloat(document.getElementById('sSP').value)/100;
+        let rApp = cfg.App.is ? AppLogic.getH(AppLogic.H_RE,y) : parseFloat(document.getElementById('sApp').value)/100;
+        let rInt = cfg.Int.is ? (AppLogic.getH(AppLogic.H_BOI,y)+0.015) : parseFloat(document.getElementById('sInt').value)/100;
+        let rInf = cfg.Inf.is ? AppLogic.getH(AppLogic.H_CPI,y) : parseFloat(document.getElementById('sInf').value)/100;
+        let exRate = exMode==='hist' ? AppLogic.getH(AppLogic.H_EX,y) : 3.7;
+        if(exMode === 'hist') exRate = AppLogic.getH(AppLogic.H_EX,y);
 
         let rYld = 0.032;
         if(cfg.Yld.is) rYld = 0.042 - ((y/20)*(0.042-0.028));
         else rYld = parseFloat(document.getElementById('sYld').value)/100;
 
-        // Monthly Rates
         let mSP = Math.pow(1 + rSP - merFee, 1/12) - 1;
         let mApp = Math.pow(1+rApp, 1/12) - 1;
         let mInf = Math.pow(1+rInf, 1/12) - 1;
 
-        // Accumulators
         let yrRent=0, yrNet=0, yrInt=0, yrPrinc=0;
 
         for(let m=0; m<12; m++) {
-            let monthsLeft = loanMonths - (y*12 + m);
+            // ... (existing inner loop code) ...
             cpiIndex *= (1+mInf);
             assetVal *= (1+mApp);
             let taxLimit = taxThresholdBase * cpiIndex;
 
-            // Drift Ex
             if(exMode !== 'hist') currentEx *= (1+mDrift); else currentEx = exRate;
 
-            // Mortgage Pmt
             let pmtTotal = 0;
             let intTotal = 0;
             let princTotal = 0;
 
-            // Prime (Variable, Unlinked)
-            if(balP > 10 && monthsLeft > 0) {
-                let p = calcPmt(balP, rateP, monthsLeft);
+            let monthsLeftP = termPMonths - (y*12 + m);
+            let monthsLeftK = termKMonths - (y*12 + m);
+            let monthsLeftZ = termZMonths - (y*12 + m);
+
+            if(balP > 10 && monthsLeftP > 0) {
+                let p = AppLogic.calcPmt(balP, rateP, monthsLeftP);
                 let i = balP * (rateP/12);
                 let pr = p - i;
                 if(pr>balP) { pr=balP; p=balP+i; }
@@ -523,9 +653,8 @@ function runSim() {
                 intTotal += i;
                 princTotal += pr;
             }
-            // Kalats (Fixed, Unlinked)
-            if(balK > 10 && monthsLeft > 0) {
-                let p = calcPmt(balK, rateK, monthsLeft);
+            if(balK > 10 && monthsLeftK > 0) {
+                let p = AppLogic.calcPmt(balK, rateK, monthsLeftK);
                 let i = balK * (rateK/12);
                 let pr = p - i;
                 if(pr>balK) { pr=balK; p=balK+i; }
@@ -534,10 +663,9 @@ function runSim() {
                 intTotal += i;
                 princTotal += pr;
             }
-            // Katz (Fixed, Linked)
-            if(balZ > 10 && monthsLeft > 0) {
-                balZ *= (1+mInf); // Linkage
-                let p = calcPmt(balZ, rateZ, monthsLeft); // Recalc
+            if(balZ > 10 && monthsLeftZ > 0) {
+                balZ *= (1+mInf);
+                let p = AppLogic.calcPmt(balZ, rateZ, monthsLeftZ);
                 let i = balZ * (rateZ/12);
                 let pr = p - i;
                 if(pr>balZ) { pr=balZ; p=balZ+i; }
@@ -549,7 +677,6 @@ function runSim() {
 
             totalInterestWasted += intTotal;
 
-            // Cashflow
             let grossRent = (assetVal * rYld) / 12;
             let rentTaxVal = 0;
             if(useRentTax && grossRent > taxLimit) rentTaxVal = grossRent * 0.10;
@@ -557,6 +684,26 @@ function runSim() {
 
             totalRentCollected += netRent;
             let oop = pmtTotal - netRent;
+            
+            // Check Initial Status
+            if (y===0 && m===0) {
+                isCashflowPositive = oop < 0;
+                const pillsEl = document.getElementById('surplusPills');
+                
+                // Update Start Cashflow Metric
+                const startCF = -oop;
+                const cfEl = document.getElementById('valCashflow');
+                if(cfEl) {
+                    cfEl.innerText = (startCF >= 0 ? '+' : '') + fmtNum(startCF) + ' ₪';
+                    cfEl.style.color = startCF >= 0 ? '#16a34a' : '#ef4444';
+                }
+                
+                // Always enable pills so user can plan for future surplus
+                if (pillsEl) {
+                    pillsEl.style.opacity = "1";
+                    pillsEl.style.pointerEvents = "auto";
+                }
+            }
 
             yrRent += netRent;
             yrInt += intTotal;
@@ -565,24 +712,79 @@ function runSim() {
 
             if(oop > 0) { spInvestedILS += oop; totalCashInvested += oop; }
 
-            // S&P
             spBasisLinked *= (1+mInf);
-            if(Math.abs(oop) > 0.01) {
-                let netInject = oop;
-                if(oop > 0) {
-                    netInject = oop * (1 - tradeFee);
-                    spBasisLinked += oop;
-                    if(exMode !== 'hedged') spBasisUSD += (oop / currentEx);
+            
+            // --- SURPLUS / S&P LOGIC ---
+            
+            // 1. Handle Surplus (oop < 0)
+            if (oop < 0) {
+                const surplus = Math.abs(oop);
+                
+                if (autoInvestSurplus) {
+                    // THE FIX: Invest in RE-Side Stock Portfolio
+                    // RE Investor keeps cash, pays trade fee, buys S&P
+                    const netInvest = surplus * (1 - tradeFee);
+                    reSideStockValue += netInvest;
+                    reSideStockBasis += netInvest;
+                    // Note: We DO NOT reduce 'spBasisLinked' here because RE investor 'consumed' the cash (into stock)
+                    // S&P investor must still 'spend' equivalent cash to match lifestyle?
+                    // NO. If RE investor BUYS STOCK, that is SAVINGS.
+                    // S&P investor should also SAVE that amount.
+                    // So if oop < 0 (Surplus), both sides effectively save it.
+                    // But since the S&P side *is* the Savings account, it stays in the S&P.
+                    // The logic for S&P side: It naturally keeps its capital if we don't withdraw.
+                    
+                    // Current logic below handles S&P side:
+                    // If oop < 0, and useSPWithdrawal=false... S&P side keeps the money.
+                    // So we just need to make sure RE side *also* gets the asset.
+                    
+                    // reset oop to 0 for the "Matching" logic below, so we don't trigger basis reduction
+                    // oop = 0; 
+                    // Actually, if we don't touch oop, the block below "if(oop < 0)" handles basis.
+                    // If we invest surplus, we act as if we consumed it? No.
+                    // We treat it as accumulation.
+                    
+                } else if (useSPWithdrawal) {
+                    // Sell S&P to match consumption
+                    const grossTarget = surplus / (1 - tradeFee);
+                    if(exMode === 'hedged') {
+                        const used = Math.min(spValueHedged, grossTarget);
+                        spValueHedged -= used;
+                        spBasisLinked = Math.max(0, spBasisLinked - used);
+                        spInvestedILS = Math.max(0, spInvestedILS - used);
+                    } else {
+                        const availableILS = spUnits * currentEx;
+                        const usedILS = Math.min(availableILS, grossTarget);
+                        const unitsSold = usedILS / currentEx;
+                        spUnits -= unitsSold;
+                        spBasisUSD = Math.max(0, spBasisUSD - unitsSold);
+                        spBasisLinked = Math.max(0, spBasisLinked - usedILS);
+                    }
                 } else {
+                    // Default: Consume surplus (Sushi). S&P side doesn't sell, but basis tracks it?
+                    // Original logic: spBasisLinked += oop (negative).
                     spBasisLinked += oop;
                 }
+            }
 
+            // 2. Handle Deficit (oop > 0)
+            if (oop > 0) {
+                let netInject = oop * (1 - tradeFee);
+                spBasisLinked += oop;
+                if(exMode !== 'hedged') spBasisUSD += (oop / currentEx);
                 if(exMode === 'hedged') spValueHedged += netInject;
                 else spUnits += (netInject / currentEx);
             }
-
+            
+            // 3. Grow Portfolios
             if(exMode === 'hedged') spValueHedged *= (1+mSP);
             else spUnits *= (1+mSP);
+            
+            reSideStockValue *= (1+mSP);
+
+            if(firstPosMonth === null && oop < 0) {
+                firstPosMonth = (y*12) + m;
+            }
 
             if(m===11) {
                 labels.push(y+1);
@@ -592,7 +794,14 @@ function runSim() {
                 flowNet.push( yrNet/12 );
 
                 let exitVal = assetVal * (1 - sellCostPct);
-                let netRE = exitVal - (balP + balK + balZ);
+                
+                // Tax on RE Side Stock
+                let reSideTax = 0;
+                if(useTax && reSideStockValue > reSideStockBasis) {
+                    reSideTax = (reSideStockValue - reSideStockBasis) * 0.25;
+                }
+                
+                let netRE = (exitVal - (balP + balK + balZ)) + (reSideStockValue - reSideTax);
 
                 let spValILS = 0;
                 if(exMode === 'hedged') spValILS = spValueHedged;
@@ -604,7 +813,6 @@ function runSim() {
                         let profit = spValILS - spBasisLinked;
                         if(profit > 0) tax = profit * 0.25;
                     } else {
-                        // Nominal
                         if(exMode === 'hedged') {
                             let prof = spValILS - spInvestedILS;
                             if(prof > 0) tax = prof * 0.25;
@@ -650,7 +858,28 @@ function runSim() {
     document.getElementById('kDiff').innerText = dStr;
     document.getElementById('kDiff').style.color = winnerIsRE ? "var(--success)" : "var(--primary)";
 
-    drawCharts(labels, reDataVal, reDataPct, spDataVal, spDataPct, flowRent, flowInt, flowPrinc, flowNet);
+    const posYears = firstPosMonth === null ? null : (firstPosMonth/12);
+    const posTxt = firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y';
+    const posCFElFinal = document.getElementById('valPosCF');
+    if (posCFElFinal) posCFElFinal.innerText = posTxt;
+
+    if(!skipCharts) {
+        if(typeof window !== 'undefined') {
+            window.__lastSim = {
+                spValueHedged,
+                spUnits,
+                spBasisLinked,
+                spBasisUSD,
+                flowNet: flowNet[flowNet.length-1],
+                finalNetRE: lRE,
+                finalNetSP: lSP,
+                remainingLoan: balP + balK + balZ,
+                reSideStockValue, // For test verification
+                posCFYears: posYears
+            };
+        }
+        drawCharts(labels, reDataVal, reDataPct, spDataVal, spDataPct, flowRent, flowInt, flowPrinc, flowNet);
+    }
 }
 
 function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet) {
@@ -691,10 +920,10 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet) {
         data: {
             labels: l,
             datasets: [
-                { type: 'line', label: 'Net Profit/Loss', data: fNet, borderColor: '#0f172a', borderWidth: 3, pointRadius: 2, tension: 0.3, order: 1 },
-                { type: 'bar', label: 'Revenue (Rent)', data: fRent, backgroundColor: '#22c55e', stack: 'Stack 0', order: 2 },
-                { type: 'bar', label: 'Interest (Cost)', data: fInt, backgroundColor: '#ef4444', stack: 'Stack 0', order: 3 },
-                { type: 'bar', label: 'Principal (Equity)', data: fPrinc, backgroundColor: '#fca5a5', stack: 'Stack 0', order: 4 }
+                { type: 'line', label: 'Net Cashflow', data: fNet, borderColor: '#0f172a', borderWidth: 4, pointRadius: 3, tension: 0.3, order: 1, fill: false },
+                { type: 'bar', label: 'Revenue (Rent)', data: fRent, backgroundColor: '#22c55e', stack: 'Stack 0', order: 3, borderWidth: 0 },
+                { type: 'bar', label: 'Interest (Cost)', data: fInt, backgroundColor: '#ef4444', stack: 'Stack 0', order: 4, borderWidth: 0 },
+                { type: 'bar', label: 'Principal (Equity)', data: fPrinc, backgroundColor: '#fca5a5', stack: 'Stack 0', order: 5, borderWidth: 0 }
             ]
         },
         options: {
@@ -709,11 +938,11 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet) {
                     let pVal = Math.abs(c.chart.data.datasets[3].data[idx]);
                     let total = iVal + pVal;
                     let pct = total > 0 ? ((iVal/total)*100).toFixed(0) : 0;
-                    return `Interest: ${fmt(iVal)} (${pct}%)`;
+                    return `Interest: ${fmtNum(iVal)} (${pct}%)`;
                 }
-                if(lbl.includes('Principal')) return `Principal: ${fmt(v)}`;
-                if(lbl.includes('Revenue')) return `Rent: ${fmt(v)}`;
-                return `Net: ${fmt(c.raw)}`;
+                if(lbl.includes('Principal')) return `Principal: ${fmtNum(v)}`;
+                if(lbl.includes('Revenue')) return `Rent: ${fmtNum(v)}`;
+                return `Net: ${fmtNum(c.raw)}`;
             }}}},
             scales: { y: { title: {display:true, text:'Monthly ₪'}, stacked: true }, x: { stacked: true } }
         }
@@ -723,7 +952,14 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet) {
 function bootstrap() {
     updMeter();
     updateLockUI();
+    updateCreditUI();
+    applyLtvCaps();
+    refreshRatesForProfile();
+    // Ensure we start on Fixed rates with scenarios visible
+    setGlobalMode(false);
+    applyScenario('base');
     setMode('currency');
+    checkMix(); // initialize mix UI state (hide sum if 100%)
     runSim();
 }
 
@@ -736,12 +972,19 @@ window.applyTamheel = applyTamheel;
 window.tglHor = tglHor;
 window.setTaxMode = setTaxMode;
 window.updMeter = updMeter;
-window.calcPmt = calcPmt;
 window.checkMix = checkMix;
 window.syncPrime = syncPrime;
-window.calcCAGR = calcCAGR;
+window.calcPmt = AppLogic.calcPmt;
+window.calcCAGR = AppLogic.calcCAGR;
 window.updateSweetSpots = updateSweetSpots;
 window.runSim = runSim;
+window.setCreditScore = setCreditScore;
 window.toggleLock = toggleLock;
+window.setBuyerType = setBuyerType;
+window.recommendMix = recommendMix;
+window.syncTrackTermsToMain = syncTrackTermsToMain;
+window.showTermVal = showTermVal;
+window.toggleAdvancedTerms = toggleAdvancedTerms;
+window.setSurplusMode = setSurplusMode;
 
 document.addEventListener('DOMContentLoaded', bootstrap);

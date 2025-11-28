@@ -10,6 +10,8 @@ function loadDom() {
 
 function bootstrapApp() {
     loadDom();
+    // Load logic before app so globals exist
+    require('../src/logic.js');
     // require after DOM is set
     require('../src/app.js');
     document.dispatchEvent(new Event('DOMContentLoaded'));

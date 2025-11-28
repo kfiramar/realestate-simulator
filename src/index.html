@@ -18,46 +18,34 @@
 </header>
 
 <div class="layout">
-    <div class="sidebar">
-        <div class="sidebar-content">
+            <div class="sidebar">
+                <div class="sidebar-content">
 
-            <div class="equity-box" id="equityBox">
-                <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;">Starting Cash</div>
-                <input type="number" id="inpEquity" value="400000" step="10000" oninput="runSim()">
-            </div>
+                    <div class="equity-box" id="equityBox">
+                        <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;">Starting Cash</div>
+                        <input type="number" id="inpEquity" value="400000" step="10000" oninput="runSim()">
+                    </div>
 
-            <div class="specs-card">
-                <div class="specs-top">
-                    <div class="spec-item">
-                        <span class="spec-lbl">Asset Price</span>
-                        <span class="spec-val" id="valAsset">1.8M</span>
-                    </div>
-                    <div class="spec-item" style="text-align: right;">
-                        <span class="spec-lbl">Leverage</span>
-                        <span class="spec-val" id="valLev">x3.3</span>
-                    </div>
+                    <div class="section-title">Deal Structure</div>
+                    <div class="control-card">
+                <div class="card-row"><span class="card-lbl">Buyer Type</span> 
+                    <select id="buyerType" style="padding:6px; border-radius:6px; border:1px solid var(--border); font-weight:600; color:#475569;" onchange="setBuyerType(this.value)">
+                        <option value="first" selected>First Home (75% LTV)</option>
+                        <option value="replacement">Replacement (70% LTV)</option>
+                        <option value="investor">Investment (50% LTV)</option>
+                    </select>
                 </div>
-                <div class="lev-bar-bg"><div class="lev-bar-fill" id="barLev"></div></div>
-            </div>
-
-            <div class="section-title">Deal Structure</div>
-            <div class="control-card">
                 <div class="card-row"><span class="card-lbl">Down Payment <span class="lock-toggle" id="lockDownBtn" onclick="toggleLock('down')">Free</span></span> <span class="card-val" id="dDown">30%</span></div>
                 <div class="range-wrapper">
                     <input type="range" id="rDown" min="25" max="100" step="5" value="30" oninput="runSim()">
                     <div class="sweet-spot" id="spotDown"></div>
                 </div>
 
-                <div class="card-row" style="margin-top:15px;"><span class="card-lbl">Mortgage Term <span class="lock-toggle" id="lockTermBtn" onclick="toggleLock('term')">Free</span></span> <span class="card-val" id="dDur">20 Yr</span></div>
-                <div class="range-wrapper">
-                    <input type="range" id="rDur" min="10" max="30" step="1" value="20" oninput="runSim()">
-                    <div class="sweet-spot" id="spotDur"></div>
+                <div class="card-divider"></div>
+                <div class="card-row"><span class="card-lbl">Mortgage Mix (Tamheel)</span> <span class="card-val" id="valMixSum" style="color:#16a34a; display:none;">100%</span></div>
+                <div class="scenario-grid" style="margin-bottom:10px;">
+                    <div class="scen-btn" style="flex:1" onclick="applyTamheel('defaultEven')">🧭 Default</div>
                 </div>
-            </div>
-
-            <div class="section-title">Mortgage Mix (Tamheel)</div>
-            <div class="control-card">
-                <div class="card-row"><span class="card-lbl">Composition</span> <span class="card-val" id="valMixSum" style="color:#16a34a">100%</span></div>
                 <div class="scenario-grid" style="margin-bottom:15px; margin-top:5px;">
                     <div class="scen-btn" onclick="applyTamheel('arbitrage')">📉 Arbitrage</div>
                     <div class="scen-btn" onclick="applyTamheel('shield')">🛡️ Shield</div>
@@ -74,14 +62,56 @@
                     <span class="track-badge" style="background:#a855f7"></span>
                     <div class="mix-label">Kalats (Fix)</div>
                     <input type="number" class="mix-pct" id="pctKalats" value="33" oninput="checkMix()">
-                    <input type="number" class="mix-rate" id="rateKalats" value="4.8" step="0.1" oninput="runSim()">
+                    <input type="number" class="mix-rate" id="rateKalats" value="4.95" step="0.1" oninput="runSim()">
                 </div>
-                <div class="mix-row">
+                <div class="mix-row" style="margin-bottom:0;">
                     <span class="track-badge" style="background:#f97316"></span>
                     <div class="mix-label">Katz (C.P.I)</div>
                     <input type="number" class="mix-pct" id="pctKatz" value="34" oninput="checkMix()">
                     <input type="number" class="mix-rate" id="rateKatz" value="3.2" step="0.1" oninput="runSim()">
                 </div>
+
+                <div class="card-divider"></div>
+                <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
+                    <span class="card-lbl">Mortgage Term <span class="lock-toggle" id="lockTermBtn" onclick="toggleLock('term')">Free</span></span>
+                    <span class="card-val" id="dDur">25 Yr</span>
+                    <div class="pill toggle" id="btnAdvancedTerm" onclick="toggleAdvancedTerms()" style="margin-left:auto;">Advanced</div>
+                </div>
+                <div id="basicTermBox">
+                    <div class="range-wrapper">
+                        <input type="range" id="rDur" min="10" max="30" step="1" value="25" oninput="runSim()">
+                        <div class="sweet-spot" id="spotDur"></div>
+                    </div>
+                </div>
+                <div id="advancedTermBox" style="display:none; margin-top:8px;">
+                    <div class="mix-row">
+                        <div class="mix-label">Prime Term</div>
+                    <input type="range" id="termPrime" min="5" max="30" step="1" value="25" oninput="showTermVal('termPrimeVal', this.value); runSim()">
+                        <span class="card-val" id="termPrimeVal" style="width:45px; text-align:right;">25y</span>
+                    </div>
+                    <div class="mix-row">
+                        <div class="mix-label">Kalats Term</div>
+                    <input type="range" id="termKalats" min="5" max="30" step="1" value="25" oninput="showTermVal('termKalatsVal', this.value); runSim()">
+                        <span class="card-val" id="termKalatsVal" style="width:45px; text-align:right;">25y</span>
+                    </div>
+                    <div class="mix-row">
+                        <div class="mix-label">Katz Term</div>
+                    <input type="range" id="termKatz" min="5" max="30" step="1" value="25" oninput="showTermVal('termKatzVal', this.value); runSim()">
+                        <span class="card-val" id="termKatzVal" style="width:45px; text-align:right;">25y</span>
+                    </div>
+                    <div class="card-sub">Use Advanced to set different terms per track. Click again to revert to single term.</div>
+                </div>
+
+                <div class="card-divider"></div>
+                <div class="card-row" style="margin-bottom:10px;">
+                    <span class="card-lbl">Credit Score</span>
+                    <span class="card-val" id="creditScoreVal">900-950</span>
+                </div>
+                <div class="range-wrapper">
+                    <input type="range" id="creditScore" min="650" max="950" step="50" value="900" oninput="setCreditScore(this.value)">
+                </div>
+                <div class="card-sub" id="creditTierLabel">Risk Tier: Standard</div>
+                <div class="card-sub danger" id="creditWarn" style="display:none;">Application rejected: score below 660</div>
             </div>
 
             <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;">
@@ -89,7 +119,7 @@
                 <div class="pills" id="pHor"><div class="pill active" onclick="tglHor(true)">Auto</div><div class="pill" onclick="tglHor(false)">Custom</div></div>
                 <div class="input-box" id="bHor">
                     <div class="range-wrapper">
-                        <input type="range" id="rHor" min="5" max="50" step="1" value="20" oninput="runSim()">
+                        <input type="range" id="rHor" min="5" max="50" step="1" value="25" oninput="runSim()">
                         <div class="sweet-spot" id="spotHor"></div>
                     </div>
                 </div>
@@ -121,7 +151,7 @@
                 <div style="margin-top:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
                     <div class="card-row"><span class="card-lbl">Rental Yield</span> <span class="card-val" id="vYld">Fixed</span></div>
                     <div class="pills" id="pYld"><div class="pill" onclick="tgl('Yld',true)">Hist</div><div class="pill active" onclick="tgl('Yld',false)">Fixed</div></div>
-                    <div class="input-box show" id="bYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1" value="3.2" oninput="runSim()"></div>
+                    <div class="input-box show" id="bYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1" value="3.0" oninput="runSim()"></div>
                     <label class="chk-row" style="margin-top:10px;">
                         <input type="checkbox" id="cRentTax" checked onchange="runSim()">
                         <span>Rent Tax (10% > 5.6k)</span>
@@ -132,13 +162,24 @@
             <div class="control-card">
                 <div class="card-row"><span class="card-lbl">S&P 500 Return</span> <span class="card-val" id="vSP">Fixed</span></div>
                 <div class="pills" id="pSP"><div class="pill" onclick="tgl('SP',true)">Hist</div><div class="pill active" onclick="tgl('SP',false)">Fixed</div></div>
-                <div class="input-box show" id="bSP"><input type="range" id="sSP" min="4" max="15" step="0.5" value="10" oninput="runSim()"></div>
+                <div class="input-box show" id="bSP"><input type="range" id="sSP" min="4" max="15" step="0.5" value="9" oninput="runSim()"></div>
 
                 <div style="background:#f1f5f9; padding:8px; border-radius:6px; margin-top:10px;">
                     <div class="card-row" style="margin-bottom:2px;"><span class="card-lbl" style="font-weight:400; font-size:0.7rem">Annual Mgmt Fee</span><span class="card-val" style="font-size:0.7rem" id="vMer">0%</span></div>
                     <input type="range" id="rMer" min="0" max="1.0" step="0.05" value="0.15" oninput="runSim()">
                     <div class="card-row" style="margin-bottom:2px; margin-top:6px;"><span class="card-lbl" style="font-weight:400; font-size:0.7rem">Deposit Fee</span><span class="card-val" style="font-size:0.7rem" id="vTrade">0%</span></div>
                     <input type="range" id="rTrade" min="0" max="1.0" step="0.05" value="0.1" oninput="runSim()">
+                    <div class="card-row" style="margin-top:12px;">
+                        <span class="card-lbl">Rent Surplus</span>
+                        <div style="display:flex; flex-direction:column; width:60%;">
+                            <div class="pills" id="surplusPills" style="width:100%;">
+                                <div class="pill active" id="surplusInvest" onclick="setSurplusMode('invest')" style="flex:1; text-align:center;">Reinvest</div>
+                                <div class="pill" id="surplusConsume" onclick="setSurplusMode('consume')" style="flex:1; text-align:center;">Pocket</div>
+                                <div class="pill" id="surplusMatch" onclick="setSurplusMode('match')" style="flex:1; text-align:center;">Match</div>
+                            </div>
+                            <div id="surplusDescText" class="card-sub" style="margin-top:4px; text-align:right; font-size:0.65rem;">Maximize Wealth: Buy stocks with profit</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -166,14 +207,14 @@
             <div class="control-card">
                 <div class="card-row"><span class="card-lbl">Buying Friction</span> <span class="card-val" id="vBuyCost">2.0%</span></div>
                 <input type="range" id="rBuyCost" min="0" max="15" step="0.5" value="2.0" oninput="runSim()">
-                <div class="card-sub">Tax, Agent, Lawyer, Indexation (Entry)</div>
+                <div class="card-sub">Entry costs (legal/registration; no purchase tax/broker)</div>
 
                 <div class="card-row" style="margin-top:8px;"><span class="card-lbl">Maint. & Vacancy</span> <span class="card-val" id="vMaint">10%</span></div>
                 <input type="range" id="rMaint" min="0" max="30" step="1" value="10" oninput="runSim()">
                 <div class="card-sub">% of Gross Rent lost annually</div>
 
-                <div class="card-row" style="margin-top:8px;"><span class="card-lbl">Selling Friction</span> <span class="card-val" id="vSellCost">2.0%</span></div>
-                <input type="range" id="rSellCost" min="0" max="10" step="0.5" value="2.0" oninput="runSim()">
+                <div class="card-row" style="margin-top:8px;"><span class="card-lbl">Selling Friction</span> <span class="card-val" id="vSellCost">3.0%</span></div>
+                <input type="range" id="rSellCost" min="0" max="10" step="0.5" value="3.0" oninput="runSim()">
                 <div class="card-sub">Agent & Lawyer at Exit</div>
             </div>
 
@@ -217,7 +258,7 @@
                 <div class="kpi-lbl">S&P 500 Net</div>
             </div>
             <div class="kpi-box" style="background:#fff1f2; border-color:#fecdd3">
-                <div class="kpi-num" style="color:#e11d48" id="kInt">0</div>
+                <div class="kpi-num wrap" style="color:#e11d48" id="kInt">0</div>
                 <div class="kpi-lbl">Interest Paid</div>
             </div>
             <div class="kpi-box" style="background:#f0fdf4; border-color:#bbf7d0">
@@ -226,7 +267,32 @@
             </div>
         </div>
 
-        <div class="charts-container">
+            <div class="inline-summary" style="margin-top:0; margin-bottom:8px;">
+                <div class="inline-spec">
+                    <span class="inline-label">Asset Price</span>
+                    <span class="inline-value" id="valAsset">1.8M</span>
+                </div>
+            <div class="inline-spec">
+                <span class="inline-label">Mortgage</span>
+                <span class="inline-value" id="valMortgage">1.2M</span>
+            </div>
+            <div class="inline-spec">
+                <span class="inline-label">Start Cashflow</span>
+                <span class="inline-value" id="valCashflow">0 ₪</span>
+            </div>
+                <div class="inline-spec">
+                    <span class="inline-label">Leverage</span>
+                    <span class="inline-value" id="valLev">x3.3</span>
+                    <div class="lev-bar-bg compact"><div class="lev-bar-fill" id="barLev"></div></div>
+                </div>
+                <div class="inline-spec">
+                    <span class="inline-label">Years to +CF</span>
+                    <span class="inline-value" id="valPosCF">--</span>
+                </div>
+            </div>
+
+        <div class="charts-warning" id="chartsWarn" style="display:none;">Mix must total 100% of mortgage to view charts</div>
+        <div class="charts-container" id="chartsContainer">
             <div class="chart-wrapper">
                 <div class="chart-title">Net Wealth Accumulation</div>
                 <div style="position:relative; flex:1;">
@@ -243,6 +309,7 @@
     </div>
 </div>
 
+<script src="./logic.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>

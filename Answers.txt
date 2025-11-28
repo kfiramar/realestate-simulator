@@ -1,0 +1,2048 @@
+1.
+Tamheel Simulation Architecture: Comprehensive Validation of Economic Assumptions & Market Logic (2025–2026)1. Executive Summary and Macroeconomic Context (November 2025)This report constitutes an exhaustive technical validation of the "Tamheel" real estate versus capital markets simulator, designed to provide the most accurate possible modeling of investment alternatives for the Israeli investor. The analysis is grounded in the specific macroeconomic reality of Q4 2025, a period characterized by a pivotal shift in monetary policy by the Bank of Israel, a cooling residential real estate market in the demand centers of Gush Dan, and a continued divergence between the local economy and the robust performance of United States equity markets.The primary objective of this document is to validate, correct, and contextualize the ten categories of assumptions provided in the user query. The review indicates that while the simulator’s structural logic is robust, significant recalibration of numeric parameters is required to reflect the November 2025 data environment. Specifically, the onset of an interest rate easing cycle—marked by the Bank of Israel’s reduction of the base rate to 4.25% on November 24, 2025—fundamentally alters the mortgage financing landscape compared to the restrictive environment of 2023–2024. Simultaneously, the Tel Aviv real estate market has entered a phase of negative real appreciation, necessitating a departure from the optimistic "always up" assumptions of the previous decade.This report integrates authoritative data from the Bank of Israel (BoI), the Central Bureau of Statistics (CBS), and global market indices. It provides granular corrections for historical time series, updated forward-looking scenario presets, and precise algorithmic adjustments for tax liabilities and mortgage amortization mechanics. The analysis demonstrates that accurate simulation in 2025 requires a sophisticated handling of the "inflation gap"—the disparity between the Israeli CPI (Madad) and the US CPI—as well as a nuanced application of the graduated purchase tax brackets which currently serve as a major friction cost for real estate investors.2. Historical Series Validation and ConstructionThe fidelity of any financial simulator rests on the accuracy of its historical "lookback" data. The user’s current hard-coded arrays require specific methodological corrections to align with professional standards and the specific tax environment of the Israeli investor.2.1 S&P 500 Returns (H_SP)Validation Status: Correction Required (Metric Definition)The assumption of using a simple annual list of S&P 500 returns is methodologically sound, but the definition of "return" is the critical variable. The research indicates that the simulator must utilize Total Return (Price Appreciation + Dividends Reinvested) rather than merely Price Return. This distinction is paramount because the S&P 500 dividend yield, historically averaging between 1.5% and 2.0%, contributes significantly to long-term compounding. For an Israeli investor holding an "Accumulating" ETF (common in local practice to defer tax), the Total Return index is the only accurate benchmark.Period and Source:The simulation should employ a 20-year lookback period (2005–2024). This duration is sufficient to capture three distinct market phases: the Global Financial Crisis (2008), the Quantitative Easing bull market (2010–2021), and the post-pandemic inflationary adjustment (2022–2025).Data Analysis (2025 Context):As of November 2025, the US equity market has demonstrated resilience. The Total Return for 2024 stands at approximately 25.02%, driven by the technology sector.1 The distinction between Price and Total return is visible in the data: in years of flat price movement, dividends often keep the total return positive.Corrected Historical Series (Nominal USD Total Return):The following series should replace the hard-coded arrays. Note specifically the divergence in years like 2011 or 2015 where price returns were flat, but total returns were positive.YearTotal Return (%)Market ContextSource202425.02%AI/Tech-driven expansion1202326.29%Recovery from rate shock12022-18.11%Inflation/Rate Hike Cycle2202128.71%Post-COVID Liquidity2202018.40%Pandemic Volatility/Stimulus2201931.49%Rate cut pivot12018-4.38%Trade War/Tightening2201721.83%Corporate Tax Cuts2201611.96%Recovery320151.38%Earnings Recession1201413.69%Mid-cycle expansion1201332.39%Multiple expansion1201216.00%Eurozone crisis resolution120112.11%Volatility/Rating Downgrade1201015.06%Early recovery1Algorithmic Implication: If the simulator allows for a "Distributing" ETF option, the user receives the dividend cash flow (taxed immediately at 25%). If "Accumulating," the Total Return series applies, and tax is deferred until the final sale. The default should be Total Return to represent the most efficient investment vehicle.2.2 Real Estate Appreciation (H_RE)Validation Status: Correction Required (Geography & Recent Trend)The user’s assumption of a monolithic "RE Appreciation" figure is dangerous in the heterogeneous Israeli market. The simulator must explicitly define the geography as Gush Dan / Tel Aviv District to align with the "Investment" profile. Peripheral markets (Beer Sheva, Haifa) behave differently. The critical correction for the November 2025 update is the recognition of the market cooling.Nominal vs. Real:The series must be Nominal. Mortgage liabilities are nominal (or linked to nominal CPI). Comparing Real Estate appreciation (Real) to Mortgage Interest (Nominal) would create a calculation error.Recent Trend Analysis (2024–2025):While the long-term trend has been upward, 2025 has seen a reversal in the high-end market. Data from late 2025 indicates that home prices in the Tel Aviv district have experienced monthly declines (e.g., -0.9% in September 2025) and a significant deceleration in annual growth.4 Q3 2025 data suggests prices in Tel Aviv are down approximately 2.8% year-over-year 4, contrasting with slight rises in peripheral districts like Haifa.5Corrected Historical Series (Nominal Appreciation - Tel Aviv District):The simulator should reflect the volatility of the last decade, not a smooth 4% curve.YearAppreciation (%)Market ContextSource2025 (Proj)-2.50%Interest rate lag/War impact420248.80%Supply constraints peak62023-1.20%Interest rate shock7202217.60%Post-COVID boom7202113.00%Low supply/Low rates720202.40%Pandemic pause720191.20%Political uncertainty72018-0.20%Buyer's Price program effect72017-1.75%Tax changes72016-0.29%Market cooling720152.80%7Insight: The data shows that Tel Aviv real estate is not a "risk-free" 4% annual gainer. It has years of nearly 18% growth and years of contraction. The simulator must expose this volatility.2.3 USD/ILS Exchange Rate (H_EX)Validation Status: Clarified (Methodology)Methodology:For the purpose of calculating Net Worth (Balance Sheet), the simulator must use the End-of-Year Spot Rate. This reflects the liquidation value of the US equity portfolio at the specific point in time of the annual snapshot. However, for calculating Cash Flow (e.g., converting quarterly USD dividends to ILS for consumption or tax), the Average Annual Rate is technically more precise. Given the complexity of simulating daily flows, using the End-of-Year Spot is an acceptable simplification for the simulator, provided the user understands the volatility risk.Current Status (Nov 2025):The shekel has shown volatility due to geopolitical risk premiums but has strengthened recently, influencing the BoI's ability to cut rates.8 The simulator should model a long-term "drift" parameter. While the Inflation Differential theory suggests the ILS should depreciate against the USD (if Israel has higher inflation), the thriving tech export sector creates structural demand for ILS (Bull case).2.4 Consumer Price Index (H_CPI)Validation Status: Correction Required (Base Year & Mechanism)Base Year:The CBS updates the CPI base period every few years. As of 2025, the index should be referenced to the 2024 Base = 100 (or the most recent reset, typically 2022 or 2024).10 The simulator must normalize historical data to this base to ensure continuity.Known vs. Actual Index (Madad Yadua vs. Befoa'l):The user asks for confirmation on alignment. In Israeli mortgage contracts, payments are calculated using the Known Index (Madad Yadua). This is the index published on the 15th of the current month, which reflects the price changes of the previous month.Simulation Logic: For Month $T$, calculate payment using $CPI_{Published\_in\_T}$.Data Source: CBS "Price Statistics Monthly".10Current Inflation Environment (Nov 2025):Annual inflation is holding steady at 2.5%.8 This is within the government’s target range (1%–3%) but remains sticky in service sectors.Corrected Series Note: The simulator should ingest monthly changes (e.g., +0.2%, +0.1%, -0.1%) rather than annual aggregates to accurately model the "Principal Inflation" on Katz mortgages, which compounds monthly.2.5 Bank of Israel Base Rate (H_BOI)Validation Status: Update Required (November 2025 Rate Cut)Current Rate:The assumption of a static high rate is outdated. On November 24, 2025, the Bank of Israel Monetary Committee reduced the interest rate by 0.25% to 4.25%.13 This marks the beginning of an easing cycle after holding at 4.50% for an extended period.Prime Rate Rule:The "Prime = BoI + 1.5%" rule remains the absolute standard in the Israeli banking system.15Calculation: $4.25\% (BoI) + 1.5\% = \mathbf{5.75\%}$ (Prime Rate).Sampling:Use Monthly sampling for the simulator. Mortgage payments on the Prime track adjust immediately (in the following month) after a BoI announcement. Annual sampling will miss the intra-year cash flow impacts of rate volatility.3. Scenario Presets and Forward-Looking ProjectionsThe "presets" (Bear/Base/Bull) drive the Monte Carlo or deterministic projections of the simulator. The user’s current presets require adjustment to reflect the divergence between the robust US economy and the stagflationary pressures in the local Israeli housing market.3.1 Validated Scenario Targets (Annual Averages)The following table presents updated, realistic targets based on the Q4 2025 economic outlook.ParameterBear (Stagflation)Base (Recovery)Bull (Growth)RationaleS&P 500 (Nominal)4.0%9.0%12.0%Base lowered from historical 10.5% to reflect valuation risks; Bull assumes continued AI productivity gains.RE Appreciation (Nominal)-1.0%3.5%7.0%Bear captures the current negative trend (-2.8% in TLV). Base assumes a return to historical norms (CPI+1%).Interest Rate (Prime)6.5%4.75%3.5%Base assumes the BoI cut cycle continues to ~3.25% BoI (4.75% Prime). Bull assumes low-rate stimulus.Inflation (CPI)4.5%2.5%1.5%Base aligns with current 2.5% prints.8 Bear reflects war-induced supply shocks.Rental Yield (Entry)2.4%2.8%3.2%Tel Aviv yields are compressed. Higher yields (Bull) usually imply lower entry prices, not higher rents.USD/ILS Drift+3.0%0.0%-1.5%Bear implies Shekel devaluation (Geopolitics). Bull implies Shekel strengthening (Tech exports).Critique of User's Current Presets:User's Bear RE (4.0%): Unrealistic. In a Bear scenario, real estate in Israel can stagnate or drop (as seen in 2025). 4.0% is a "Base" case, not a Bear case.User's Base S&P (8.5%): Slightly conservative but acceptable.User's Interest Rate: The User's "Base" of 3.75% BoI is reasonable for the end of the forecast, but the starting point must be the current 4.25%.3.2 Yield Glide PathValidation Status: Correction RequiredThe user’s proposed glide from 4.2% → 2.8% is inappropriate for the chosen geography (Gush Dan/Tel Aviv).Current Reality: Entry yields in Tel Aviv are already extremely compressed, typically between 2.2% and 2.6%. Starting a simulation at 4.2% yield implies purchasing in a peripheral city or a distressed asset, which contradicts the "Prime Real Estate" assumption.Corrected Glide Path:Start: 2.5% (Market Actual).Trajectory: Flat to slight compression. If prices rise faster than rents (Bull Case), yields drop to 2.2%. If prices correct (Bear Case), yields might recover to 3.0%.Formula: $Yield_t = \frac{Rent_t}{Price_t}$. The simulator should model Rent Growth and Price Appreciation separately; the Yield Glide is the result, not the input.3.3 FX DriftValidation Status: ReasonableThe drifts per scenario are acceptable.Base (0.0% or -0.5%): Assumes purchasing power parity holds roughly true or slight Shekel strength due to demographics and tech.Bear (+2.5%): Shekel devaluation is a major risk for Israeli importers but a boon for the S&P 500 investor (hedging the portfolio). This negative correlation is a key insight the simulator should highlight: A weak Shekel hurts the homebuyer (inflation) but boosts the S&P investor (FX gain).4. Deal Structure and Logic (Sliders & Bounds)4.1 Down Payment (Equity)Validation Status: Updates Required for RegulationMinimum: 25% is the regulatory minimum for a "First Home" (Single Property) buyer.Investor Minimum: The simulator must enforce a 50% minimum down payment for any user designated as an "Investor" (owning an existing property). The Bank of Israel strictly limits LTV to 50% for investment properties.17Slider Configuration:First Home: 25% – 100% (Step 5%).Investor: 50% – 100% (Step 5%).Non-Resident: Typically max 50% LTV (Requires 50% down), sometimes up to 70% for premium borrowers.184.2 Mortgage TermRange: 4 – 30 years.Step: 1 year.Default: 20 or 25 years.Insight: 30-year mortgages in Israel are less "standard" than in the US due to the steep compounding of CPI-linked tracks over long durations. Banks often push for shorter terms (20-25) to manage risk.4.3 Transaction Costs (Entry & Exit)Validation Status: Major Correction Required (Purchase Tax)The user’s default of "Buy 2%" is critically low for an investor profile and must be updated to reflect the 2025 Purchase Tax (Mas Rechisha) reality.Entry Costs (The "Buy" Slider):Purchase Tax (Mas Rechisha): This is the single largest friction cost.Investor (2nd Home): 8% on the first bracket (up to ~6,055,070 NIS), rising to 10% above that.19First Home: 0% on first ~1.98M NIS, tiered thereafter (3.5%, 5%).Broker Fee: 2% + VAT (18%) = 2.36%.Legal: 0.5% – 1.0% + VAT.Appraisal/Mortgage Opening: ~0.2%.Total Entry Cost (Investor): ~11.0% (8% Tax + 2.36% Broker + 0.6% Legal).Correction: The simulator must calculate this dynamically based on the property price and user status, rather than a flat %. A flat 2% is only valid for a first-home buyer purchasing a cheap apartment without a broker.Exit Costs (The "Sell" Slider):Broker Fee: 2% + VAT = 2.36%.Legal: 0.5% + VAT.Total Exit Cost: ~3.0%.Improvement Tax (Hetel Hashbacha): This municipal tax applies if zoning rights increased during ownership. It is 50% of the zoning value increase. It is too complex to model by default, so a toggle "Include Hetel Hashbacha?" (Default: No) is appropriate.4.4 HorizonLogic: Unlocking horizon from term is correct.Step: 1 year.Bounds: 1 to 50 years.5. Mortgage Tracks and Rates (The "Tamheel")This section defines the "Engine Room" of the liability side. As of November 2025, the BoI rate cut has shifted the optimal mix, and the yield curve suggests specific strategies.5.1 Prime Track (P)User Question: What spread should default to?Analysis: The Prime track is not CPI-linked. It is the most volatile but currently transparent track.Base: BoI (4.25%) + 1.5% = 5.75%.Spread: In the current competitive market (Nov 2025), banks are offering Prime minus 0.2% to 0.4% to strong borrowers, or Prime + 0.0% to +0.5% for high-leverage investors.15Recommended Default: Prime - 0.20% (Effective Rate: 5.55%).Regulatory Limit: The 33% cap on Prime was lifted previously, but banks still manage exposure. A mix of up to 66% Prime is theoretically possible but risky.5.2 Kalatz (Fixed Rate Non-Linked)User Question: Is 4.8% realistic?Analysis: Yes, it is close.Current Market (Nov 2025): Long-term bond yields have stabilized. Mortgage lenders are quoting 4.85% – 5.10% for 20-year terms.15Default: 4.90%.Role: This is the "insurance" track. The payment never changes. It is expensive initially but safe.5.3 Katz (Fixed Rate CPI-Linked)User Question: Is 3.2% realistic?Analysis: This is slightly low for the current environment.Current Market (Nov 2025): Real yields are higher. Lenders are quoting 3.50% – 3.90% + CPI.15Default: 3.60% + CPI.Modeling Note: The simulator must model the rate as Real. The nominal interest charged in any given month is roughly $(1+Real Rate) * (1+CPI) - 1$.5.4 Recommended Mixes (Presets)The simulator should offer three distinct risk profiles:"The Shield" (Risk Averse / Cash Flow Stability):Composition: 50% Kalatz (4.90%), 50% Prime (5.55%).Rationale: Zero exposure to CPI. Payment stability is high. Best for investors who cannot tolerate negative cash flow shocks."The Arbitrage" (Balanced):Composition: 40% Prime (5.55%), 30% Kalatz (4.90%), 30% Katz (3.60%).Rationale: Diversifies inflation risk and interest rate risk."Investor Aggressive" (Low Entry Payment):Composition: 50% Katz (3.60%), 50% Prime (5.55%).Rationale: Minimizes the initial monthly payment to maximize initial cash-on-cash return, taking on significant risk of "Negative Amortization" (Principal Rising) due to the CPI linkage on the Katz portion.6. Taxes and Thresholds (2025 Fiscal Structure)Accurate tax modeling is the simulator’s key differentiator. The Israeli tax code creates non-linear outcomes that simple spreadsheets miss.6.1 Rent Tax TracksUser Question: Confirm threshold and indexing.Validation:2025 Exemption Ceiling: 5,654 NIS per month.22Indexing: The threshold is updated annually in January based on the CPI increase of the previous year.Calculation Logic (The "10% Cliff" vs. "Marginal Exemption"):Full Exemption: Rent $\le$ 5,654 NIS $\rightarrow$ Tax = 0.Partial Exemption: If Rent is between 5,654 and 11,308 (2x Ceiling):$Excess = Rent - Ceiling$.$Reduced Ceiling = Ceiling - Excess$.$Taxable Amount = Rent - Reduced Ceiling$.Tax Rate = Marginal Income Tax Rate (starts at 31% for rental income usually).10% Flat Track (Maslul Asara Ahuz): 10% on the entire gross rent. No deductions permitted. This is the standard choice for investors when rent > 5,654.Simulator Logic: The simulator should auto-calculate both (Partial Exemption vs. 10% Flat) and select the lowest tax liability for the user automatically.6.2 Capital Gains TaxReal Estate (Mas Shevach): 25% on Real Gain.Calculation: $(Sale Price - (Purchase Price \times Total Inflation)) \times 25\%$.Exemption: Single home sellers are exempt (up to ~4.8M NIS). Investors pay 25%.Capital Markets (Stocks): 25% on Real Gain.Dividends: Taxed at 25% (if foreign ETF) upon receipt.Surtax (Mas Yasef): As of 2025, a new law imposes a 2% Surtax on capital income if total annual taxable income exceeds 721,560 NIS.23 The simulator should have a "High Earner" toggle to apply this (making Capital Gains 27% or 30%).6.3 Tax Basis OptionsValidation:Real (vs CPI): Correct for Israel. Taxes are paid on the gain above inflation.Nominal (vs USD): Technically relevant for US citizens filing US taxes (phantom currency gains), but for the Israeli simulator, the Real (Shekel) basis is the statutory requirement.7. Fees and Operational Friction7.1 Management & Trading Fees (S&P 500)User Question: Confirm 0.15% default.Analysis:ETF Expense Ratio: VOO/IVV cost ~0.03%. Irish-domiciled ETFs (CSPX) cost ~0.07%.Platform Fee: Israeli banks charge "Custody Fees" (Dmei Mishmeret) of ~0.3% to 0.6% annually unless negotiated. Brokerages (IBKR) charge 0%.Simulator Default: 0.15% is a fair "Optimized" default (assuming a low-cost platform or negotiated bank fee). If modeling a standard bank user, this should be 0.50%.7.2 Deposit/Transaction FeeUser Question: 0.10%?Analysis:Buy/Sell Fee: Israeli banks charge 0.1% – 0.25%.Injection Fee Logic: The user asks if trade fee applies only on positive injections. Yes. Every time the user adds cash (monthly savings), they execute a "Buy" order, incurring the commission.Minimum Fee: Banks often have a "Minimum per trade" (e.g., $20 or 25 NIS). This hurts small monthly contributions. The simulator should ideally model a Minimum Fee (e.g., Max(0.1%, 5 USD)).8. Cashflow and Algorithmic Mechanics8.1 The "Spitzer" Mechanism with CPI LinkageUser Question: Confirm Principal linked monthly before interest.Confirmation: Yes, this is critical. The Israeli "Spitzer" calculation differs from a standard US amortization schedule regarding indexation timing.Algorithm Step-by-Step:Start Month $t$: Take Principal Balance from end of $t-1$ ($P_{t-1}$).Index Principal: $P_{adjusted} = P_{t-1} \times (1 + \Delta CPI_t)$.Calculate Interest: $Interest_t = P_{adjusted} \times (AnnualRate / 12)$.Calculate Total Payment: Using the standard amortization formula on $P_{adjusted}$ for the remaining term.Principal Reduction: $PrincipalPaydown = TotalPayment - Interest_t$.End Balance: $P_t = P_{adjusted} - PrincipalPaydown$.Implication: If $\Delta CPI$ is high, $P_{adjusted}$ grows faster than $PrincipalPaydown$, causing the loan balance to increase in nominal terms. This is the "Negative Amortization" effect.8.2 Rent Indexation LogicMechanism: In Israel, rent is typically not indexed monthly. It is fixed for the contract year.Simulator Logic: Update rent Annually. Apply the accumulated CPI of the previous 12 months to the rent at the start of Year $N+1$.8.3 "Out-of-Pocket" Logic (Opportunity Cost)User Question: Positive cash flow invests in SP; Negative reduces SP basis.Validation: This is the correct way to calculate the Internal Rate of Return (IRR) of the "Real Estate Strategy."Logic:Real Estate is the "Master": It dictates cash flow.S&P is the "Slave": If RE generates cash, it goes to S&P. If RE demands cash (Negative Cashflow), it is taken from the S&P allocation (or considered "New Equity" injected).Comparison: To make the comparison fair, the Total Invested Capital must be identical in both scenarios.Scenario A (RE): Down Payment + Closing Costs + Stream of Monthly Injections (if any).Scenario B (S&P): Lump Sum (equal to RE Down Payment) + Stream of Monthly Injections (equal to RE negative cash flow).9. Outputs and KPIs9.1 ROI Difference (Net Wealth Gap)User Question: Is "Loser as base" (Absolute % outperformance) correct?Recommendation: While % outperformance is useful, the Net Wealth Gap (NIS) is more actionable.Example: "In 20 years, the S&P strategy results in 1.2 Million NIS more than the RE strategy."Metric: Show Net Worth (Post-Tax, Liquidated). This accounts for the different tax rates on exit (RE exemption vs. Capital Gains Tax).9.2 Recommended KPIsEquity Multiple: (Total Net Cash Out / Total Net Cash In).Break-even Inflation: The annual CPI rate at which the index-linked mortgage destroys the RE return, making S&P superior.LTV Risk Path: A chart showing LTV over time. In high inflation/Katz scenarios, LTV can rise above 100% in the early years.Cash-on-Cash Return (Year 1): $\frac{Annual Net Rent}{Initial Cash Invested}$. Critical for investors focused on income.10. Validated Defaults Summary (Configuration)The following table provides the "Gold Standard" defaults for the simulator as of November 26, 2025. These replace the user's dated values.ParameterUser Old ValueValidated New ValueSource/LogicBoI Rate4.50% / Unknown4.25%Nov 2025 Cut.13Prime RateBoI + 1.5%5.75%BoI + 1.5% Rule.Inflation (CPI)2.5%2.50%Annual target.8S&P Return10%10.5%Nominal Total Return (20y avg).RE Apprec.4.0%3.0%Conservative Gush Dan (Cooling).Rent Yield3.2%2.6%Realistic Tel Aviv entry yield.Mortgage Term20y25 YearsBalance of affordability/cost.Down Payment30%50% (Investor)Regulated min for 2nd home.Purchase Tax2%8.0% (Investor)First bracket (0-6.05M).Buy Costs (Total)2%10.5%Tax (8%) + Broker (2%) + Legal.Sell Costs2%2.5%Broker (2%) + Legal.Rent Tax Thr.5,6905,654 NIS2025 Ceiling.22Mgmt Fee (SP)0.15%0.15%Low-cost ETF.Kalatz Rate4.8%4.90%Market avg 20y.15Katz Rate3.2%3.60%Market avg 20y + CPI.15Final Recommendation:The simulator must clearly distinguish between the "First Home Buyer" (0% Purchase Tax, 75% LTV, High Leverage Potential) and the "Sophisticated Investor" (8% Purchase Tax, 50% LTV, High Friction). The default mode should likely be "Investor" given the nature of a "Real Estate vs. Stocks" comparison tool, as first-home buyers rarely weigh buying VOO against buying a home to live in; investors do.
+2.
+Below is a “true-to-life” spec you can implement **without hard-coded arrays** by pulling **authoritative series (BoI/CBS)** plus **BoI-published mortgage rate tables**. Wherever I can’t verify your current hard-coded numbers (because you didn’t paste them), I mark **unknown** and recommend making it a **user input** or a **data pull**.
+
+---
+
+## 0) One key modeling decision (recommended)
+
+**Move everything to monthly frequency** (even if you still show annual UI inputs). It eliminates misalignment between CPI, interest resets, rent, and FX.
+
+**Canonical monthly state variables**
+
+* CPI index level (not “monthly change”)
+* USD/ILS monthly avg or month-end (choose one consistently)
+* Mortgage payment schedule monthly
+* S&P monthly total return (USD), then convert to ILS if needed
+
+---
+
+## 1) Historical Series (replace hard-coded arrays with live pulls)
+
+### 1.1 S&P returns (H_SP, annual list)
+
+* **Status:** **unknown** (you didn’t share the array; also “S&P total return index” is often licensed).
+* **Recommendation:** use **monthly total returns**.
+* **Implementation options (choose one and document it):**
+
+  1. **S&P 500 Total Return index** (cleanest academically, but can be licensed → if you don’t have a licensed feed, expose as “data source” choice)
+  2. **Investable proxy**: SPY / VOO “adjusted close” → compute total-return series yourself (dividends included in adjusted).
+* **User-configurable?** Yes: *index vs ETF proxy*, *currency conversion (USD vs ILS)*.
+
+### 1.2 Real-estate appreciation (H_RE, annual %)
+
+* **Status:** **unknown** (need your chosen geography/series).
+* **Recommended authoritative source:** **CBS “Housing Price Index”** (including “by districts” if you want Tel-Aviv district). The CBS API explicitly notes the HPI exists and is published **bi-monthly** and is **provisional and revised**. ([Bank of Israel][1])
+* **Implementation:** store **index level** and compute YoY / annualized CAGR for your horizon.
+* **User-configurable?** Yes: *National vs Tel-Aviv district vs “Gush Dan proxy”*, *nominal vs real*.
+
+### 1.3 USD/ILS (H_EX, annual spots)
+
+* **Status:** Your “annual spots” definition must be chosen.
+* **Correct approach:** decide **one**:
+
+  * **EOY** = last business day of year, or
+  * **annual average**.
+* **Authoritative data pull:** Bank of Israel **representative exchange rate** series via the new SDMX endpoint; BoI’s own guide shows how to download **CSV** and even how to aggregate to monthly mean (`normalisefreq=M;mean`). ([Bank of Israel][1])
+
+  * Example (from BoI docs style):
+    `https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv`
+* **User-configurable?** Yes: *EOY vs average*.
+
+### 1.4 CPI (H_CPI, monthly changes)
+
+* **Correction:** Don’t store “monthly changes” as the primary series. Store the **CPI index level** and derive MoM/YoY.
+* **Authoritative pull:** CBS API for price indices (CSV/JSON). ([Bank of Israel][1])
+* **Base year:** **unknown** until you inspect the API payload/metadata (CBS changes base years over time). Make it programmatic.
+
+### 1.5 BoI base rate (H_BOI, annual)
+
+* **Correction:** the BoI policy rate changes on specific decision dates; sample **daily or monthly**, not annual.
+* **Current level (as of decision):** BoI states it **cut to 4.25% on 24/11/2025**. ([Bank of Israel][2])
+* **API for current rate:** BoI exposes `Boi.org.il/PublicApi/GetInterest` returning JSON with current interest + next decision date. ([Bank of Israel][3])
+* **History:** BoI provides “Rates of interest published…” as a downloadable dataset from its statistics pages (best is to pull via series DB or their published files). ([Bank of Israel][4])
+* **Prime rule:** BoI defines **Prime = BoI rate + 1.5%** in its public guidance. ([Bank of Israel][5])
+
+---
+
+## 2) Scenario Presets (Bear/Base/Bull)
+
+### 2.1 Are your current presets “realistic”?
+
+* **Status:** I can’t validate your exact numbers as “correct” because they are *assumptions*, not facts.
+* **Recommended change:** make scenario presets **editable** + add a “calibrated from history” button that computes:
+
+  * SP return distribution from chosen SP source
+  * RE appreciation from chosen CBS HPI series
+  * inflation distribution from CBS CPI
+  * rates distribution from BoI policy rate history
+
+### 2.2 Updated targets (suggested defaults, not “truth”)
+
+Use these as *starting points* (and label them as such):
+
+| Scenario | SP (nominal, USD) | RE app (nominal, ILS) | CPI (ILS) | Mortgage rate level | Rental yield | FX drift (USD/ILS) |
+| -------- | ----------------: | --------------------: | --------: | ------------------: | -----------: | -----------------: |
+| Bear     |              5.5% |                  2.5% |      3.5% |              “high” |         3.8% |              +1.5% |
+| Base     |              8.0% |                  4.0% |      2.5% |               “mid” |         3.3% |              +0.5% |
+| Bull     |             10.5% |                  6.0% |      1.8% |               “low” |         2.8% |              -0.5% |
+
+Rationale anchors you *can* cite from BoI:
+
+* BoI inflation target regime is longstanding; the homepage currently shows inflation (12-month) and the current policy rate. ([Bank of Israel][2])
+  Everything else here should remain **user-configurable**.
+
+### 2.3 Yield glide (historic mode)
+
+* **Status:** **unknown** without specifying segment (TLV small apartment yields behave very differently than national).
+* **Recommendation:** instead of a hard-coded 20y glide, treat rental yield as either:
+
+  * **mean-reverting** toward a long-run level, or
+  * **flat per scenario**, unless you have a credible yield series.
+
+### 2.4 FX drift
+
+* **Recommendation:** default FX drift = **0%** unless the user explicitly wants to model it; FX is a major driver and easily becomes “wishcasting.”
+* **User-configurable?** Yes.
+
+---
+
+## 3) Sliders & Bounds (Deal Structure)
+
+### 3.1 Down payment min/max/step
+
+* **Correction:** minimum down payment depends on **regulatory max LTV** by buyer type:
+
+  * **Single dwelling:** max LTV **75%** → min down **25%**
+  * **Replacement dwelling:** max LTV **70%** → min down **30%**
+  * **Investment dwelling:** max LTV **50%** → min down **50%** ([Bank of Israel][6])
+* **Step 5%** is fine for UI; but enforce the correct **min** based on user-selected buyer type.
+
+### 3.2 Mortgage term (10–30y)
+
+* **Confirm:** max **30 years** is consistent with common Israeli mortgage limits guidance. ([Kol Zchut][7])
+* **Min 10y:** fine for your sim; but real-world can be shorter → consider allowing **5y**.
+
+### 3.3 Horizon locked to term, unlock 5–50y
+
+* **Status:** product/design choice. Realism is fine.
+* **Suggestion:** if horizon > term, decide clearly what happens post-term (rent continues? invest continues? upkeep continues?).
+
+### 3.4 Costs: Buy/Sell/Maint/Vacancy
+
+* **Correction:** “Buy 2% / Sell 2%” is *not generally true* in Israel because **purchase tax** can dominate and is buyer-specific.
+* **Recommendation:** break “buy costs” into components:
+
+  * Broker (often 1–2% + VAT) → user input
+  * Lawyer (often ~0.5–1% + VAT) → user input
+  * Appraisal, registration, mortgage origination fees → user input
+  * **Purchase tax** → must be a separate module (depends on buyer type / property / thresholds)
+* **Maint/Vacancy 10%:** plausible as a conservative combined knob, but should be user input.
+
+---
+
+## 4) Tamheel Tracks & Rates (defaults should be data-driven)
+
+### 4.1 Prime track default spread
+
+* **Prime definition confirmed:** Prime = BoI + 1.5%. ([Bank of Israel][5])
+* **Spread/discount vs Prime:** **unknown** as a universal constant (varies by bank, LTV, term, borrower).
+* **Recommendation:** default spread should be **user input**, plus optional “use BoI average effective mortgage rates” mode.
+
+### 4.2 Kalatz fixed nominal default 4.8%
+
+* **Status:** cannot confirm as a “current market average” without reading the latest BoI attachment tables.
+* **Correct approach:** set Kalatz from **BoI “average mortgage interest rates”** publications (monthly, weighted average on new loans). BoI explains the series is monthly, effective annual rate, weighted average on new loans. ([Bank of Israel][8])
+  (Use their attached “full data” Excel/series as your source of truth.)
+
+### 4.3 Katz “fixed real rate 3.2%”
+
+* **Correction:** CPI-linked mortgages are typically modeled as **nominal interest + linked principal**; calling it “real rate” is a modeling choice.
+* **Recommendation:** support both:
+
+  * **Real-rate mode** (interest applied to CPI-linked principal in real terms)
+  * **Nominal-rate mode** (interest rate quoted nominally but principal indexation applied monthly)
+
+### 4.4 Default mixes / presets
+
+* **Status:** these are strategy assumptions.
+* **Recommendation:** default weights should respect:
+
+  * regulatory constraints on LTV (above)
+  * user risk tolerance
+  * and optionally a “stress test” (rate + CPI shock).
+
+---
+
+## 5) Taxes & Thresholds
+
+### 5.1 Rent tax threshold “5,690 ₪ indexed to CPI; 10% applied above”
+
+* **Correction:** In Israel, there is a **monthly exemption ceiling** for residential rent income; if exceeded, there’s a **partial exemption formula** up to a higher ceiling, and there is also a **separate optional 10% track** (not “automatically applied above”).
+* **2025 exemption ceiling:** **5,654 ₪ / month** (authoritative published value). ([Gov.il][9])
+* **Indexation rule:** do **not** assume monthly CPI indexation unless you’ve confirmed; these ceilings are typically updated **periodically (often annually)** → treat as data (or user input).
+
+### 5.2 Capital gains “25% toggle”
+
+* **Confirm (high level):** Israel Tax Authority notes capital gains and real-estate appreciation tax are **usually** around **25%**.
+* **Correction:** applicability differs a lot:
+
+  * securities vs real estate
+  * exemptions for a primary residence
+  * holding period rules / historical inflation adjustments
+* **Recommendation:** make “effective CGT rate” a user input **plus** toggles for “primary residence exemption applies” and “investor property”.
+
+### 5.3 Tax basis options (Real vs CPI, Nominal vs USD)
+
+* **Status:** useful, but taxation is complex.
+* **Recommendation:** keep as options, but label as “approximation,” and let user select:
+
+  * taxed in **ILS nominal**
+  * taxed on **real gain** (CPI-adjusted)
+  * taxed after **FX conversion** assumptions
+
+---
+
+## 6) Fees & Friction
+
+### 6.1 S&P mgmt fee 0.15%
+
+* **Status:** can be reasonable, but varies widely by product wrapper (ETF vs managed account vs pension product).
+* **Recommendation:** keep as user input; consider presets: 0.05%, 0.15%, 0.50%.
+
+### 6.2 Deposit/transaction fee 0.10%
+
+* **Recommendation:** model as either:
+
+  * % of notional, or
+  * fixed fee per trade (+ minimum)
+    Make it user input.
+
+### 6.3 Apply trade fee only on positive injections?
+
+* **Correction:** usually fees apply on **every buy/sell trade**, not only “positive injections.”
+* **Recommendation:** apply:
+
+  * buy-fee on buys
+  * sell-fee on sells
+  * and optionally custody/FX conversion fees separately
+
+---
+
+## 7) Optimizer & Locks
+
+* **Confirm ranges/steps:** ok as UI defaults, but enforce LTV-dependent minimum down payment (25/30/50) from BoI rules. ([Bank of Israel][6])
+* **Lock defaults (horizon locked):** reasonable.
+
+---
+
+## 8) Cashflow & Rent Modeling
+
+### 8.1 Rent mechanics + tax timing
+
+* **Recommendation:** compute monthly gross rent = (property value × yield) / 12
+  then apply vacancy/maintenance monthly.
+* **Tax timing:** compute rent income tax **monthly** (most realistic) or accumulate and settle **annually**. Make it a toggle.
+
+### 8.2 CPI linkage on linked tracks (Katz)
+
+* **Status:** borrower experience often has “known index” vs “actual index” timing effects.
+* **Recommendation:** implement “index lag = 1 month” option and a “known/unknown index adjustment” switch.
+
+### 8.3 Out-of-pocket cashflows
+
+* **Your approach is coherent** (surplus invests; deficit sells). Keep it, but:
+
+  * apply transaction fees on those trades (see §6).
+
+---
+
+## 9) Outputs & KPIs
+
+Your current KPIs are good. Strongly consider adding:
+
+* **DSCR** (rent NOI / debt service)
+* **LTV path** over time (with price + amortization + indexation)
+* **NPV** (discount rate = user input or scenario-based)
+* **IRR** and **cash-on-cash**
+* **Max drawdown** of SP leg (if you use monthly returns)
+
+---
+
+## 10) Defaults to verify (recommended updates)
+
+Assuming **first home** (single dwelling) and wanting “typical Israel” constraints:
+
+* Down: **25%** (since max LTV 75%) ([Bank of Israel][6])
+* Term: **25y** (keep 20y if you prefer; 30y is also common)
+* Horizon: **locked to term** by default
+* Prime auto-sync: **Prime = BoI + 1.5%** ([Bank of Israel][5])
+* BoI rate current: **4.25%** as of **24/11/2025** ([Bank of Israel][2])
+* Rent tax threshold: **5,654 ₪/month (2025)**, and don’t auto-apply “10% above threshold” ([Gov.il][9])
+* Mortgage fixed rates (Kalatz/Katz): **do not hardcode** → pull BoI monthly “average mortgage rates” tables ([Bank of Israel][8])
+* Buy/sell costs: replace 2%/2% with decomposed inputs + purchase tax module
+* Maintenance/vacancy: keep **10%** as conservative default but user-editable
+
+---
+
+# What I still need marked as **unknown** (should be user input or data-source choice)
+
+* Your current hard-coded **H_SP / H_RE / H_EX / H_CPI / H_BOI arrays** (periods + definitions).
+* Whether your app compares everything in **ILS nominal**, **ILS real**, or **USD**.
+* Current “Kalatz 4.8 / Katz 3.2” and the preset track rates (these should come from BoI-published average tables or lender quotes per bank).
+
+---
+
+## Practical “make it true-to-life” implementation checklist
+
+1. **Replace arrays with pullers**
+
+   * BoI FX: SDMX CSV endpoint (representative USD/ILS) ([Bank of Israel][1])
+   * CBS CPI + HPI: CBS API ([Bank of Israel][1])
+   * BoI policy rate current: `GetInterest` ([Bank of Israel][3])
+   * BoI mortgage average rates: BoI “average mortgage rates” page + attachment ([Bank of Israel][8])
+2. Add a **Data Definitions panel** in the UI (exact series names, aggregation, and update timestamp).
+3. Make “buyer type” explicit → enforce correct LTV mins. ([Bank of Israel][6])
+
+If you paste your current hard-coded arrays (even just first/last 5 values + claimed years), I can map each one to the closest authoritative series definition and tell you exactly what’s mismatched (period, total-vs-price, EOY-vs-avg, base-year issues) and what you should replace it with.
+
+[1]: https://www.boi.org.il/media/zodneksc/extracting-series-from-the-new-series-database-representative-exchange-rates-example.pdf?utm_source=chatgpt.com "Bank Of Israel Extracting series from the new series database"
+[2]: https://www.boi.org.il/en/?utm_source=chatgpt.com "Bank of Israel"
+[3]: https://boi.org.il/qawebsite/?utm_source=chatgpt.com "שאלות ותשובות על השימוש באתר החדש"
+[4]: https://www.boi.org.il/en/economic-roles/statistics/boi-interest-rate-and-the-monetary-tools/boi-interest-rate-and-the-monetary-tools/ "BOI Interest Rate and the Monetary Tools | בנק ישראל - הבנק המרכזי של ישראל"
+[5]: https://www.boi.org.il/en/information-and-service-to-the-public/banking-customer-service-information/public-guides/taking-a-loan/?utm_source=chatgpt.com "Taking a Loan"
+[6]: https://boi.org.il/en/information-and-service-to-the-public/banking-customer-service-information/financial-education/the-reform-to-increase-information-transparency-and-competition-in-mortgages/?utm_source=chatgpt.com "The Mortgages Transparency Reform"
+[7]: https://www.kolzchut.org.il/he/%D7%9E%D7%92%D7%91%D7%9C%D7%95%D7%AA_%D7%A2%D7%9C_%D7%9C%D7%A7%D7%99%D7%97%D7%AA_%D7%9E%D7%A9%D7%9B%D7%A0%D7%AA%D7%90?utm_source=chatgpt.com "מגבלות על לקיחת משכנתא (מושג) – כל-זכות"
+[8]: https://www.boi.org.il/information/interestrates/mortgage/ "הריבית הממוצעת על משכנתאות ומועדי פרסומם | בנק ישראל - הבנק המרכזי של ישראל"
+[9]: https://www.gov.il/en/pages/faq-digital-assets?utm_source=chatgpt.com "Frequently Asked Questions and Answers about Digital Assets"
+
+3.
+Below is what I can **confirm/correct** *independently of your current hard-coded arrays* (since you didn’t paste them). For each item I give (a) what’s “true-to-life”, (b) what should be **user-configurable**, and (c) **authoritative pull sources / APIs** (BoI/CBS) you can wire into the simulator.
+
+---
+
+## 0) Ground rules (so the sim matches how data is actually published)
+
+* Prefer **monthly** simulation where possible; derive annual outputs from monthly. This avoids sampling artifacts (esp. CPI linkage, FX, and rate changes).
+* Store **index levels** (CPI level, home price index level), and compute % changes yourself. Base year changes then don’t break the sim (you just splice levels).
+
+---
+
+## 1) Historical Series (your hard-coded arrays)
+
+### 1.1 S&P returns (H_SP)
+
+**Status:** **unknown** (can’t validate your array without seeing it, and “official” S&P Total Return data is usually license-controlled).
+
+**What “true-to-life” means**
+
+* Decide: **USD investor** (S&P returns in USD, then convert using USD/ILS) vs **ILS-hedged** (different instrument).
+* If you want “S&P 500” *investment-like* performance, you want **total return** (dividends reinvested), not price return.
+
+**Recommendation**
+
+* Make H_SP a **pluggable data provider**:
+
+  * Option A (best): licensed **S&P DJI SPXTR / SPTR** feed.
+  * Option B (pragmatic): use a **tradable proxy** (ETF total return via “adjusted close”) and label it as proxy in UI.
+* Expose to user: *“Use Total Return / Price Return”* toggle, currency (USD/ILS).
+
+**User-configurable:** provider choice, total-vs-price return, frequency (monthly vs annual).
+
+---
+
+### 1.2 RE appreciation (H_RE)
+
+**Status:** **correctable** using **CBS dwelling price index**.
+
+**What to use**
+
+* Use CBS “**Index of Prices of Dwellings**” (מדד מחירי הדירות). In the CBS price indices feed, the housing chapter’s main code appears as **40010** (“מדד ומחירים ממוצעים משוק הדירות”). ([CBS API][1])
+* Important: this index is published at **bimonthly** cadence and the latest observations may be **revised** (CBS explicitly notes provisional behavior for recent observations in its API guidance). ([CBS API][1])
+
+**Nominal vs real**
+
+* This is **nominal ILS** home prices (not CPI-adjusted). Real appreciation = home-price-index change − CPI inflation (computed from CPI series).
+
+**Geography**
+
+* National index is the most robust default.
+* If you want **Tel Aviv / Gush Dan**, treat **region as a user input** and pull the regional series (CBS provides breakdowns; wire via catalog lookup).
+
+**User-configurable:** geography (national vs district), nominal vs real mode, use “latest provisional” yes/no.
+
+---
+
+### 1.3 USD/ILS (H_EX)
+
+**Status:** **correctable** using BoI “representative exchange rate”.
+
+**True-to-life definition**
+
+* Bank of Israel publishes the **representative exchange rate** and exposes it via SDMX/Edge.
+* You must choose sampling:
+
+  * **Monthly average** (best for monthly cashflows)
+  * **End-of-month** (best if you rebalance at month-end)
+  * **End-of-year** is just end-of-month for December.
+
+**BoI SDMX pull (CSV)**
+
+```txt
+# Daily series → normalize to monthly mean (recommended)
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?c[DATA_TYPE]=OF00&format=csv&normalisefreq=M;mean
+
+# If you want “yearly last (EOY spot)”
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?c[DATA_TYPE]=OF00&format=csv&normalisefreq=Y;lastperiod
+```
+
+The BoI extraction guide documents the `EXR` dataflow, the `DATA_TYPE=OF00` filter for representative rates, and the `normalisefreq` aggregation syntax.
+
+**User-configurable:** monthly mean vs month-end vs year-end; representative vs other rates (default representative).
+
+---
+
+### 1.4 CPI (H_CPI, monthly)
+
+**Status:** **correctable** using CBS CPI; **your “base year” assumption should NOT matter** if you store levels and compute changes.
+
+**Key gotcha: base-year change**
+
+* CBS changed CPI base: **from January 2025 the CPI base is “Average 2024=100”**, linked from the previous base using coefficient **1.074**.
+* If you hard-coded a CPI level series across 2025 without splicing, it will break.
+
+**What to store**
+
+* Store CPI **index level** (not monthly deltas), then compute:
+
+  * monthly inflation = `CPI[t]/CPI[t-1] - 1`
+  * YoY inflation = `CPI[t]/CPI[t-12] - 1`
+
+**User-configurable:** whether to apply “known CPI” lag (see §8).
+
+---
+
+### 1.5 BoI base rate (H_BOI) + Prime rule
+
+**Status:** **correctable**.
+
+**Current facts (for defaults)**
+
+* BoI interest rate as shown by BoI: **4.25%** (site also shows next decision date). ([Bank of Israel][2])
+
+**Prime rule**
+
+* BoI explicitly defines Prime as **BoI interest rate + 1.5%** in its mortgage transparency material (example given). ([Bank of Israel][3])
+  So with 4.25%, Prime = **5.75%**.
+
+**Historical series sources**
+
+* BoI provides a downloadable historical interest-rate sheet: `bointcre_m.xls` (“Rates of interest published by the Bank of Israel… Bank of Israel declared nominal interest rate”). ([Bank of Israel][4])
+* BoI also provides a simple API for the **current** rate: `Boi.org.il/PublicApi/GetInterest` (JSON format documented). ([Bank of Israel][5])
+
+**User-configurable:** whether Prime spread is fixed 1.5 (it is, per BoI), and whether “Prime track rate” is Prime ± bank margin (bank-dependent).
+
+---
+
+## 2) Scenario Presets (Bear/Base/Bull)
+
+**Status:** the exact numbers are **model assumptions** (not “confirmable”), but you can make them realistic by anchoring to **current BoI rate + target inflation regime + current rental yields**.
+
+**Hard correction you should do**
+
+* Start the interest-rate preset from **current BoI (4.25%) and Prime (5.75%)**, not from arbitrary 3–4% if you’re using “today” as t0. ([Bank of Israel][2])
+
+**Recommended structure change (more realistic than fixed ‘Int’ and ‘Yld’)**
+
+* Scenario defines **long-run means** + **mean reversion speed**:
+
+  * Interest: mean-revert to a long-run policy rate; use current t0 as initial.
+  * Yield: mean-revert by geography (TLV lower yield than periphery).
+
+**User-configurable:** FX drift (see §2.3), yield level by geography, mean-reversion speeds.
+
+*(If you want, paste your current presets’ intent—“nominal ILS? USD?”—and I’ll map them into long-run mean + current-state initialization.)*
+
+---
+
+## 3) Sliders & Bounds (Deal structure)
+
+### 3.1 Down payment min/max/step
+
+**Status:** **needs correction**: the minimum down payment depends on borrower type due to LTV caps.
+
+Common/officially-cited caps (surface the choice in UI):
+
+* **First (and only) home:** up to **75% LTV** ⇒ min down **25%**
+* **Replacing home:** up to **70% LTV** ⇒ min down **30%**
+* **Investment / additional home:** up to **50% LTV** ⇒ min down **50%** ([Kol Zchut][6])
+
+**Implementation**
+
+* Add a dropdown: `buyer_type = {first_home, replacement, investor}` and set slider min accordingly.
+* Keep max 100%.
+* Step 5% is fine; consider 1–2% in “advanced” mode.
+
+### 3.2 Mortgage term 10–30y
+
+**Status:** broadly correct; Israel commonly caps mortgage at **≤30 years**. ([Kol Zchut][6])
+
+### 3.3 Horizon default/step
+
+**Status:** modeling choice. Good default = **horizon locked to term**; unlock for investor analysis. Your 5–50y is OK.
+
+### 3.4 Costs (Buy/Sell/Maint/Vacancy)
+
+**Status:** **unknown** as fixed % (varies massively by: purchase tax status, broker, legal fees, renovations, vacancy, who pays Arnona/Vaad, etc.).
+**Recommendation:** split into:
+
+* **Transaction costs ex-tax (% of price)** (broker + legal + misc)
+* **Purchase tax module** (user type + up-to-date thresholds)
+* **OPEX (% of rent)** and **vacancy (% of rent)** separately
+
+**User-configurable:** definitely yes.
+
+---
+
+## 4) Tamheel tracks & rates
+
+### 4.1 Prime track spread default
+
+**Status:** **bank- and borrower-dependent** ⇒ should be **user input**.
+
+* Model rate as: `Prime + bank_margin`
+* Prime itself is anchored to BoI + 1.5%. ([Bank of Israel][3])
+
+### 4.2 Kalatz / Katz defaults
+
+**Status:** **unknown** without pulling latest “average rates on new mortgages by track” (BoI tables) or live bank quotes.
+
+**Recommendation (true-to-life)**
+
+* Don’t hard-code 4.8 / 3.2 long-term. Instead:
+
+  * Default to **BoI published monthly averages** for new mortgages by track (data source: BoI statistics tables / Edge series).
+  * Allow user override.
+
+### 4.3 Default mix weights/presets
+
+**Status:** product decision; should reflect regulation and borrower risk appetite.
+
+* Keep your presets, but treat rates as pulled-from-market, not embedded constants.
+
+**User-configurable:** weights yes (advanced), or at least preset selection.
+
+---
+
+## 5) Taxes & thresholds
+
+### 5.1 Rent tax threshold + “10% above”
+
+**Status:** **your rule is not reliable as stated**.
+
+* Israel has multiple rental tax regimes (full/partial exemption with phaseout; optional 10% on gross, etc.). This should be a **mode selection**, not a single rule.
+* The exemption ceiling is time-varying and policy-changes happen; treat the threshold as **data input** sourced from the Tax Authority / gov.il page and refreshed.
+
+**User-configurable:** tax regime, threshold (auto-updated default), filing method.
+
+### 5.2 Capital gains tax 25%
+
+**Status:** **partly wrong if applied to Israeli residential RE**.
+
+* 25% is a common equity capital gains rate, but Israeli real-estate sale taxation has exemptions/deductions/eligibility rules and is not “flat 25%” in many common cases.
+
+**Recommendation**
+
+* Separate toggles:
+
+  * **Securities CGT** (25% nominal, plus dividends/withholding if you model them)
+  * **Real-estate sale tax**: start with a simplified toggle (“taxable / exempt”) + user-entered effective rate, unless you’re ready to implement the full rule set.
+
+### 5.3 Tax basis options
+
+**Status:** useful, but missing key real-world frictions:
+
+* Add optional: **dividend tax drag** (S&P)
+* Add optional: FX conversion tax/fees if relevant
+* Add optional: inflation adjustment handling per asset class (advanced)
+
+**User-configurable:** yes.
+
+---
+
+## 6) Fees & friction
+
+### 6.1 S&P mgmt fee 0.15%
+
+**Status:** plausible but not universal; should be **instrument-dependent**.
+
+### 6.2 Deposit/transaction fee 0.10%
+
+**Status:** depends on broker/bank and minimum commissions ⇒ **user input**.
+
+### 6.3 Trade fee only on positive injections
+
+**Status:** generally **not true-to-life** (fees apply whenever you execute trades, including sells).
+Better rule:
+
+* Apply trade fees on **every buy/sell**.
+* If you want to approximate “only deposits incur”, label it as a simplification.
+
+**User-configurable:** yes.
+
+---
+
+## 7) Optimizer & locks
+
+Your ranges are fine mechanically, but once you add borrower type (LTV caps) you must constrain the search space accordingly (see §3.1). ([Kol Zchut][6])
+Lock defaults are a UX decision; “horizon locked to term” is sensible.
+
+---
+
+## 8) Cashflow & rent modeling
+
+### 8.1 Rent mechanics + tax timing
+
+* Monthly modeling is fine; annual tax settlement can be approximated as monthly withholding or annual true-up (choose one and expose it).
+
+### 8.2 CPI linkage on Katz (index-linked track)
+
+**Status:** **unknown without bank contract specifics**.
+Make it a switch:
+
+* `indexation_mode = {known_index_lagged, current_index}`
+  and document it clearly in UI.
+
+### 8.3 Out-of-pocket → invest in SP
+
+Reasonable default behavior, but if you ever model taxes you should track:
+
+* realized gains on forced sells
+* cost basis lots (or at least weighted average)
+
+**User-configurable:** yes (advanced toggle: “auto-invest surplus” on/off).
+
+---
+
+## 9) Outputs & KPIs
+
+Your current KPIs are fine for v1. For “true-to-life” mortgage/investor analysis, add:
+
+* **LTV path** (with CPI-linkage effects)
+* **DSCR / ICR** (if investment property)
+* **IRR** and **NPV** (discount rate = user input or BoI gov bond proxy)
+* **Max drawdown of liquid portfolio**
+* **Worst-month cash deficit** (liquidity stress)
+
+---
+
+## 10) Defaults to verify (recommended “today-anchored” corrections)
+
+These are the only ones I can hard-anchor to authoritative current-state data from what I pulled:
+
+* **BoI interest (t0): 4.25%** ([Bank of Israel][2])
+* **Prime auto sync:** **Prime = BoI + 1.5%** ⇒ today **5.75%** ([Bank of Israel][3])
+* **Down payment min:** depends on buyer type (25/30/50). ([Kol Zchut][6])
+
+Everything else (SP return, RE appreciation, yield, buy/sell %, maintenance, fees, tax thresholds) should be **scenario or user inputs** unless you wire live sources.
+
+---
+
+# “Wiring” cheat-sheet (copy/paste endpoints)
+
+### BoI — representative USD/ILS (monthly mean) as CSV
+
+```txt
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?c[DATA_TYPE]=OF00&format=csv&normalisefreq=M;mean
+```
+
+
+
+### BoI — current interest rate (JSON)
+
+```txt
+https://www.boi.org.il/PublicApi/GetInterest
+```
+
+([Bank of Israel][5])
+
+### BoI — historical interest-rate file (convert xls → csv in your pipeline)
+
+```txt
+https://www.boi.org.il/boi_files/Statistics/bointcre_m.xls
+```
+
+([Bank of Israel][4])
+
+---
+
+## What I need from you to “confirm/correct the arrays”
+
+If you paste your current hard-coded arrays (H_SP/H_RE/H_EX/H_CPI/H_BOI) and what you *intended* each to mean (EOY vs average, nominal vs real, geography), I can:
+
+* label the exact period (start/end),
+* tell you where they diverge from the authoritative series, and
+* return **ready-to-ingest CSV** (same shape as your simulator inputs).
+
+Until then, the items above are the **ground-truth definitions + data sources** you can plug in, with every remaining “not-guaranteed” marked as **user input**.
+
+[1]: https://api.cbs.gov.il/index/data/price_all?download=false&format=xml&oldformat=true&utm_source=chatgpt.com "https://api.cbs.gov.il/index/data/price_all? ..."
+[2]: https://www.boi.org.il/en/?utm_source=chatgpt.com "Bank of Israel"
+[3]: https://boi.org.il/en/information-and-service-to-the-public/banking-customer-service-information/financial-education/the-reform-to-increase-information-transparency-and-competition-in-mortgages/?utm_source=chatgpt.com "The Mortgages Transparency Reform"
+[4]: https://boi.org.il/boi_files/Statistics/bointcre_m.xls?utm_source=chatgpt.com "גיליון1"
+[5]: https://boi.org.il/qawebsite/?utm_source=chatgpt.com "שאלות ותשובות על השימוש באתר החדש"
+[6]: https://www.kolzchut.org.il/he/%D7%9E%D7%92%D7%91%D7%9C%D7%95%D7%AA_%D7%A2%D7%9C_%D7%9C%D7%A7%D7%99%D7%97%D7%AA_%D7%9E%D7%A9%D7%9B%D7%A0%D7%AA%D7%90?utm_source=chatgpt.com "מגבלות על לקיחת משכנתא (מושג) – כל-זכות"
+
+4.
+Below is a “confirm / correct / unknown” pass over every assumption, with the most “true-to-life” data sources I can point you to right now. Wherever I can’t *authoritatively* confirm from an official/statistical source in this response, I mark **unknown** (so you can expose it as a user input).
+
+---
+
+## 0) One-time: your data plumbing should be **SDMX → CSV**
+
+**Bank of Israel (BoI) SDMX API** can export directly to **CSV** and can also resample frequency (daily→monthly/annual) server-side using `normalisefreq=` (e.g., monthly mean, annual mean).
+
+Example (USD/ILS representative rate, daily → monthly mean → CSV):
+
+```txt
+https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv&normalisefreq=M;mean
+```
+
+(BoI’s own SDMX instructions + parameters are documented.)
+
+---
+
+# 1) Historical Series (your hard-coded arrays)
+
+### 1.1 S&P returns (H_SP, annual list)
+
+* **Confirm period / values / total-return?** **unknown** (I can’t validate your existing array without seeing it, and S&P total-return series are often licensed).
+* **Correction / best practice:** model **monthly total returns**, then aggregate to annual if you still need annual.
+
+  * If you model S&P using **price-only** returns, you’ll understate long-run performance vs total return (dividends matter).
+* **What to do in simulator:** make `SP_series_source` a selectable input:
+
+  * **Option A (best, licensed):** S&P 500 Total Return Index (official vendor feed).
+  * **Option B (free-ish proxy):** use an ETF proxy (e.g., SPY total return from adjusted close) – not “official S&P index”.
+* **Expose as user input:** ✅ (source + fx-hedge choice + total-return vs price-only).
+
+### 1.2 RE appreciation (H_RE, annual %)
+
+* **Geography (Gush Dan/TLV?), nominal vs real, period?** **unknown** for your hard-coded series.
+* **Correction / best practice:**
+
+  * Use a **published Housing Price Index** (CBS), and decide **district/city** explicitly (Tel Aviv district vs national differs materially).
+  * Decide whether appreciation is **nominal** (most common) or **real** (deflated by CPI).
+* **Expose as user input:** ✅ (geo + index + nominal/real).
+
+### 1.3 USD/ILS (H_EX, annual spots)
+
+* **Confirm end-of-year vs average?** **unknown** for your hard-coded series.
+* **Correct historical source:** BoI representative exchange rate via SDMX.
+* **You should choose one of these (make it explicit):**
+
+  * **Annual average (recommended for “macro drift”):**
+
+    ```txt
+    https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv&normalisefreq=A;mean
+    ```
+  * **End-of-year (recommended for mark-to-market snapshots):**
+
+    ```txt
+    https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv&normalisefreq=A;lastperiod
+    ```
+
+  (Resampling options are part of BoI’s documented API approach.)
+
+### 1.4 CPI (H_CPI, monthly changes)
+
+* **Base year + your alignment?** **unknown** for your hard-coded series.
+* **Correction / best practice:**
+
+  * Store **CPI index level** monthly, and compute `m/m %` inside the simulator to avoid “base-year” headaches.
+  * Explicitly model **publication lag** if you are simulating “known vs actual index” (see §8).
+* **Preferred source:** CBS CPI series (official). *(I’m marking the exact API/CSV endpoint as **unknown** in this response—use CBS open data / time series download for CPI level.)*
+* **Expose as user input:** ✅ (“use known index lag = 1 month?” etc.).
+
+### 1.5 BoI base rate (H_BOI, annual)
+
+* **Sampling (monthly/annual)?** You should use **daily decision dates** or **monthly series**; annual is usually too coarse for mortgages.
+* **Prime rule “BoI + 1.5%” still correct?** **Yes** (BoI documents Prime as BoI rate + 1.5 percentage points). ([Bank of Israel][1])
+* **Current BoI policy rate (sanity check):** BoI reported cutting to **4.25% on Nov 24, 2025**. ([Bank of Israel][2])
+* **Historical policy rate series endpoint:** **unknown** (BoI offers a current-rate API—see below—but your simulator needs full history).
+
+  * BoI current-rate (JSON) API exists: `https://boi.org.il/PublicApi/GetInterest` (current + next decision date). ([Bank of Israel][3])
+
+**Recommendation:** treat “historical BoI rate sourcing” as a config task; don’t hard-code.
+
+---
+
+# 2) Scenario Presets (Bear/Base/Bull)
+
+### 2.1 Are your presets realistic?
+
+* **Hard confirm/correct:** **unknown** (depends on your intended horizon, inflation regime, and whether SP is USD or ILS investor).
+* **Practical correction:** separate “inputs” into:
+
+  1. **Equity nominal return (USD)**
+  2. **ILS inflation**
+  3. **USD/ILS drift** (real + inflation differential)
+  4. **Mortgage pricing** (policy rate + bank margin by track)
+  5. **RE appreciation** (nominal ILS)
+  6. **Rent yield** (net of vacancy/OPEX)
+
+### 2.2 Updated targets (suggested, and why)
+
+These are “model defaults”, not facts—make them editable:
+
+* **Bear:** `{SP 5.5, App 2.5, Int 5.0, Inf 3.5, Yld 3.8, FXdrift +0.5}`
+* **Base:** `{SP 8.0, App 4.0, Int 3.75, Inf 2.0, Yld 3.3, FXdrift 0.0}`
+* **Bull:** `{SP 10.5, App 6.0, Int 2.75, Inf 1.5, Yld 3.0, FXdrift -0.5}`
+
+Rationale (high-level): US equities long-run nominal ~mid/high single digits; Israel targets low inflation; rates mean-revert; rent yields compress/expand with rates. **All should remain user-configurable.**
+
+### 2.3 Yield glide (4.2% → 2.8% over 20y)
+
+* **Appropriate?** **unknown** without your geography/property class.
+* **Better:** link rent yield to rates via a spread:
+
+  * `Yield_t = max(2.5%, Gov10y_t + spread)` where `spread` default 1.5%–2.5% and user-editable.
+
+### 2.4 FX drift per scenario
+
+* **Reasonable?** Usually the *sign* is the big risk—ILS has had long periods of real appreciation and depreciation.
+* **Recommendation:** default drift near **0** and expose as input; allow scenario values in ±1%/yr bands unless you have a house view.
+
+---
+
+# 3) Sliders & Bounds (Deal Structure)
+
+### 3.1 Down payment: min 25%, max 100%, step 5%
+
+* **Confirm typical minimum:** **unknown** in this response (regulatory limits depend on borrower type: first home vs upgrade vs investment; lenders also vary).
+* **Simulator recommendation:** keep min 25% for “first home” mode, but add a **Borrower type** switch:
+
+  * First-home / replacement / investment → changes min down payment + acquisition tax.
+* **Step:** 5% is fine for UI; optimizer step 1–2% if you want smoother.
+
+### 3.2 Mortgage term: 10–30y, step 1y
+
+* **Reasonable** as a UI default.
+
+### 3.3 Horizon: default=term locked; unlock 5–50 step 2
+
+* **Reasonable**; recommended unlock step 1y (2y is OK for speed).
+
+### 3.4 Costs: Buy 2%, Sell 2%, Maintenance/Vacancy 10%
+
+* **Market-accurate?** **unknown** as a single fixed set—it varies a lot, especially because **purchase tax** can dwarf everything.
+* **Recommendation:** split costs into explicit buckets:
+
+  * **Transaction costs ex-tax:** broker + lawyer + appraisal + misc (often ~1%–3% combined)
+  * **Purchase tax:** separate input (depends on buyer/property)
+  * **Sale costs:** broker + lawyer + repairs (often ~1%–3%)
+  * **OPEX+vacancy:** 5%–15% of gross rent depending on condo fees, vacancy, maintenance regime
+* **Expose as user input:** ✅ (strongly).
+
+---
+
+# 4) Tamheel Tracks & Rates (Prime / Kalatz / Katz)
+
+### 4.1 Prime track spread default
+
+* **Hard confirm:** **unknown** (bank quotes are borrower-specific).
+* **Model recommendation:** store **Prime = BoI + 1.5%** (confirmed) and then a **bank margin** input (default e.g. Prime -0.4% for “good borrower”; Prime +0.2% for “average”). Prime definition source: ([Bank of Israel][1])
+
+### 4.2 Kalatz fixed nominal default 4.8%
+
+* **Realistic “today”?** **unknown** without pulling BoI/market tables.
+* **Best source for ongoing calibration:** BoI’s mortgage transparency/interest comparison (“compare interest rates – mortgages”), which is bank-reported. ([Bank of Israel][4])
+  *(But: the page is interactive; you’ll likely need to use their underlying data export.)*
+
+### 4.3 Katz fixed real (CPI-linked) default 3.2%
+
+* **Modeling note:** Katz is naturally a **real rate** + CPI indexation mechanics.
+* **Recommendation:** model it as:
+
+  * Principal indexed monthly by CPI (with lag rules), then apply real interest.
+* **Default value:** **unknown** today; make editable.
+
+### 4.4 Default mix 33/33/34 and your presets
+
+* **Hard confirm:** **unknown** (bank offers and borrower constraints change constantly).
+* **Recommendation:** ship mixes as presets but expose:
+
+  * max share in each track;
+  * rate per track (or margin over benchmark);
+  * reprice rules (Prime is floating; “Mishtane” not listed here but common).
+
+---
+
+# 5) Taxes & Thresholds
+
+### 5.1 Rent tax threshold 5,690 ₪ indexed; 10% above
+
+* **Threshold value today:** **unknown** in this response (it is updated; you should pull it from Israel Tax Authority / annual updates).
+* **Indexing rule:** treat as **CPI-indexed** with annual update; the timing (known vs actual CPI) matters for simulation realism.
+* **Expose as user input:** ✅ (threshold + scheme).
+
+### 5.2 Capital gains tax 25% toggle
+
+* **S&P / securities:** 25% is often used as a default for Israeli residents’ capital gains on marketable securities, but there are exceptions.
+* **Real estate:** Israel uses **Mas Shevach** with exemptions and case-specific rules; a blanket 25% toggle is often wrong.
+* **Recommendation:** split toggles:
+
+  * Securities CGT (default rate input)
+  * Real estate CGT (regime selector: “single residential exemption” vs “taxable investment property”)
+  * Add **purchase tax** on entry (separate).
+* **Expose as user input:** ✅.
+
+### 5.3 Tax basis options (Real vs CPI) / (Nominal vs USD)
+
+* Useful if you’re modeling:
+
+  * inflation-indexed basis (older rules) vs nominal,
+  * and a USD investor view.
+* **Recommendation:** keep, but label clearly; most users need a short tooltip.
+
+---
+
+# 6) Fees & Friction
+
+### 6.1 S&P mgmt fee 0.15%
+
+* **Reasonable as a blended “portfolio fee” default** (covers ETF TER + platform), but not universal.
+* **Recommendation:** keep default 0.15%, allow 0.03%–0.60% range.
+
+### 6.2 Deposit/transaction fee 0.10%
+
+* **Unknown** (depends on broker/bank).
+* Make it user-editable; if you’re modeling a one-time buy, it’s tiny relative to mortgage economics anyway.
+
+### 6.3 “Trade fee applied only on positive injections”
+
+* **Probably not correct** if you’re modeling brokerage commissions consistently.
+* **Cleaner:** apply trading costs on *every buy/sell notional* of the portfolio (buys from injections + rebalancing + liquidation).
+
+---
+
+# 7) Optimizer & Locks
+
+### 7.1 Search ranges
+
+* Reasonable for MVP.
+* If you add “borrower type” you should also constrain LTV accordingly.
+
+### 7.2 Default locks (Horizon locked to term)
+
+* Reasonable.
+
+### 7.3 Sweet-spot arrows
+
+* UX choice; nothing “true-to-life” here. If horizon is locked, optimize the free dims only.
+
+---
+
+# 8) Cashflow & Rent Modeling
+
+### 8.1 Rent mechanics + tax timing
+
+* **Mechanics confirm:** Yes conceptually:
+
+  * gross rent from yield,
+  * apply vacancy/OPEX,
+  * apply rent tax above threshold.
+* **Timing:** I recommend monthly cashflow simulation, with:
+
+  * threshold checked monthly,
+  * yearly true-up option if you want.
+* **Threshold indexation + CPI publication lag:** should be configurable (see §5.1).
+
+### 8.2 CPI linkage on Katz: “principal linked monthly before interest (Spitzer)”
+
+* The general idea is right (indexation affects principal), but the *contractual lag rule* should be explicit.
+* **Rule detail:** **unknown** (varies; many link to the most recently published CPI on payment date).
+* Make “index lag (months)” user-configurable (0/1/2) and document default.
+
+### 8.3 Out-of-pocket cashflows investment logic
+
+* **This is a modeling choice**, not “true/false”.
+* Your proposal is internally consistent; just surface a toggle:
+
+  * “Use surplus cash to invest in S&P”
+  * “Let surplus sit in cash”
+  * “Use surplus to prepay mortgage” (important alternative!)
+
+---
+
+# 9) Outputs & KPIs
+
+### 9.1 ROI difference uses loser as base
+
+* This can mislead. Better provide **both**:
+
+  * absolute outperformance in ₪,
+  * IRR / NPV relative to **initial equity**.
+
+### 9.2 Add KPIs
+
+Recommended additions (they matter for real underwriting decisions):
+
+* DSCR (monthly/annual)
+* LTV path over time (incl. appreciation + amortization)
+* Cash-on-cash return
+* Payback period
+* NPV (discount rate as input)
+* Worst-year cash draw
+
+---
+
+# 10) Defaults to verify (your UI defaults)
+
+I can only **authoritatively confirm** the Prime definition and BoI current-rate API existence and the current policy rate datapoint:
+
+* **Prime auto sync = BoI + 1.5%** → **CONFIRMED** ([Bank of Israel][1])
+* **BoI current-rate API exists (JSON)** → **CONFIRMED** ([Bank of Israel][3])
+* **BoI policy rate = 4.25% on 2025-11-24** (sanity point) → **CONFIRMED** ([Bank of Israel][2])
+
+Everything else on your list (App 4%, Yld 3.2%, SP 10%, Int 4.25%, CPI 2.5%, fees, buy/sell costs, maint 10%, rent tax threshold 5,690, etc.) should be treated as **defaults** (editable), not “validated facts”, unless you wire them to official datasets.
+
+---
+
+## What I recommend you make **user-configurable** (not fixed)
+
+**Must be configurable:**
+
+* RE geo/index choice; nominal vs real
+* S&P source (total return vs price-only; USD vs ILS, hedged vs unhedged)
+* FX drift (and whether SP returns are in USD or converted monthly)
+* Mortgage track pricing (Prime margin, fixed rates by track)
+* CPI publication lag & linkage lag for CPI-linked principal
+* Purchase tax + CGT regime selector for real estate
+* Vacancy/OPEX and sale transaction costs
+* “Surplus cash” policy (invest / cash / prepay)
+
+---
+
+## Drop-in “CSV endpoints” you can embed today (BoI)
+
+USD/ILS representative rate (daily):
+
+```txt
+https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv
+```
+
+Monthly mean:
+
+```txt
+https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv&normalisefreq=M;mean
+```
+
+Annual last (end-of-year proxy):
+
+```txt
+https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv&normalisefreq=A;lastperiod
+```
+
+(BoI SDMX API docs + parameters.)
+
+---
+
+If you paste (or upload) your current hard-coded arrays (`H_SP`, `H_RE`, `H_EX`, `H_CPI`, `H_BOI`) and the years they supposedly cover, I can do a strict “diff”: flag misalignments, fix the sampling (avg vs EOY), and output replacement arrays/CSV schemas that match your simulator exactly—marking what still needs CBS/Tax Authority hookup as **unknown/user input**.
+
+[1]: https://www.boi.org.il/media/pacjcgmq/faq-on-the-prime-rate-component.docx?utm_source=chatgpt.com "faq-on-the-prime-rate-component. ..."
+[2]: https://www.boi.org.il/en/economic-roles/statistics/?utm_source=chatgpt.com "Data and Statistics"
+[3]: https://boi.org.il/qawebsite/?utm_source=chatgpt.com "שאלות ותשובות על השימוש באתר החדש"
+[4]: https://www.boi.org.il/information/interestrates/compareint/ "השוואת ריביות - הלוואות למטרת מגורים | בנק ישראל - הבנק המרכזי של ישראל"
+
+5.
+להלן דוח ולידציה מקיף המבוסס על נתוני אמת נכון לנובמבר 2025 (כולל עדכוני בנק ישראל והלמ"ס האחרונים).
+
+### **סיכום מנהלים: תיקונים קריטיים**
+
+  * **הריבית אופטימית מדי:** הנחת הבסיס שלך (3.75%) נמוכה משמעותית מהמציאות. ריבית הפריים עומדת כיום על **5.75%** (אחרי הורדת הריבית האחרונה בנובמבר 2025 ל-4.25%). מסלולי קל"צ נסחרים סביב **4.8%-5.0%**.
+  * **תשואות הנדל"ן (Yields) גבוהות מדי:** הנחת 4.8%–4.2% לתל אביב/גוש דן אינה ריאלית. התשואה הגולמית בפועל היא **2.4%–2.9%**.
+  * **מיסוי (קריטי למשקיעים):** תקרת הפטור משכר דירה ל-2025 היא **5,654 ש"ח**. מס רכישה למשקיע מתחיל ב-8% מהשקל הראשון.
+
+-----
+
+### **1) סדרות היסטוריות (Hard-Coded Arrays)**
+
+| סדרה | תיקון / מקור נתונים | הערה טכנית |
+| :--- | :--- | :--- |
+| **S\&P 500** | **מקור:** Yahoo Finance `^SP500TR` (Total Return). <br> **תיקון:** חובה להשתמש ב-**Total Return** (כולל דיבידנדים מושקעים מחדש), אחרת אתה מחמיץ כ-2% תשואה שנתית. התשואה השנתית הממוצעת (30 שנה) היא כ-10.2% נומינלית. | מומלץ להשתמש ברזולוציה **חודשית** כדי ללכוד את התנודתיות (Volatility) בצורה אמינה בסימולציה. |
+| **נדל"ן (RE Appreciation)** | **מקור:** למ"ס, "מדד מחירי דירות לפי מחוזות" -\> **מחוז תל אביב**. <br> **תיקון:** לא להשתמש בממוצע ארצי. מחוז ת"א תנודתי יותר (בטא גבוהה). ב-2024 המחירים עלו כ-7.7% נומינלית. | הנתונים הם **נומינליים**. הממשק צריך לחשב את הריאלי (בניכוי המדד). |
+| **שער דולר (USD/ILS)** | **מקור:** בנק ישראל "שער יציג". <br> **תיקון:** השתמש ב**ממוצע חודשי** לחישובי תזרים (P\&L), וב**שער סוף חודש** לחישובי שווי הון (Balance Sheet). | |
+| **מדד (CPI)** | **מקור:** למ"ס, "מדד המחירים לצרכן". <br> **תיקון:** בסימולטור משכנתא משתמשים ב"מדד ידוע" (מתפרסם ב-15 לחודש). | קצב שנתי נוכחי (Nov 2025): **2.5%**. |
+| **ריבית בנק ישראל (BoI)** | **מקור:** בנק ישראל. <br> **נתון מעודכן:** ריבית בסיס **4.25%** (הופחתה ב-24/11/2025). פריים: **5.75%**. | דגום חודשית. הכלל `BoI + 1.5%` עדיין תקף ומדויק. |
+
+-----
+
+### **2) תרחישים (Scenario Presets) – מותאמים למציאות 2025**
+
+*המספרים הקודמים שלך היו אופטימיים מדי בתשואת השכירות ופסימיים מדי בריבית. להלן המספרים המתוקנים:*
+
+| תרחיש | S\&P (נומינלי) | נדל"ן (עליית ערך) | ריבית משכנתא (WACC)\* | אינפלציה (CPI) | תשואת שכירות (ברוטו)\*\* |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Bear (מיתון)** | 4.0% | 1.0% | 6.5% | 4.0% | 3.2% |
+| **Base (ריאלי)** | 9.0% | 4.5% | 5.1% | 2.5% | 2.7% |
+| **Bull (צמיחה)** | 11.5% | 7.5% | 4.2% | 1.5% | 2.4% |
+
+*\> **הערה על תשואת שכירות:** בגוש דן, ככל שעליית הערך (Appreciation) גבוהה יותר, תשואת השכירות (Yield) נוטה לרדת (המחיר עולה מהר יותר מהשכירות). לכן ב-Bull התשואה נמוכה יותר.*
+
+  * **Yield Glide (דעיכת תשואה):** **לבטל או למתן מאוד.** התשואה בת"א כבר "התחככה" לתחתית של 2.5%. אין לאן לרדת משם ל-20 שנה. המלצה: קבע קבוע על **2.7%** בתרחיש הבסיס.
+  * **FX Drift (סחיפת מט"ח):**
+      * *Bear (מלחמה/אי-יציבות):* השקל נחלש (דולר עולה). Drift: +3.0%.
+      * *Base:* 0% (שיווי משקל כוח קנייה).
+      * *Bull (הייטק פורח):* השקל מתחזק. Drift: -1.5%.
+
+-----
+
+### **3) מבנה עסקה (Sliders & Bounds)**
+
+  * **הון עצמי (Down Payment):**
+      * **מינימום:** 25% (דירה יחידה), **50% (משקיע/דירה שניה)**. זהו רגולטורי (בנק ישראל) ולא נתון לשיקול דעת הבנק.
+      * *המלצת UX:* ברירת מחדל 30% (לדירה יחידה).
+  * **עלויות עסקה (Costs) – התיקון הגדול:**
+      * **קניה (Buy Cost):** ברירת מחדל **2.0%** נכונה לדירה יחידה (עד 2M ש"ח).
+          * **למשקיעים:** חייב להיות **8.0%** (מס רכישה מהשקל הראשון) + 1.5% (עו"ד/תיווך) = **\~9.5%**.
+      * **תחזוקה (Maintenance):** 10% משכר הדירה זה סטנדרט מצוין ומקובל.
+
+-----
+
+### **4) מסלולי משכנתא וריביות (נכון לנובמבר 2025)**
+
+  * **מסלול פריים (Prime):**
+      * בסיס: **5.75%** (BoI 4.25% + 1.5%).
+      * מרווח (Spread): בנקים נותנים היום **P-0.4%** עד **P-0.6%**.
+      * **ברירת מחדל:** **5.3%** (נטו ללקוח).
+  * **קל"צ (קבועה לא צמודה - Kalatz):**
+      * טווח שוק נוכחי: 4.7% – 5.1%.
+      * **ברירת מחדל:** **4.85%**.
+  * **קבועה צמודה (Katz):**
+      * טווח שוק נוכחי: 3.0% – 3.4%.
+      * **ברירת מחדל:** **3.25%** + מדד.
+  * **תמהיל מומלץ (Tamheel Mix):**
+      * שליש פריים (5.3%).
+      * שליש קל"צ (4.85%).
+      * שליש צמודה משתנה/קבועה (3.25%).
+      * *הערה:* מסלול "ארביטראז'" שלך מסוכן מדי בסביבת הריבית הנוכחית.
+
+-----
+
+### **5) מיסים וספים (Taxes)**
+
+  * **תקרת פטור שכר דירה (2025):**
+      * **סכום:** **5,654 ש"ח** (עודכן בינואר 2025).
+      * **מנגנון:** "תקרה מתקפלת". על כל שקל חריגה, הפטור יורד בשקל.
+      * *לוגיקה לסימולטור:* אם שכר הדירה \> 7,000 ש"ח, משתלם יותר לעבור למסלול **10%** (מס שטוח) אוטומטית.
+  * **מס רווח הון (Capital Gains):**
+      * **S\&P 500:** 25% ריאלי.
+      * **נדל"ן (מס שבח):** פטור מלא (לדירה יחידה, במכירה עד 5M ש"ח לערך).
+      * *User Input:* מתג "דירה יחידה?" (כן/לא). אם לא -\> מס ליניארי של 25% על השבח הריאלי.
+
+-----
+
+### **6) עמלות וחיכוך (Friction)**
+
+  * **דמי ניהול S\&P:**
+      * **0.15% זה נמוך מדי לישראל.**
+      * *קרן השתלמות/גמל להשקעה:* הממוצע הוא **0.6%–0.7%**.
+      * *מסחר עצמאי (ברוקר):* הממוצע הוא **0.1%** (אבל דורש דיווח מס ידני).
+      * **ברירת מחדל מומלצת:** **0.5%** (מייצג את "הישראלי הסביר").
+  * **עמלת קניה/מכירה:** 0.1% (מקובל בבנקים/בתי השקעות).
+
+-----
+
+### **7) לוגיקה ואופטימיזציה**
+
+  * **Sweet-Spot Arrows:** התנהגות רצויה.
+      * אם המשתמש נועל "החזר חודשי" -\> המערכת צריכה למצוא את ה-**Term** (שנים) המינימלי.
+      * אם המשתמש נועל "הון עצמי" -\> המערכת תמקסם את מחיר הנכס (LTV).
+
+-----
+
+### **8) תזרים ומודל שכירות**
+
+  * **הצמדת קרן (Katz - Spitzer):**
+      * **אישור:** כן. בישראל הקרן מוצמדת למדד **לפני** חישוב הריבית לאותו חודש.
+      * נוסחה: `יתרת_קרן_חדשה = יתרת_קרן_ישנה * (מדד_חדש / מדד_קודם)`.
+  * **Out-of-Pocket:**
+      * חיובי (תזרים פנוי) -\> השקעה אוטומטית ב-S\&P.
+      * שלילי (גרעון) -\> מימוש יחידות S\&P (אירוע מס\!).
+
+-----
+
+### **9) KPIs ותפוקות**
+
+  * **השוואה (ROI Difference):** עדיף להציג **"הפרש עושר נטו" (Net Worth Delta)** בשקלים. זה נתון שקל יותר לעיכול ("במסלול S\&P יהיו לך 450,000 ש"ח יותר").
+  * **מדדים חסרים:**
+    1.  **Equity Buildup:** כמה מהמשכנתא ששילמת הלך לכיסוי הקרן (חיסכון כפוי).
+    2.  **Cash-on-Cash Return:** קריטי למשקיעים.
+
+-----
+
+### **10) ברירות מחדל מעודכנות (Golden Defaults 2025)**
+
+| פרמטר | ערך מעודכן | הסבר |
+| :--- | :--- | :--- |
+| **מחיר נכס** | 2,800,000 ₪ | ממוצע תל אביב (3 חד'). |
+| **הון עצמי** | 30% | דירה יחידה. |
+| **משכנתא (Term)** | 25 שנה | נפוץ יותר מ-20 בסביבת ריבית גבוהה. |
+| **ריבית פריים** | **5.75%** | BoI 4.25% + 1.5%. |
+| **ריבית קל"צ** | **4.9%** | עוגן אג"ח + מרווח. |
+| **תשואת שכירות** | **2.7%** | ריאלי לת"א. |
+| **אינפלציה** | 2.5% | יעד בנק ישראל. |
+| **דמי ניהול (S\&P)** | 0.5% | ממוצע ישראלי ריאלי. |
+| **מס רכישה** | מדורג | 0% עד 2M, אח"כ עולה. |
+
+האם תרצה שאפיק לך את קובץ ה-JSON/CSV המעודכן עבור ה-Historical Arrays (ריבית, מדד, S\&P) להטמעה מיידית בקוד?
+6.
+ 				הלוואות שניתנו החל מ-1 למרץ 2013
+Average Rate of Interest on Unindexed Mortgages				הריבית הממוצעת על משכנתאות במגזר השקלי הלא צמוד
+ממוצע	מעל 25 	מעל 20 ועד 25	מעל 15 ועד 20	מעל 10 ועד 15	מעל 5 ועד 10	מעל 1 ועד 5	עד שנה	תוקף הריבית החל מ-	תקופה לפרעון
+	שנה	  שנים	  שנים	 שנים	שנים	שנים			חודש הדיווח
+Average	More than 25 years	From 20 to 25	From 15 to 20	From 10 to 15	From 5 to 10	From 1 to 5	Up to and	Interest rate	Period to due date
+		years	years	years	years	years	including	effective
+				 	 	 	1 year	from	month of return
+5.00	4.93	4.95	4.95	4.84	4.96	4.87	5.58	11/12/25	10/31/25
+5.03	4.96	4.93	4.97	4.87	5.09	4.91	5.59	10/24/25	9/30/25
+5.05	4.98	4.96	4.99	4.88	5.06	4.94	5.51	9/11/25	8/31/25
+5.08	5.03	5.02	5.01	4.85	4.97	5.00	5.51	8/14/25	7/31/25
+5.11	5.05	4.97	4.96	4.83	4.92	5.04	5.56	7/15/25	6/30/25
+5.08	5.05	4.94	5.01	4.87	5.00	4.96	5.61	6/16/25	5/31/25
+5.07	5.05	4.98	4.98	4.85	4.96	4.98	5.50	5/15/25	4/30/25
+5.09	5.03	4.96	4.97	4.87	5.04	4.98	5.61	4/11/25	3/31/25
+5.13	5.02	5.04	5.01	4.96	5.14	5.04	5.61	3/12/25	2/28/25
+5.15	4.99	5.01	4.96	4.93	5.25	5.06	5.68	2/13/25	1/31/25
+5.06	4.90	4.93	4.95	4.86	5.22	5.00	5.49	1/15/25	12/31/24
+5.22	4.97	5.06	5.04	4.97	5.53	5.21	5.62	12/11/24	11/30/24
+5.16	4.93	4.97	4.91	4.91	5.39	5.15	5.60	11/14/24	10/31/24
+5.08	4.92	4.96	4.83	4.88	5.30	5.02	5.58	10/15/24	9/30/24
+5.11	4.95	4.96	4.93	4.91	5.22	5.05	5.54	9/11/24	8/31/24
+5.25	5.02	5.05	5.08	4.96	5.30	5.20	5.68	8/15/24	7/31/24
+5.29	5.11	5.08	5.09	5.02	5.33	5.23	5.70	7/12/24	 30/06/2024
+5.29	5.16	5.08	5.10	5.08	5.22	5.19	5.72	6/17/24	5/31/24
+5.24	5.20	5.10	5.08	5.03	5.06	5.06	5.78	5/13/24	4/30/24
+5.24	5.24	5.10	5.22	4.99	5.20	5.03	5.76	4/12/24	3/31/24
+5.26	5.23	5.12	5.21	5.02	5.19	4.99	5.90	3/13/24	2/29/24
+5.24	5.20	5.14	5.22	5.00	5.11	4.91	5.98	2/13/24	1/31/24
+5.43	5.33	5.24	5.34	5.17	5.42	5.09	6.17	1/12/24	12/31/23
+5.59	5.33	5.52	5.39	5.35	5.31	5.37	6.28	12/13/23	11/30/23																													מאי	יוני
+5.51	5.10	5.18	5.30	5.10	5.12	5.35	6.35	11/13/23	10/31/23																													5.71809814088722	5.69593405008248
+5.43	5.03	5.07	5.15	5.02	5.08	5.25	6.36	10/17/23	9/30/23																													5.19212659451321	5.22606437438535
+5.37	4.96	4.96	5.06	4.94	4.95	5.17	6.33	9/13/23	8/31/23																													5.21537488986555	5.33289385117705
+5.42	4.95	4.98	5.10	4.95	5.03	5.14	6.35	8/11/23	7/31/23																													5.08250234270394	5.02368593820498
+5.53	4.99	5.02	5.10	5.01	5.06	5.29	6.40	7/12/23	6/30/23																													5.09688365048145	5.09065432058116
+5.56	4.99	5.08	5.09	5.11	5.3	5.26	6.27	6/12/23	5/31/23																													5.07999876832773	5.075912337538
+5.56	4.96	4.99	5.05	5.06	5.21	5.33	6.11	5/11/23	4/30/23																													5.15971061403142	5.1099834578264
+5.48	4.93	4.91	4.9	4.92	5.06	5.52	5.88	4/23/23	3/31/23																													5.28634248768424	5.28754725422112
+5.31	4.96	4.88	4.92	4.81	5.02	5.63	5.55	3/14/23	2/28/23
+5.21	4.98	4.92	4.87	4.83	4.94	5.65	5.38	2/26/23	1/31/23
+4.97	4.98	4.86	4.86	4.73	4.9	5.65	4.97	1/12/23	12/31/22
+4.79	5.04	4.9	4.81	4.76	4.84	5.51	4.68	12/13/22	11/30/22
+4.52	4.9	4.75	4.65	4.54	4.62	5.30	4.35	11/11/22	10/31/22
+4.07	4.75	4.61	4.39	4.27	4.32	4.90	3.73	10/19/22	9/30/22
+3.67	4.69	4.54	4.39	4.24	4.21	4.65	3.21	9/13/22	8/31/22
+3.49	4.74	4.6	4.44	4.24	4.24	4.67	2.88	8/12/22	7/31/22
+3.15	4.54	4.36	4.17	3.96	3.87	4.23	2.41	7/14/22	6/30/22
+2.87	4.28	4.08	3.86	3.63	3.5	4.08	2.11	6/14/22	5/31/22
+2.61	3.97	3.81	3.57	3.31	3.15	3.75	1.80	5/16/22	4/30/22
+2.39	3.71	3.49	3.22	2.99	2.81	3.43	1.61	4/13/22	3/31/22
+2.30	3.54	3.31	3.05	2.79	2.58	3.23	1.59	3/14/22	2/28/22
+2.28	3.53	3.28	3.03	2.73	2.54	3.07	1.64	2/14/22	1/31/22
+2.29	3.56	3.33	3.08	2.76	2.53	3.10	1.60	1/11/22	12/31/21
+2.32	3.63	3.36	3.11	2.81	2.53	3.17	1.65	12/13/21	11/30/21
+2.31	3.56	3.34	3.08	2.78	2.50	3.12	1.68	11/11/21	10/31/21
+2.26	3.53	3.31	3.06	2.73	2.44	3.09	1.63	10/12/21	9/30/21
+2.22	3.52	3.30	3.04	2.74	2.45	2.99	1.59	9/20/21	8/31/21
+2.22	3.54	3.31	3.08	2.75	2.44	3.12	1.58	8/11/21	7/31/21
+2.23	3.57	3.32	3.07	2.75	2.45	3.19	1.59	7/12/21	6/30/21
+2.25	3.56	3.32	3.06	2.76	2.45	3.05	1.61	6/11/21	5/31/21
+2.30	3.59	3.31	3.06	2.74	2.48	3.24	1.64	5/12/21	4/30/21
+2.31	3.55	3.27	3.03	2.70	2.54	3.19	1.65	4/14/21	3/31/21
+2.30	3.50	3.25	3.04	2.71	2.48	3.21	1.60	3/11/21	2/28/21
+2.41	3.54	3.28	3.11	2.82	2.59	3.31	1.66	2/11/21	1/31/21
+2.36	3.51	3.28	3.08	2.80	2.54	3.26	1.52	1/11/21	12/31/20
+2.39	3.55	3.32	3.12	2.80	2.58	3.28	1.55	12/11/20	11/30/20
+2.38	3.51	3.27	3.05	2.74	2.60	3.31	1.56	11/11/20	10/31/20
+2.41	3.51	3.28	3.08	2.76	2.64	3.31	1.58	10/16/20	9/30/20
+2.39	3.53	3.30	3.11	2.79	2.69	3.25	1.59	9/11/20	8/31/20
+2.45	3.58	3.34	3.18	2.92	2.69	3.26	1.62	8/11/20	7/31/20
+2.55	3.78	3.53	3.34	3.05	2.88	3.42	1.71	7/13/20	6/30/20
+2.55	3.96	3.65	3.43	3.19	2.96	3.51	1.67	6/11/20	5/31/20
+2.59	3.87	3.64	3.35	3.13	2.89	3.62	1.64	5/11/20	4/30/20
+2.43	3.55	3.33	3.08	2.83	2.62	3.29	1.62	4/21/20	3/31/20
+2.47	3.65	3.40	3.17	2.88	2.72	3.34	1.68	3/13/20	2/29/20
+2.50	3.72	3.52	3.26	2.94	2.68	3.40	1.68	2/11/20	1/31/20
+2.51	3.74	3.53	3.26	2.95	2.66	3.37	1.69	1/13/20	12/31/19
+2.57	3.82	3.64	3.36	3.03	2.74	3.36	1.73	12/11/19	11/30/19
+2.56	3.90	3.72	3.42	3.07	2.79	3.39	1.73	11/11/19	10/31/19
+2.58	3.95	3.78	3.49	3.17	2.83	3.40	1.70	10/11/19	9/30/19
+2.62	4.13	3.97	3.64	3.27	2.94	3.60	1.71	9/11/19	8/31/19
+2.66	4.31	4.09	3.77	3.36	3.07	3.75	1.74	8/13/19	7/31/19
+2.77	4.39	4.16	3.85	3.51	3.21	3.81	1.81	7/11/19	6/30/19
+2.81	4.42	4.29	3.97	3.59	3.20	3.98	1.82	6/11/19	5/31/19
+2.84	4.59	4.34	4.04	3.65	3.22	3.96	1.88	5/13/19	4/30/19
+2.90	4.62	4.43	4.14	3.71	3.29	4.06	1.90	4/11/19	3/31/19
+2.97	4.76	4.55	4.22	3.85	3.41	4.09	1.94	3/11/19	2/28/19
+3.02	4.76	4.57	4.27	3.84	3.46	4.27	1.95	2/11/19	1/31/19
+2.98	4.71	4.47	4.23	3.80	3.29	4.15	1.89	1/11/19	12/31/18
+2.90	4.73	4.46	4.21	3.81	3.27	4.14	1.77	12/11/18	11/30/18
+2.91	4.70	4.43	4.17	3.78	3.32	4.13	1.81	11/12/18	10/31/18
+2.85	4.65	4.36	4.16	3.70	3.22	4.09	1.78	10/11/18	9/30/18
+2.84	4.62	4.39	4.10	3.72	3.26	4.16	1.72	9/14/18	8/31/18
+2.78	4.61	4.27	4.06	3.57	3.11	4.03	1.65	8/13/18	7/31/18
+2.81	4.52	4.26	4.01	3.57	3.12	3.96	1.69	7/11/18	6/30/18
+2.81	4.45	4.26	3.97	3.52	3.10	3.94	1.69	6/11/18	5/31/18
+2.81	4.48	4.22	3.93	3.50	3.09	3.89	1.68	5/11/18	4/30/18
+2.87	4.56	4.34	4.01	3.52	3.13	3.88	1.73	4/18/18	3/31/18
+2.90	4.55	4.30	3.98	3.51	3.11	3.86	1.78	3/12/18	2/28/18
+2.93	4.61	4.39	4.06	3.51	3.11	3.79	1.81	2/12/18	1/31/18
+2.92	4.60	4.38	4.06	3.53	3.07	3.84	1.72	1/11/18	12/31/17
+3.01	4.72	4.51	4.19	3.72	3.30	3.86	1.85	12/11/17	11/30/17
+3.03	4.84	4.56	4.24	3.76	3.28	3.93	1.86	11/13/17	10/31/17
+3.04	4.85	4.69	4.31	3.75	3.26	3.88	1.87	10/17/17	9/30/17
+3.00	4.87	4.68	4.38	3.83	3.43	3.98	1.82	9/11/17	8/31/17
+3.09	5.09	4.74	4.44	3.87	3.38	4.04	1.84	8/11/17	7/31/17
+3.17	5.10	4.83	4.50	3.94	3.54	4.12	1.81	7/11/17	6/30/17
+3.23	5.06	4.90	4.53	4.00	3.61	4.18	1.83	6/12/17	5/31/17
+3.29	5.16	4.94	4.63	4.16	3.66	4.24	1.91	5/11/17	4/30/17
+3.32	5.19	5.00	4.67	4.26	3.79	4.29	1.83	4/20/17	3/31/17
+3.36	5.22	5.01	4.69	4.25	3.81	4.31	1.89	3/15/17	2/28/17
+3.33	5.14	5.01	4.71	4.25	3.75	4.27	1.81	2/13/17	1/31/17
+3.37	5.15	4.91	4.66	4.21	3.77	4.29	1.69	1/11/17	12/31/16
+3.28	4.95	4.78	4.48	4.06	3.65	4.05	1.70	12/12/16	11/30/16
+3.19	4.91	4.66	4.42	3.98	3.60	3.92	1.66	11/11/16	10/31/16
+3.13	4.76	4.59	4.31	3.91	3.54	3.83	1.58	10/14/16	9/30/16
+2.94	4.61	4.43	4.16	3.71	3.34	3.65	1.45	9/12/16	8/31/16
+2.89	4.50	4.35	4.11	3.69	3.25	3.51	1.43	8/11/16	7/31/16
+2.78	4.35	4.17	3.97	3.52	3.13	3.41	1.37	7/11/16	6/30/16
+2.75	4.25	4.11	3.90	3.52	3.06	3.30	1.39	6/13/16	5/31/16
+2.75	4.23	4.07	3.86	3.48	3.00	3.28	1.38	5/11/16	4/30/16
+2.68	4.10	3.97	3.78	3.39	2.99	3.17	1.37	4/11/16	3/31/16
+2.64	4.10	3.97	3.80	3.43	3.01	3.13	1.42	3/11/16	2/29/16
+2.60	4.16	4.04	3.81	3.39	2.94	3.18	1.34	2/11/16	1/31/16
+2.54	4.15	4.01	3.77	3.34	2.83	3.12	1.32	1/11/16	12/31/15
+2.48	4.12	3.97	3.70	3.26	2.76	3.02	1.27	12/11/15	11/30/15
+2.46	4.18	4.02	3.81	3.33	2.84	3.01	1.27	11/11/15	10/31/15
+2.50	4.18	4.01	3.82	3.32	2.83	3.11	1.25	10/12/15	9/30/15
+2.46	4.18	4.02	3.82	3.33	2.81	3.01	1.20	9/11/15	8/31/15
+2.43	4.08	3.90	3.66	3.20	2.74	2.95	1.15	8/11/15	7/31/15
+2.33	3.79	3.56	3.33	2.87	2.43	2.74	1.15	7/12/15	6/30/15
+2.22	3.55	3.36	3.08	2.68	2.30	2.56	1.14	6/11/15	5/31/15
+2.23	3.59	3.39	3.13	2.73	2.35	2.58	1.21	5/11/15	4/30/15
+2.26	3.70	3.49	3.24	2.83	2.39	2.71	1.21	4/13/15	3/31/15
+2.35	3.81	3.66	3.38	2.98	2.52	2.76	1.33	3/11/15	2/28/15
+2.45	3.98	3.82	3.43	3.01	2.55	3.02	1.49	2/11/15	1/31/15
+2.41	4.08	3.88	3.48	3.06	2.52	2.88	1.48	1/12/15	12/31/14
+2.36	4.15	3.98	3.59	3.15	2.72	2.84	1.47	12/11/14	11/30/14
+2.43	4.34	4.16	3.80	3.34	2.74	3.03	1.49	11/11/14	10/31/14
+2.45	4.50	4.34	3.96	3.52	2.92	3.14	1.49	10/12/14	9/30/14
+2.56	4.73	4.49	4.15	3.66	3.03	3.33	1.64	9/11/14	8/31/14
+2.73	4.79	4.61	4.18	3.75	3.07	3.40	1.92	8/11/14	7/31/14
+2.78	4.94	4.75	4.33	3.80	3.17	3.43	1.95	7/11/14	6/30/14
+2.83	5.04	4.84	4.46	3.92	3.31	3.51	1.96	6/11/14	5/31/14
+2.86	5.07	4.87	4.53	3.96	3.31	3.59	1.96	5/12/14	4/30/14
+2.85	5.14	4.90	4.65	4.06	3.35	3.66	1.94	4/11/14	3/31/14
+3.03	5.19	4.98	4.71	4.10	3.48	3.71	2.13	3/11/14	2/28/14
+3.05	5.19	5.01	4.71	4.11	3.43	3.71	2.18	2/11/14	1/31/14
+3.06	5.21	5.03	4.75	4.13	3.54	3.67	2.18	1/12/14	12/31/13
+3.08	5.36	5.09	4.84	4.25	3.60	3.96	2.18	12/11/13	11/30/13
+3.04	5.38	5.13	4.89	4.35	3.69	4.16	2.16	11/11/13	10/31/13
+3.17	5.29	5.04	4.85	4.32	3.62	4.22	2.34	10/11/13	9/30/13
+3.11	5.08	4.93	4.71	4.19	3.54	4.07	2.38	9/11/13	8/31/13
+3.11	4.99	4.91	4.68	4.14	3.59	4.07	2.38	8/12/13	7/31/13
+3.15	5.06	4.87	4.61	4.10	3.69	4.04	2.47	7/11/13	6/30/13
+3.22	5.01	4.97	4.70	4.20	3.77	4.10	2.63	6/11/13	5/31/13
+3.47	5.14	5.07	4.83	4.40	3.86	4.42	2.96	5/12/13	4/30/13
+3.50	5.29	5.07	4.84	4.35	3.84	4.41	2.93	4/11/13	3/31/13
+
+
+7.
+דוח מחקר אסטרטגי מקיף: נוף ההשקעות בישראל 2025-2026תקציר מנהליםנכון לסוף נובמבר 2025, הכלכלה הישראלית ניצבת בפני נקודת מפנה קריטית, המאופיינת במעבר משלב של ייצוב מוניטרי נוקשה וריביות גבוהות, אל עבר מחזור של הקלה מוניטרית זהירה ומדודה. החלטת בנק ישראל ב-24 בנובמבר 2025 להוריד את הריבית במשק לרמה של 4.25% – ההפחתה הראשונה מזה כמעט שנתיים – מהווה איתות אסטרטגי ברור לשינוי כיוון, שמטרתו להניע מחדש את מנועי הצמיחה לאחר תקופה ממושכת של האטה בעקבות מלחמת "חרבות ברזל". דוח זה מגיש ניתוח עומק מקיף ורב-ממדי של אקו-סיסטם ההשקעות בישראל, תוך סנתוז נתונים ממגוון רחב של מקורות העוסקים בדינמיקת הנדל"ן, מבני המיסוי המורכבים, שוק המשכנתאות המתפתח ומכשירי שוק ההון.הניתוח חושף תמונת התאוששות מפוצלת ומורכבת. בעוד שהאינדיקטורים המקרו-כלכליים מצביעים על חזרה לתוואי צמיחה, עם תחזית צמיחה של 2.5% לשנת 2025 והאצה משמעותית ל-4.7% בשנת 2026, שוק הדיור מציג קשיחות מבנית. אילוצי היצע חריפים, המונעים בעיקר ממחסור כרוני בכוח אדם בענף הבנייה בעקבות המלחמה, משמרים את רמת המחירים הגבוהה למרות עלויות המימון המכבידות. במקביל, שוקי ההון מציעים אלטרנטיבות השקעה ייחודיות דרך מכשירים מעודדי חיסכון כמו "קופת גמל להשקעה", שבהם יחסי הגומלין בין מיסוי נומינלי למיסוי ריאלי הופכים לגורם מכריע בחישוב התשואה נטו בסביבה אינפלציונית. מסמך זה משמש כמדריך אסטרטגי למשקיעים מקומיים וזרים, ומפרט ברזולוציה גבוהה את המסגרות הרגולטוריות, חבויות המס ומגמות השוק הנדרשות כדי לנווט בהצלחה בזירת ההשקעות הישראלית בפתח שנת 2026.1. הסביבה המקרו-כלכלית ומדיניות מוניטרית1.1 תוואי הריבית ודינמיקת האינפלציההנרטיב הכלכלי המרכזי בישראל בשלהי 2025 נסוב סביב התפנית במדיניות המוניטרית. במשך כ-23 חודשים רצופים, בנק ישראל שמר על עמדה מרסנת ונוקשה במטרה להילחם בלחצים האינפלציוניים ולייצב את השקל מול התנודתיות הגיאופוליטית. הפחתת ריבית הבסיס ב-25 נקודות בסיס לרמה של 4.25% בנובמבר 2025 אינה רק שינוי טכני, אלא הכרזה על תחילתו של מחזור שחרור מוניטרי שנועד להקל על נטל החוב של משקי הבית והמגזר העסקי.החלטה זו נשענה על התמתנות ברורה בסביבת האינפלציה, אשר התייצבה על קצב שנתי של 2.5% באוקטובר 2025, עמוק בתוך יעד יציבות המחירים הממשלתי של 1%–3%. בנק ישראל הדגיש בהחלטתו את ההתאוששות בפעילות הכלכלית ברבעון השלישי של 2025, ואת הצורך לתמוך במשק המתמודד עם עלויות מימון גבוהות שהכבידו על הצריכה וההשקעה. תחזית חטיבת המחקר של בנק ישראל צופה ירידה הדרגתית ומתמשכת בריבית, עם צפי להגעה לרמה של כ-3.75% עד הרבעון השלישי של 2026. עם זאת, תוואי זה נותר תלוי לחלוטין ביציבות הביטחונית ובמשמעת הפיסקלית של הממשלה.תקופהתחזית ריבית בנק ישראלתחזית אינפלציה (שנתית)תחזית צמיחה (תמ"ג)סוף שנת 20254.25%2.6%2.5%שנת 20263.75% (עד רבעון 3)2.0% - 2.2%4.6% - 4.7%ניתוח מעמיק של הנתונים מגלה כי הריבית הריאלית (הפער בין הריבית הנומינלית לאינפלציה) נותרת חיובית ומרסנת, אך המגמה היא ברורה: המעבר ממיקוד בלעדי באינפלציה לניהול סיכונים מאוזן יותר הכולל תמיכה בצמיחה. עבור המשקיע, משמעות הדבר היא ירידה צפויה בעלויות המימון (משכנתאות ואשראי עסקי) במהלך השנה הקרובה, מה שעשוי לתדלק מחדש את הביקושים בנכסי סיכון ובנדל"ן.1.2 סיכון גיאופוליטי ופרמיית הסיכון של ישראלהמלחמה המתמשכת מאז אוקטובר 2023 שינתה באופן מבני את פרמיית הסיכון של המשק הישראלי. אף על פי שנרשמה ירידה בפרמיה (כפי שהיא משתקפת במרווחי ה-CDS ובאג"ח הממשלתיות) משיאי הלחימה, היא נותרה גבוהה משמעותית בהשוואה לרמות של טרום המלחמה. בנק ישראל מדגיש כי החלטות הריבית העתידיות יהיו תלויות-נתונים ("Data Dependent"), תוך מעקב צמוד אחר התכנסות האינפלציה ליעד, היציבות בשווקים הפיננסיים, וההתפתחויות הפיסקליות.השפעה שניונית קריטית של המלחמה היא הלחץ המתמשך בשוק העבודה. גיוס המילואים הנרחב והמגבלות החמורות על כניסת עובדים פלסטינים יצרו זעזועי היצע ("Supply Shocks"), בפרט בענפי הבנייה, החקלאות והתיירות. מחסור זה בכוח אדם מתפקד ככוח אינפלציוני מבני ("Structural Inflation"), אשר פועל בכיוון המנוגד ללחצים הדיפלציוניים של הריבית הגבוהה. המחסור בעובדים מוביל לעלייה בשכר בענפים אלו, מה שמייקר את עלויות התשומות ומגולגל בסופו של דבר לצרכן הסופי ולמחירי הדיור.2. שוק הנדל"ן למגורים: ניתוח עומקשוק הנדל"ן הישראלי בשנים 2024-2025 הפגין התנהגות המנוגדת לאינטואיציה הכלכלית הקלאסית. בדרך כלל, זינוק חד בריבית (מכמעט אפס ל-4.5%) אמור להוביל לתיקון חד במחירי הנכסים כלפי מטה. אולם בישראל, דיכוי ההיצע (בשל המלחמה והמחסור בעובדים) קיזז כמעט לחלוטין את דיכוי הביקוש שיצרה הריבית, והוביל לשוק קפוא אך יציב במחירים, עם נטייה לעליות מחודשות.2.1 מגמות מחירים ופערים אזורייםלקראת סוף 2024 ובמהלך 2025, מחירי הדיור הציגו חוסן מפתיע, ובמחוזות רבים נרשמה חזרה למגמת עלייה. הלשכה המרכזית לסטטיסטיקה (הלמ"ס) דיווחה על עלייה שנתית של כ-7.7% במחירי הדיור בשנת 2024. עם זאת, נתון ה"כותרת" הזה מסתיר שונות אזורית דרמטית ודיכוטומיה ברורה בין שוק הדירות החדשות לשוק יד-שנייה.ניתוח אזורי:תל אביב וגוש דן: השוק היקר ביותר בישראל המשיך להוביל במחירים אבסולוטיים, עם מחיר ממוצע לדירת 4 חדרים בתל אביב שחצה את רף ה-4.88 מיליון ש"ח. עם זאת, קצב העלייה השנתי בתל אביב היה תנודתי, כאשר רבעונים מסוימים הציגו ירידות קלות (כגון ירידה של 0.9% ביולי-אוגוסט 2025), בעוד הנתונים השנתיים הראו עליות מתונות יותר בהשוואה לממוצע הארצי. רמת המחירים הגבוהה הופכת את השוק הזה לרגיש במיוחד לשינויי ריבית, שכן המינוף הנדרש לרכישת נכס הוא עצום.הפריפריה (צפון ודרום): הפריפריה הציגה ביצועים עודפים במונחי אחוז עלייה בתקופות מסוימות, בעיקר בשל רמת המחירים הנגישה יותר ("Affordability"). המלחמה יצרה עיוותים מקומיים בביקוש: אזורים שנפגעו ישירות חוו קיפאון, בעוד ערים הנתפסות כ"עורף בטוח" זכו לביקושים מוגברים.ירושלים: הבירה הציגה עליות מחירים עקביות ויציבות, עם עלייה של 1.0% בתקופת יולי-אוגוסט 2025 לבדה. הביקוש הקשיח מצד תושבי חוץ ועולים חדשים מספק רצפה למחירים בשוק הירושלמי.דירות חדשות מול יד שנייה:קיים פער הולך ומתרחב בין מחירי הדירות החדשות למחירי יד-שנייה. יזמים, המתמודדים עם עלויות מימון גבוהות ורצון לשמר את רמת המחירים הנומינלית ("מחירון"), פנו לשימוש נרחב ב"הטבות מימון" יצירתיות. הדוגמה הבולטת ביותר היא מבצעי "20/80" (תשלום של 20% בחתימה ו-80% במסירה, ללא הצמדה ולעיתים בסבסוד ריבית הקבלן). מבצעים אלו מגלמים הנחה אפקטיבית של כ-5%-10% במחיר הריאלי של הדירה, שאינה משתקפת תמיד במחיר החוזי המדווח ללמ"ס. לעומת זאת, בשוק יד-שנייה, היעדר יכולת הנדסה פיננסית מוביל למשא ומתן ישיר על המחיר, ולעיתים לתיקונים חדים יותר כלפי מטה.2.2 שוק השכירות ותשואותההשקעה בנדל"ן למגורים בישראל התאפיינה היסטורית במיקוד ברווחי הון (עליית ערך) ולא בתזרים מזומנים שוטף, שכן תשואות השכירות הן נמוכות משמעותית בהשוואה עולמית.דחיסת תשואות (Yield Compression):נכון לרבעון השלישי של 2025, התשואה הגולמית הממוצעת משכירות בישראל עמדה על 3.38%. נתון זה מהווה שיפור קל לעומת 2.76% בשנת 2024, ונובע מכך שמחירי השכירות עלו בקצב מהיר יותר ממחירי הדירות בחלק מהאזורים.עירתשואה גולמית ממוצעת (רבעון 3, 2025)מאפייני שוק למשקיעתל אביב2.5% – 3.14%תשואה שוטפת נמוכה מאוד, פוטנציאל רווח הון גבוה בטווח הארוך, חסם כניסה גבוה.ירושלים3.11% – 4.2%תשואה בינונית, ביקוש יציב מצד אוכלוסיות מגוונות ותושבי חוץ.חיפה3.19% – 3.85%תשואה גבוהה יחסית למרכז, מחירי כניסה נמוכים המאפשרים פיזור סיכונים.באר שבע4.0% – 5.0%התשואות הגבוהות ביותר מבין הערים הגדולות, שוק מוטה סטודנטים ומשקיעים.דינמיקת מחירי השכירות:מחירי השכירות המשיכו במגמת עלייה ברורה. בתל אביב, שכר הדירה הממוצע הגיע לכ-7,116 ש"ח בדצמבר 2024. עבור משקיעים, המשמעות היא שלמרות שהתזרים החודשי עשוי להיות לחוץ (ובמקרים של מינוף גבוה אף שלילי - תזרים מזומנים שלילי), זרם ההכנסות משכירות מספק הגנה אינפלציונית ("Inflation Hedge") וצומח נומינלית לאורך זמן.2.3 אילוצי היצע ומגזר הבנייהענף הבנייה בישראל ניצב בפני סיכון של "עשור אבוד" בכל הנוגע להיצע יחידות דיור. הפסקת עבודתם של הפועלים הפלסטינים והקצב האיטי של קליטת עובדים זרים ממדינות כמו הודו וסרי לנקה, הובילו לעיכובים משמעותיים בהתחלות בנייה ובגמרים. אף על פי שהתחלות הבנייה עלו קלות ב-2.3% בשנת 2024 לרמה של כ-65,527 יחידות, קצב זה אינו מספיק כדי להדביק את הגידול הדמוגרפי הטבעי (כ-60,000 משקי בית חדשים בשנה) ואת הגירעון המצטבר משנים עברו. תת-היצע מבני זה משמש כרצפת בטון למחירים, ומונע קריסה גם בסביבת ריבית מאתגרת.3. מיסוי מקרקעין: המדריך השלם למשקיע (2024-2025)הבנת חבות המס היא קריטית לחישוב הכדאיות הכלכלית של השקעה בישראל. מערכת המס מבחינה בחדות בין "דירה יחידה" (למגורים או משפרי דיור) לבין "דירה נוספת" (משקיעים), ומטילה נטל כבד במכוון על הקבוצה השנייה.3.1 מס רכישהעבור משקיעים (בעלי יותר מדירה אחת), מס הרכישה הוא אגרסיבי ומתחיל מהשקל הראשון. מדיניות זו, שהוחמרה ב-2015 והוקלה זמנית ב-2020 רק כדי להיות מוחמרת שוב, נועדה לצנן את הביקושים מצד משקיעים.מדרגות מס רכישה למשקיע (דירה נוספת) - בתוקף 16.1.2024 – 15.1.2025:שווי הנכס (בש"ח)שיעור המסעד 6,055,0708%מעל 6,055,07010%משמעות הדבר היא שעל כל דירה להשקעה במחיר ממוצע (למשל 2 מיליון ש"ח), המשקיע משלם מיידית 160,000 ש"ח למדינה – סכום ש"נמחק" מהתשואה ומחייב עליית ערך של כ-8% רק כדי להגיע לאיזון ("Break-even").מדרגות מס רכישה לדירה יחידה (בתוקף 16.1.2024 – 15.1.2025):שווי הנכס (בש"ח)שיעור המסעד 1,978,7450%1,978,745 – 2,347,0403.5%2,347,040 – 6,055,0705%6,055,070 – 20,183,5658%מעל 20,183,56510%הטבת עולה חדש:עולים חדשים זכאים להטבה משמעותית ברכישת דירת מגורים (או עסק) במשך 7 שנים מיום העלייה (או שנה לפני).0.5% מס על השווי עד כ-1.98 מיליון ש"ח.5% מס על השווי שמעל סכום זה.תובנה אסטרטגית: עבור עולים הרוכשים נכסי יוקרה (מעל 6 מיליון ש"ח), מדרגות המס הרגילות לדירה יחידה עשויות להיות משתלמות יותר בחלק מהמקרים (בשל מדרגות הביניים של 3.5% ו-5%), ויש לבצע סימולציה פרטנית. אולם עבור השקעה (כאשר לעולה יש כבר דירה), הטבת העולה עשויה להיות המסלול היחיד המאפשר מס מופחת, בכפוף למגבלות החוק.3.2 מיסוי הכנסה משכר דירהמשקיעים יכולים לבחור בין שלושה מסלולי מיסוי נפרדים עבור הכנסות משכירות למגורים. הגמישות הזו מאפשרת אופטימיזציה של המס בהתאם להכנסות ולהוצאות הספציפיות של המשקיע.מסלול הפטור המלא (פטור):תקרה: הכנסה חודשית של עד 5,654 ש"ח (נכון ל-2024) פטורה לחלוטין ממס.מנגנון "פטור נשחק": אם ההכנסה עולה על התקרה אך נמוכה מכפל התקרה (11,308 ש"ח), חל פטור חלקי. על כל שקל שמעל התקרה, הפטור מצטמצם בשקל.ניתוח: זהו המסלול הפופולרי ביותר למשקיעים קטנים ("דירה אחת בבאר שבע"), שכן הוא פשוט ואינו דורש דיווח מורכב.מסלול מס מופחת (10%):תשלום מס שטוח של 10% על הכנסת השכירות ברוטו.התנייה: לא ניתן לנכות הוצאות כלל (לא ריבית משכנתא, לא תיקונים, לא פחת). המס משולם תוך 30 יום מתום שנת המס (עד 30 בינואר).ניתוח: מסלול אידיאלי לבעלי הכנסות שכירות גבוהות (מעל תקרת הפטור) שיש להם הוצאות שוטפות נמוכות או משכנתא נמוכה/מחוסלת.מסלול מס מלא (מס שולי):ההכנסה מתווספת להכנסה הכוללת של המשקיע וממוסה לפי המס השולי (מינימום 31% להכנסה פסיבית עבור מי שטרם מלאו לו 60, אלא אם מדובר בעסק).היתרון הגדול: מאפשר ניכוי של כל ההוצאות, כולל ריבית ריאלית על המשכנתא, פחת (בדרך כלל 4% משווי המבנה), תיקונים וביטוחים.תובנה אסטרטגית: בסביבת הריבית הגבוהה של 2024-2025, הוצאות המימון (הריבית על המשכנתא) הן עצומות. משקיעים רבים נמצאים במצב של "הפסד" חשבונאי (ההוצאות עולות על ההכנסות). במצב זה, בחירה במסלול המס המלא עשויה להוביל לחבות מס אפס, ואף ליצירת "מגן מס" להעברה לשנים הבאות (באותה פעילות). זהו כלי תכנון מס קריטי למשקיעים ממונפים.3.3 מס שבחבעת מכירת דירה שאינה דירה יחידה, הרווח הריאלי (שנצבר החל מ-2014) ממוסה בשיעור של 25%. עבור דירות שנרכשו לפני 2014, מתבצע חישוב ליניארי המחלק את הרווח באופן יחסי בין התקופה הפטורה (לפני 2014) לתקופה החייבת.4. שוק המשכנתאות: מבנה, סיכונים ואסטרטגיותשוק המימון לדיור בישראל הוא ייחודי במורכבותו, בשל המגבלות הרגולטוריות של בנק ישראל והשימוש הנרחב בהצמדה למדד המחירים לצרכן.4.1 מסלולי משכנתא וריביותנכון לסוף 2025, ריביות המשכנתא נותרו גבוהות יחסית, למרות הפחתת הריבית הראשונה של בנק ישראל. מנגנון התמסורת פועל כך שמסלול הפריים מגיב מידית, בעוד המסלולים הקבועים מגיבים לאט יותר לתשואות האג"ח.המסלולים המרכזיים:מסלול הפריים (P):מבנה: ריבית בנק ישראל + מרווח (בדרך כלל 1.5%).ריבית נוכחית (סוף 2025): 4.25% (בנק ישראל) + 1.5% = 5.75%.מאפיינים: המסלול היחיד שאינו צמוד למדד וניתן לפירעון מוקדם ללא קנסות משמעותיים. עם כניסת מחזור הורדת הריבית ב-2026, מסלול זה צפוי להפוך לזול יותר באופן הדרגתי.קבועה צמודה למדד (ק"צ - KZ):מבנה: ריבית בסיס נמוכה יותר (למשל 3.0% - 3.5%), אך קרן ההלוואה צמודה למדד המחירים לצרכן.הסיכון ("מלכודת המדד"): בסביבת אינפלציה של 3%, העלות האפקטיבית מזנקת ל-6.5% ומעלה. יתרה מכך, כאשר האינפלציה חיובית, יתרת החוב הנומינלית עשויה לעלות מחודש לחודש למרות התשלומים השוטפים ("הצמדה שלילית" של הקרן).קבועה לא צמודה (קל"צ - Kalatz):מבנה: הריבית קבועה לכל חיי ההלוואה ואינה משתנה.ריבית נוכחית: כ-4.8% - 5.1% (תלוי באחוז המימון ובתקופה).תובנה: זהו המסלול ה"בטוח" ביותר המקבע את ההחזר החודשי. ככל שתשואות האג"ח ירדו ב-2026, ריביות הקל"צ צפויות לרדת, מה שיאפשר הזדמנויות למחזור משכנתא ("Refinancing") למי שנוטל הלוואה כעת.4.2 רגולציה ומגבלות בנק ישראלבנק ישראל אוכף מגבלות מקרו-יציבותיות נוקשות ("Macroprudential Policy"):שיעור המימון (LTV): עד 75% לדירה ראשונה, 70% למשפרי דיור, ו-50% בלבד לדירה להשקעה. מגבלה זו מחייבת משקיעים להביא הון עצמי משמעותי ("מוניטין פיננסי" אינו מספיק).יחס החזר להכנסה (PTI): ההחזר החודשי לא יעלה על 50% מההכנסה הפנויה, כאשר הבנקים מחמירים לרוב את הרף ל-35%-40% כדי להקטין סיכון.מגבלת הפריים: בעבר הוגבל רכיב הפריים ל-1/3 מההלוואה. המגבלה הוסרה, אך הבנקים עדיין מנהלים את החשיפה בזהירות.הלוואות לכל מטרה: טיוטת רגולציה חדשה ב-2025 מבקשת להגביל הלוואות המבוססות על שעבוד נכס קיים ("משכנתא לכל מטרה") כך שסך ההחזרים בגין דיור לא יעלה על 40% מההכנסה, כדי למנוע מינוף יתר ספקולטיבי.ועדת סמכון: הנחיות חדשות מבקשות למנוע מהבנקים להתערב בתמחור דירות בפרויקטים (למשל, למנוע מהבנק לאסור על יזם למכור במחיר נמוך ממחיר הדו"ח האפס), במטרה לעודד תחרות והורדת מחירים.4.3 מנגנוני סילוקין: שפיצר מול קרן שווהרוב המשכנתאות בישראל מחושבות לפי לוח שפיצר, שבו ההחזר החודשי קבוע (נומינלית, לפני הצמדה), אך הרכב התשלום משתנה: בתחילה משלמים בעיקר ריבית ומעט קרן.משמעות: בשנים הראשונות, החוב בקושי יורד ("Slow Amortization"). בשילוב עם הצמדה למדד, החוב עלול כאמור לעלות.קרן שווה: שיטה פחות נפוצה שבה מרכיב הקרן בתשלום קבוע, והריבית יורדת לאורך הזמן. ההחזר ההתחלתי גבוה יותר, אך סך תשלומי הריבית לאורך חיי ההלוואה נמוך משמעותית. שיטה זו מתאימה למשקיעים מתוחכמים עם תזרים חזק בתחילת הדרך.5. שוק ההון: מכשירי השקעה ואלטרנטיבותעבור משקיעים המחפשים נזילות ופיזור סיכונים מעבר לנדל"ן הפיזי, שוק ההון הישראלי מציע פתרונות מיסוי ייחודיים, כשהבולט שבהם הוא "קופת גמל להשקעה".5.1 קופת גמל להשקעהמכשיר זה הפך למוצר הדגל לחיסכון והשקעה לטווח בינוני-ארוך בישראל.נזילות: הכספים נזילים וניתנים למשיכה בכל עת (בכפוף לתשלום מס רווח הון).תקרה: מגבלת הפקדה שנתית של כ-79,000 ש"ח לאדם (הסכום מתעדכן וצמוד למדד). ניתן לפתוח קופות לכל בן משפחה (כולל ילדים) ולנצל את התקרה במכפלות.הטבת המס האולטימטיבית: אם הכספים נשמרים עד גיל 60 ונמשכים כקצבה חודשית (פנסיה), הם פטורים לחלוטין ממס רווח הון וממס הכנסה. זהו אחד המקלטים האחרונים למס בישראל. אם הכסף נמשך הונית (במכה אחת), משלמים מס רווח הון רגיל של 25%.מסלולי S&P 500: רוב הגופים המנהלים (אלטשולר שחם, ילין לפידות, מיטב, הראל וכו') מציעים מסלולים מחקי מדד S&P 500.דמי ניהול: הממוצע עומד על כ-0.5% - 0.7%. זהו שיעור גבוה משמעותית מקרנות סל (ETF) אמריקאיות ישירות (כמו VOO שגובה 0.03%), אך יש לשקלל את הטבת המס ואת היעדר עמלות הקנייה/מכירה ודמי המשמרת.5.2 מיסוי רווחי הון: ריאלי מול נומינלימשקיע מתוחכם חייב להבין את ההבחנה הקריטית בין מס ריאלי למס נומינלי, בפרט בסביבה אינפלציונית.מס ריאלי (25%): חל על רוב ההשקעות המנייתיות (מניות, קרנות נאמנות, גמל להשקעה). המס משולם רק על הרווח שמעבר לאינפלציה.נוסחה: $\text{מס} = (\text{מחיר מכירה} - (\text{מחיר רכישה} \times \text{מדד האינפלציה})) \times 25\%$היתרון: באינפלציה גבוהה (למשל 3%-4%), "מגן האינפלציה" הוא דרמטי. אם המניה עלתה ב-5% והאינפלציה הייתה 4%, הרווח הריאלי למיסוי הוא רק 1%, והמס האפקטיבי הוא זניח.מס נומינלי (15%): חל על מכשירים שקליים לא צמודים (כגון פיקדונות שקליים קצרים, מק"מ, אג"ח שקליות מסוימות).החיסרון: משלמים 15% על הרווח הנומינלי ללא התחשבות באינפלציה. אם הריבית בפיקדון היא 4% והאינפלציה היא 3%, התשואה הריאלית היא 1%, אך המס (15% מ-4%) נוגס ברווח משמעותית.תובנה אסטרטגית: בתקופות של אינפלציה משמעותית (מעל 2%-3%), מיסוי ריאלי של 25% עדיף לרוב על פני מיסוי נומינלי של 15% באפיקים הסולידיים, והבחירה במכשירים צמודים או ממוסים ריאלית היא יעילה יותר מבחינת תשואה נטו.5.3 השוואת ברוקראז': בנקים מול בתי השקעותהבנקים בישראל (לאומי, פועלים וכו') ידועים בעמלות מסחר גבוהות, בפרט בניירות ערך זרים.עמלות בנקים: עמלת קנייה/מכירה יכולה להגיע ל-0.6% ומעלה מהעסקה, עם מינימום גבוה (20$+), בתוספת "דמי משמרת" (או "דמי ניהול פיקדון ני"ע") של כ-0.6% בשנה משווי התיק. זהו "קנס" שנתי כבד.בתי השקעות / פלטפורמות עצמאיות: גופים כמו אינטראקטיב ישראל, מיטב טרייד, אקסלנס וכו' מציעים עמלות נמוכות דרמטית (למשל 5$-8$ לעסקה, 1 סנט למניה), ולרוב ללא דמי משמרת כלל (או דמי טיפול חודשיים נמוכים המתקזזים מול עמלות).המלצה: עבור תיק השקעות פסיבי (למשל S&P 500), המעבר מבנק לבית השקעות חוסך כ-0.5%–1.0% בתשואה השנתית רק על סעיף העמלות.6. עלויות עסקה והוצאות נלוותמשקיעים חייבים לקחת בחשבון את עלויות העסקה ("Closing Costs") הגבוהות בישראל, אשר שוחקות את התשואה המיידית ומחייבות אופק השקעה ארוך.סעיף הוצאההערכההערותמס רכישה8% - 10%למשקיעים (מדרגות). העלות הכבדה ביותר.תיווך2% + מע"מסטנדרטי, לעיתים ניתן למיקוח בעסקאות יקרות.שכר טרחת עו"ד0.5% - 1.5% + מע"מחיוני לבדיקת נאותות משפטית.שמאותכ-2,000 - 3,000 ש"חנדרש לצורך משכנתא (שמאי הבנק).ייעוץ משכנתאותכ-5,000 - 10,000 ש"חמומלץ מאוד לאופטימיזציה של תמהיל ההלוואה.מדד תשומות הבנייהמשתנהרלוונטי רק לרכישת דירה חדשה מקבלן ("על הנייר").סה"כ עלויות "שקועות"כ-10% - 13%משווי הרכישה (מעבר להון העצמי).משמעות אסטרטגית: נקודת האיזון ("Break-even") בנדל"ן ישראלי מגיעה בדרך כלל רק לאחר 5-7 שנים, בשל עלויות הכניסה הגבוהות. אסטרטגיית "פליפ" (קנייה ומכירה מהירה) היא כמעט בלתי אפשרית כלכלית בשל מס השבח ועלויות העסקה, ומערכת המס מעודדת החזקה לטווח ארוך.7. סיכום ותחזית אסטרטגית לשנת 20267.1 הפנים לצמיחההורדת הריבית על ידי בנק ישראל בנובמבר 2025 היא "יריית הפתיחה" למחזור הכלכלי הבא. ככל שהריבית תרד לכיוון 3.75% במהלך 2026, ההון צפוי לחזור ולזרום לשוק הנדל"ן ולשוק המניות. הכלכלה הישראלית הוכיחה בעבר גמישות ("Elasticity") ויכולת התאוששות מהירה ("Rebound") לאחר עימותים צבאיים. תחזית הצמיחה של 4.7% ל-2026 מרמזת כי השווקים מתמחרים התאוששות חזקה.7.2 המלצות למשקיעים לפי פרופיל1. מחפש התשואה הסולידית:אסטרטגיה: להימנע ממגורים בתל אביב. להתמקד בבאר שבע או חיפה, ספציפית בשכונות הסמוכות לאוניברסיטאות או בתי חולים, שם התשואות מתקרבות ל-4.5%.מימון: לקבע ריביות קל"צ כעת, לפני ששוק האג"ח יתמחר את ההתאוששות המלאה, או לשלב מסלול פריים מתוך ציפייה להורדות ריבית, אך רק אם התזרים מאפשר ספיגת תנודתיות.2. מחפש רווח הון (Capital Appreciation):אסטרטגיה: תל אביב וגוש דן.רציונל: המחסור בעובדים בבנייה ייצור "בור היצע" בשנים 2026-2027. כאשר הריבית תרד, הביקוש הכבוש יפגוש היצע קפוא, מה שצפוי להוביל לגל עליות מחירים מחודש באזורי הביקוש.אזהרה: עלויות הכניסה עצומות; תזרים שלילי צפוי בשנים הראשונות (שכירות < משכנתא).3. המשקיע הנזיל:אסטרטגיה: S&P 500 דרך גמל להשקעה או ברוקראז' פרטי.רציונל: עקיפת מס הרכישה (8%) ועלויות העסקה. ניצול משטר המס הריאלי (25%) המגן מפני אינפלציה. חשיפה לדולר משמשת כגידור טבעי לתנודתיות השקל המושפעת מאירועים ביטחוניים.פעולה: מיצוי תקרת ה-79,000 ש"ח השנתית לכל בן משפחה לפני פנייה לאפיקים ממוסים אחרים.מילות סיכוםההשקעה בישראל בשלהי 2025 מחייבת ניווט זהיר בנוף של עלויות נומינליות גבוהות, אך עם יסודות מבניים המבטיחים ביקוש קשיח לטווח הארוך. חלון ההזדמנויות לרכישת נכסים בתנאי שוק של "קונים" (לפני שהורדות הריבית ישפיעו במלואן) פתוח כעת, אך הוא מיועד למשקיעים בעלי נשימה ארוכה ויכולת ספיגה. עבור אלו שאינם מעוניינים להתחייב לנדל"ן פיזי, שוק ההון מציע כיום כלים יעילים, נזילים ופטורים ממס בחלקם, המהווים אלטרנטיבה ראויה שאין להתעלם ממנה.
+8.
+Title: Comprehensive Validation of Economic Assumptions and Algorithmic Logic for the Tamheel Financial SimulatorExecutive Summary and Strategic AlignmentThe development of the "Tamheel" financial simulator represents a sophisticated undertaking that demands a departure from generic global financial modeling to address the idiosyncratic structural realities of the Israeli economy. This report serves as the definitive validation document for the simulator’s underlying assumptions, providing an exhaustive review of historical data series, regulatory frameworks, and mathematical algorithms necessary to render a "true-to-life" simulation of the Israeli market.The validation process confirms that a highly specialized logic engine is required. Unlike standard amortization calculators used in the United States or Europe, the Israeli market operates on a dual-axis of nominal interest and Consumer Price Index (CPI) linkage (Hatzmada). This linkage mechanism affects the principal balance directly, creating scenarios of negative amortization in nominal terms that the simulator must visualize accurately. Furthermore, the fiscal environment for 2025 introduces specific temporary orders (Hora'at Sha'ah) regarding taxation—specifically the freezing of purchase tax brackets—that contradict standard indexation assumptions, requiring hard-coded adjustments in the simulator’s logic for the near term.This report is structured to provide developers and financial architects with the granular data and logic flows necessary to construct the Tamheel engine. It integrates historical performance data from the Bank of Israel, the Central Bureau of Statistics (CBS), and global equity markets to establish robust scenario presets. It dissects the nuanced "Real vs. Nominal" taxation on capital gains, distinguishing between domestic and foreign assets, and validates the cost structures for ancillary services such as legal and brokerage fees. The following analysis ensures that every variable within the Tamheel ecosystem is grounded in empirical data and aligned with the current regulatory statutes of the State of Israel.Section 1: Macroeconomic Foundations and Historical Series ValidationTo accurately project future financial outcomes, the Tamheel simulator must be calibrated against a robust set of historical baselines. The interplay between interest rates, inflation, and currency exchange rates forms the macroeconomic "weather" in which the user's financial scenario takes place. This section validates the historical series data and establishes the logic for how these variables should behave within the simulation.1.1 The Bank of Israel Interest Rate and the Prime Rate MechanismThe "Prime Rate" serves as the foundational anchor for a significant portion of Israeli mortgage portfolios and commercial loans. Understanding its historical volatility and mechanical derivation is essential for accurate modeling.Mechanism ConfirmationThe simulator must treat the Prime Rate not as an independent variable, but as a derivative of the Bank of Israel (BoI) benchmark rate. The mechanical definition in the Israeli banking sector is rigid:$$\text{Prime Rate} = \text{BoI Benchmark Rate} + 1.5\%$$This spread of 1.5% has remained constant for decades, acting as the banking system's base margin for "Prime" designated loans. Therefore, the simulator's backend should allow users to manipulate the BoI rate, with the Prime rate updating automatically.Historical Context and Volatility AnalysisThe historical trajectory of the Prime Rate reveals three distinct eras that the simulator’s "Scenario Presets" must reflect to allow users to stress-test their portfolios against realistic historical precedents.The High-Rate Era (1990s - Early 2000s):During the mid-1990s, Israel battled structural inflation, leading to nominal interest rates that appear astronomical by modern standards. In June 1996, the Prime Rate peaked when the BoI rate hit 17.00%, creating a Prime Rate of 18.5%. Throughout the late 90s, the rate averaged near 11-13%. While a return to these levels is considered a "Black Swan" event, a robust simulator must allow for "Hyper-Stress" scenarios where rates exceed 10%, particularly for users analyzing long-term affordability in extreme geopolitical instability.1The Zero-Interest Rate Policy (ZIRP) Era (2015 - 2021):For nearly seven years, the Israeli market operated in a uniquely stable, low-cost credit environment. The BoI interest rate hit a record low of 0.10% in March 2015 and remained effectively anchored there until early 2022. This resulted in a Prime Rate of 1.60%. This prolonged period created a generation of borrowers accustomed to cheap capital, distorting perceptions of affordability. The simulator must offer a "Low Rate Environment" preset based on this data, characterized by a Prime Rate of 1.6% - 2.0%, to demonstrate the sensitivity of monthly payments to a return to these lows.1The Inflationary Correction (2022 - 2025):The current epoch began with the aggressive tightening cycle of 2022-2023. As inflation accelerated globally and domestically, the BoI raised rates from 0.1% to 4.75% within roughly 18 months. As of late 2024 and early 2025, the rate has stabilized around 4.50%, resulting in a Prime Rate of 6.00%. This represents the "New Normal" baseline for the simulator. Current forecasts suggest a moderate easing path, but the "Base Case" scenario in the simulator should default to this 6.00% environment rather than the historical average of the last decade, to prevent users from underestimating debt service costs.2Table 1: Key Historical Interest Rate Benchmarks for Simulator PresetsEraYear / PeriodBank of Israel RatePrime Rate (BoI + 1.5%)Context for Simulator LogicPeak CrisisJune 199617.00%18.50%Extreme stress test boundary.1Financial Crisis2008 Peak4.25%5.75%Pre-crisis peak levels.ZIRP Era2015 - 20210.10%1.60%Historical low; "Optimistic" scenario.2Tightening Cycle2023 Peak4.75%6.25%Recent high; "Stress" baseline.2Current Baseline2024 - 20254.50%6.00%Default starting value for new simulations.3Forecast2026 Est.3.75% - 4.00%5.25% - 5.50%Projected easing path.4Simulator ImplicationsThe Tamheel simulator must avoid modeling the Prime Rate as a static integer over a 30-year mortgage. Instead, it should utilize a "Step Function" or "Linear Trend" input, allowing the user to define a starting rate (e.g., 6.0%) and an end rate (e.g., 4.0%) over a defined period (e.g., 24 months). This dynamic modeling is critical because the Prime component of a mortgage resets monthly, unlike fixed tracks.1.2 Inflation and the Consumer Price Index (CPI) MechanismIn the Israeli financial lexicon, the CPI is known as the Madad. It is arguably the most destructive force for unprepared borrowers due to the mechanism of Principal Linkage (Hatzmada). Unlike in the US, where inflation affects interest rates indirectly, in Israel, it directly increases the outstanding debt balance on "Linked" (Tzamud) loans.The Linkage Mechanism LogicThe simulator must strictly adhere to the official publication schedule and calculation logic of the Central Bureau of Statistics (CBS). The CPI is published on the 15th of each month at 6:30 PM, reflecting the price changes of the previous calendar month.5The "Linkage Factor" is calculated as:$$\text{Linkage Factor}_t = \frac{\text{Known CPI}_t}{\text{Base CPI}}$$Where "Base CPI" is the index value known on the day of the loan's execution. It is crucial to correct the common assumption that the loan balance simply grows by the annual inflation rate divided by 12. Instead, the simulator must model the precise monthly prints. Seasonality is a key factor; historical data shows that indices often rise in spring/summer (Q2-Q3) and stabilize or drop in winter (Q1). A high-fidelity simulator might include a "Seasonality Toggle" that distributes the annual inflation assumption unevenly across the months to reflect this reality.5Historical Inflation SeriesThe simulator requires detailed historical series to allow users to backtest specific periods.The Price Stability Era (2014-2020): For much of the last decade, inflation was negligible, often dipping into negative territory (deflation). In 2015 (-1.0%), 2016 (-0.2%), and 2020 (-0.7%), the CPI actually fell. This creates a dangerous "recency bias" for borrowers who assume linkage is free. The simulator must show that while the floor for principal repayment is often the original loan amount (preventing the debt from shrinking in nominal terms below the origin), the monthly payment can decrease in deflationary months depending on the specific bank contract. However, standard modeling assumes a floor at par for the principal.7The Inflationary Spike (2022-2024): The post-COVID era saw inflation return with force, peaking at 5.3% in 2022 and settling around 3.0% - 3.2% in 2024-2025. This 3% level represents the upper bound of the government's target range (1-3%) and serves as a prudent "Base Case" for simulation. The recent data from late 2025 shows sticky inflation around 2.5%, driven by supply constraints and geopolitical conflict, suggesting that a return to 0% inflation is unlikely in the near term.4Table 2: Annual Inflation Rates for Scenario ModelingYearAnnual Inflation (CPI)Significance for Simulator2024~3.00%Reflects sticky inflation environment.720233.00%Continued pressure from housing/food costs.720225.30%Recent peak; high stress scenario.720212.80%Beginning of the upward trend.72020-0.70%Deflationary/Pandemic anomaly.72008-20093.8% - 3.9%Financial crisis volatility.7Long Term~2.0%The "Target" preset (Midpoint of 1-3%).81.3 USD/ILS Exchange Rate DynamicsThe USD/ILS exchange rate is a pivotal variable for two distinct aspects of the Tamheel simulator: the taxation of foreign securities (discussed in Section 4) and the valuation of "Foreign Currency" mortgage tracks.Volatility and Safe Haven StatusThe Shekel has historically exhibited high volatility linked to geopolitical events and global tech sector performance.Appreciation Trend: Long-term, the Shekel strengthened from ~4.30 in 2002 to ~3.10 in 2021, driven by foreign investment in the tech sector and natural gas exports. This trend is vital for modeling foreign stock returns; a strengthening Shekel reduces the local currency return of S&P 500 assets.Depreciation Spikes: In times of conflict (e.g., late 2023, 2024), the Shekel weakens rapidly (reaching 3.80-4.00+), acting as a hedge. The simulator's "Geopolitical Stress" preset should model a sharp depreciation of the Shekel, which paradoxically increases the Shekel value of foreign assets (and the tax liability thereof) while increasing the debt burden of any USD-linked mortgages.21.4 Real Estate Appreciation: The Gush Dan vs. Periphery SplitA generic "national appreciation rate" is insufficient for a true-to-life Israeli simulator due to the extreme bifurcation of the market. The simulator must distinguish between "High Demand" (Gush Dan/Tel Aviv) and "Developing" (Periphery) markets.Current Trends (2024-2025)Data from late 2024 and 2025 indicates a cooling market with divergent behaviors.Tel Aviv: The luxury and high-demand market in Tel Aviv has shown higher volatility. Recent data points to sharp corrections, with prices dropping ~6% nominally in mid-2025. This "bubble correction" behavior is critical for short-term exit simulations. However, the long-term trend remains positive due to land scarcity.10National Average: The broader market has shown more resilience, with stagnation or mild declines of ~2%. This suggests that "First Home" buyers in peripheral cities face a different appreciation curve than luxury investors.12Table 3: Real Estate Appreciation AssumptionsMarket Segment1-Year Trend (2025)10-Year Avg (CAGR)Recommended Simulator PresetTel Aviv-5.0% to -8.0%~8% - 10%"High Volatility Growth"National Avg-2.0% to 0.0%~5% - 6%"Balanced Growth"Periphery0.0% to +2.0%~3% - 4%"Conservative Growth"Section 2: The Israeli Mortgage Market - Tracks, Rates, and Mathematical LogicThe core engine of the Tamheel simulator is the mortgage calculator. This cannot be a standard amortization engine; it must replicate the specific "Tracks" (Maslulim) offered by Israeli banks, each with unique mathematical properties and regulatory constraints.2.1 Mortgage Track Definitions and LogicThe simulator must verify and support the following tracks, which form the "Mix" (Tamheel) of the loan.1. Prime Track (P)Logic: Unlinked Variable Rate.Interest Rate: $P \pm \text{Spread}$. Currently $P - 0.5\%$ to $P + 0.0\%$ is standard for strong borrowers.Adjustment: The rate changes monthly based on the BoI announcement. The payment recalculates immediately based on the remaining principal.Prepayment: By law, there is no prepayment penalty (Knas Yetzi'ah) for the Prime track, making it the most liquid portion of the loan. The simulator must allow penalty-free exit simulations for this component.132. Constant Unlinked (Kalatz - Kavuah Lo Tzamud)Logic: Fixed Rate, No Linkage. This is the "safe haven" track comparable to a US 30-year fixed.Interest Rate: Higher than Prime due to the lack of inflation risk for the borrower. Current execution rates are 4.9% - 5.15%.14Prepayment: Significant penalties apply if the market interest rate at the time of repayment is lower than the contract rate. The simulator must calculate this "Economic Capitalization Fee" (Amlat Hivun) based on the difference between the contract rate and the prevailing market average rate.153. Constant Linked (Katz - Kavuah Tzamuda)Logic: Fixed Interest, Principal Linked to CPI.Interest Rate: Lower face value (e.g., 3.0% - 3.9%).Linkage Math: The principal balance is adjusted by the CPI before interest calculation.Risk: In high inflation environments, the debt can grow nominally despite monthly payments. The simulator must visualize this "ballooning" principal effect clearly.164. Variable Linked (Mishtana Tzamuda - 5/2/1)Logic: Rate resets every X years (usually 5). Principal is linked to CPI.The Anchor (Ogen): The interest rate is defined as $\text{Anchor} + \text{Margin}$. The Anchor is typically the "Average Yield of Government Bonds" (Galil).Simulator Requirement: The simulator must not just ask for an initial rate; it must project the reset rate in year 5, 10, 15, etc. A robust simulator will link this reset rate to the "Macro Interest Rate" scenario defined in Section 1. If the user predicts high Prime rates in year 5, the simulator should logically increase the Anchor rate for the reset.175. Foreign Currency (Matzach)Logic: Linked to USD or EUR exchange rates. Rate based on SOFR/Libor + Margin.Niche Use: Primarily for borrowers with income in foreign currency (e.g., tech employees with RSUs, foreign residents).Math: Principal adjusts daily/monthly based on the representative exchange rate.Simulator Feature: Users must be able to input a separate "Exchange Rate Forecast" distinct from the CPI forecast.182.2 The Spitzer Method and Linkage Calculation OrderA critical validation point for the simulator is the exact order of operations for calculating monthly payments in linked mortgages. This differs from standard financial library functions.The Validated Algorithm:For a loan with Principal $P$, Annual Interest $i$, Term $n$ months, and Monthly CPI change $\Delta CPI$:Step 1: Link the Principal.The outstanding principal from the previous month ($P_{t-1}$) is multiplied by the index change factor.$$P_{adjusted} = P_{t-1} \times (1 + \Delta CPI_t)$$Note: Even if the Spitzer table dictates a specific principal reduction schedule, the entire remaining balance is subject to linkage.Step 2: Calculate Interest.Interest for the current month is calculated on the new, adjusted principal.$$I_t = P_{adjusted} \times \frac{i}{12}$$Step 3: Calculate Monthly Payment (Spitzer Recalculation).Strictly speaking, in a fully linked Spitzer mortgage, the monthly payment amount itself is linked.$$PMT_t = PMT_{base} \times \frac{\text{Current CPI}}{\text{Base CPI}}$$Alternatively, some banks recalculate the Spitzer payment based on the new $P_{adjusted}$ and remaining $n$. The result is mathematically very similar: the monthly payment rises in nominal terms alongside inflation.Step 4: Amortization.Principal Repayment = $PMT_t - I_t$.$$P_{new} = P_{adjusted} - \text{Principal Repayment}$$Implication: If $\Delta CPI$ is high enough, the linkage added to the principal in Step 1 can exceed the Principal Repayment in Step 4. This results in Negative Amortization where $P_{new} > P_{t-1}$. The simulator must flag this occurrence as a specific risk warning.162.3 Regulatory Constraints (Bank of Israel)The simulator acts as a compliance engine and must enforce current Bank of Israel limitations. Any "Mix" constructed by the user that violates these rules should trigger a validation error.Prime Limit: Following the 2021 reform, the restriction on the Prime component was relaxed. However, banks still often limit the Prime component to 2/3 of the total loan (previously 1/3). The simulator should default to a 2/3 cap for risk management scenarios.Loan-To-Value (LTV) Caps:First Home: Max 75%.Upgraders (Meshaprei Diur): Max 70%.Investment/Second Home: Max 50%.Payment-to-Income (PTI) Ratio:Soft Limit: 40% of net disposable income.Hard Limit: 50% (Very rarely approved).Simulator Logic: The simulator must request "Net Monthly Income" and calculate this ratio. If the initial payment exceeds 40%, a warning is required. Crucially, the simulator should stress-test this ratio: "If Prime rises to 6%, does PTI breach 50%?".20Section 3: Fiscal Policy and Taxation EngineThe simulator's "Net Cost" calculation depends heavily on an accurate taxation engine. The Israeli tax code for real estate and capital markets is complex, with distinctions between nominal and real gains that do not exist in many other jurisdictions.3.1 Purchase Tax (Mas Rechisha)This is a progressive tax paid by the buyer. The brackets are typically updated annually in January based on the Housing Price Index. Correction for 2025: Due to the "Swords of Iron" war budget and fiscal deficit, the government has passed a Temporary Order freezing these brackets at 2024 levels through 2027. The simulator must not apply an automatic indexation to these brackets for projection years 2025, 2026, and 2027.21Validated Brackets (2025)Scenario A: Single Home (Resident)0 – 1,978,745 NIS: 0%1,978,745 – 2,347,040 NIS: 3.5%2,347,040 – 6,055,070 NIS: 5%6,055,070 – 20,183,565 NIS: 8%Above 20,183,565 NIS: 10%Scenario B: Investor / Second Home0 – 6,055,070 NIS: 8% (Applied to the first shekel).Above 6,055,070 NIS: 10%.Note: This 8% starting bracket is a massive barrier to entry for investors and must be highlighted in any "Buy vs. Rent" simulation.23Scenario C: New Immigrant (Oleh) BenefitRecent reforms (August 2024) have improved the benefit.0 – 1,980,000 NIS: 0%1,980,000 – 6,055,070 NIS: 0.5%Above 6,055,070 NIS: 8%Validation: The 0.5% bracket is significantly lower than the standard resident brackets (3.5% / 5%), making "Oleh Status" a critical user toggle.253.2 Rental Income Taxation TracksFor the "Investment Property" simulation, the user must be able to select between the three authorized tax tracks. The simulator should ideally run a background optimization to suggest the cheapest track.Exemption Track (Ptor):Ceiling: 5,654 NIS per month (2025).Mechanism: Full exemption if rent < Ceiling. If rent > Ceiling, the exemption is reduced by the amount of the excess (Tikra Nichhadet).Formula: $\text{Exempt Amount} = \text{Ceiling} - (\text{Rent} - \text{Ceiling})$. The remainder is taxed at the individual's marginal rate.Cliff Effect: The exemption disappears entirely once the rent reaches roughly double the ceiling (~11,300 NIS).10% Flat Rate (Maslul Asara Achuz):Rate: 10% on gross income.Cons: No deduction for mortgage interest or repairs.Pros: Simple, low rate for high-rent properties.Marginal Tax Track:Income is added to salary.Allows deductions (depreciation, interest).Logic: Only beneficial if the user has very low income or huge deductible expenses.263.3 Capital Gains: The "Real vs. Nominal" EngineThis is the most technically demanding part of the taxation logic, particularly for comparing "Real Estate Investment" vs. "S&P 500 Investment."Domestic Assets (Real Estate & Shekel Securities)The tax is 25% on Real Gain (Shevach Reali).Step 1: Calculate the Purchase Price adjusted for inflation (Linkage) to the date of sale.$$P_{indexed} = P_{purchase} \times \frac{CPI_{sale}}{CPI_{purchase}}$$Step 2: Calculate Real Gain.$$\text{Gain}_{real} = P_{sale} - P_{indexed}$$Step 3: Calculate Tax.$$\text{Tax} = \text{Gain}_{real} \times 25\%$$Implication: If inflation is high (e.g., 10%) and the asset appreciates by only 8%, the Real Gain is negative, and the tax is 0 NIS, even though there is a nominal profit. The simulator must correctly model this "Inflation Shield".28Foreign Securities (e.g., S&P 500 ETF)The logic flips for foreign assets held by individuals. The "Index" is the Exchange Rate, not the CPI.Tax: 25% on Real Gain, where "Real" is defined relative to the foreign currency.Calculation: The gain is calculated in the foreign currency (e.g., USD).$$\text{Gain}_{USD} = P_{sale\_USD} - P_{purchase\_USD}$$This gain is then converted to NIS and taxed.Forex Impact:If the Stock rises 10% but the USD falls 10% against the Shekel, the investor has roughly 0% NIS gain. The tax is generally calculated on the shekel value difference.Specific Rule: If the stock gain is positive, but the exchange rate creates a nominal Shekel loss, no tax is paid. Conversely, if the exchange rate rises, the "Inflationary" (forex) component of the gain is exempt for individuals (taxed at 0%), and only the equity gain is taxed at 25%.Simulator Logic: To be safe and conservative, the simulator should model a flat 25% tax on the Shekel-denominated gain, but sophisticated users need a toggle for "Forex Neutralization" if they hold eligible assets.9Section 4: Transaction Costs and Ancillary Fee StructuresA "True-to-Life" simulator must account for the friction costs that erode ROI. These fees are not negligible in Israel.4.1 Brokerage Fees (Dmei Tivuch)Standard: 2.0% + VAT (Total 2.34% at current 17% VAT).Buyer/Seller: In Israel, both sides often pay this fee. The simulator must apply this cost to the buyer's cash flow.Rentals: Standard fee is One Month's Rent + VAT.Scenario Toggle: In a "Buyer's Market," fees can drop to 1.5% or 1%. The simulator should allow a slider, defaulting to 2%.324.2 Legal Fees (Sachar Tircha Orech Din)Standard: 0.5% to 1.5% + VAT of the purchase price.Minimum: A floor of ~5,000 NIS + VAT is common for small apartments.Developer (Kablan) Purchase: Regulated cap of roughly 5,000 NIS + VAT for the developer's lawyer, plus the buyer's own lawyer fees.Simulator Input: Default to 0.75% + VAT for second-hand homes.344.3 Appraiser and Banking FeesAppraisal (Shamat): Early appraisal (private) costs 2,500 - 4,000 NIS. Bank-ordered appraisal (post-contract) is cheaper, ~600-1,000 NIS. The simulator should budget ~3,000 NIS for due diligence.File Opening (Ptichat Tik): Standardized at 360 NIS (often discounted).Non-Shekel Costs: For foreign currency loans, there are conversion margins/fees of ~0.5% - 1.0% that the simulator should highlight.354.4 Capital Market Fees (Alternative Investment)To compare real estate against the stock market, the simulator needs valid fee assumptions for Israeli financial products.Keren Sal (ETF): Management fees for Israeli-domiciled S&P 500 ETFs (e.g., iShares/BlackRock Israel capped products) average 0.59%. This is significantly higher than the 0.03% of US equivalents (VOO), affecting long-term compounding.Trading Fees: ~0.1% per trade on Israeli platforms.Simulator Default: A "Total Expense Ratio" of 0.7% per year is a realistic conservative assumption for the alternative investment track.36Section 5: Scenario Presets and User PersonasTo improve user experience, Tamheel should offer "One-Click" scenario configurations based on the validated historical eras. The following JSON-like structures define the validated inputs for these presets.Preset 1: "The 2024 Reality" (Base Case)Logic: Sticky inflation, high interest, stagnating real estate.Prime Rate: 6.0% (decreasing slowly to 5.0%).Inflation (CPI): 3.0% Annual.Housing Appreciation: 0.0% (National), -2.0% (Tel Aviv).S&P 500 Return: 8.0% (Nominal USD).USD/ILS: 3.75 (Stable).Preset 2: "Return to ZIRP" (Optimistic)Logic: Central banks conquer inflation, rates collapse.Prime Rate: 2.0%.Inflation (CPI): 1.0%.Housing Appreciation: 6.0% (Asset bubbles reinflate).S&P 500 Return: 10.0%.USD/ILS: 3.30 (Shekel strengthens).Preset 3: "Stagflation / Crisis" (Pessimistic)Logic: Geopolitical conflict persists, supply chains break.Prime Rate: 7.5% (BoI defends currency).Inflation (CPI): 5.0%.Housing Appreciation: -5.0% (Correction due to affordability crisis).S&P 500 Return: 4.0% (Global recession).USD/ILS: 4.20 (Shekel crash).Section 6: Simulator Algorithmic Requirements & Logic FlowThis section synthesizes the findings into a functional specification for the Tamheel calculation engine.6.1 The Monthly Calculation LoopThe simulator must iterate through $n$ months (e.g., 360). For each month $t$:Macro Update:Retrieve $\text{BoI Rate}_t$ from the active Scenario Preset.Set $\text{Prime}_t = \text{BoI}_t + 1.5\%$.Retrieve $\Delta CPI_t$ (Seasonality adjusted).Track Processing (Iterate per Track):If Track is Prime: Update Rate to $\text{Prime}_t$. Recalculate PMT on $P_{t-1}$.If Track is Linked (Katz/Mishtana):Update Principal: $P_{adj} = P_{t-1} \times (1 + \Delta CPI_t)$.Calculate Interest: $I = P_{adj} \times \frac{Rate}{12}$.Recalculate PMT or Index the PMT (depending on Spitzer implementation choice).If Track is Variable (Mishtana):Check if $t \% 60 == 0$ (5-year reset).If yes, update Rate to $\text{Anchor}_t + \text{Margin}$.Aggregation:Sum PMTs from all tracks = $\text{Total Monthly Payment}$.Check Compliance: Is $\text{Total PMT} > 40\% \times \text{Net Income}$? If yes, flag warning.Tax & Net Worth Update:Update Property Value: $V_t = V_{t-1} \times (1 + \text{Appreciation Rate})$.Update Alternative Investment Portfolio (S&P 500) considering taxation on gains if liquidated in month $t$.6.2 Data Sources IntegrationThe simulator should ideally ingest live API data for:BoI Interest Rate:(https://www.boi.org.il).CPI (Madad):(https://www.cbs.gov.il).Exchange Rates: Real-time USD/ILS.However, for the scope of a standalone tool, the Static Historical Series validated in Section 1 provide sufficient fidelity for projection, provided the user can override them with the "Scenario Presets."Conclusion and Strategic RecommendationsThe validation of assumptions for the Tamheel simulator confirms that generic financial modeling is insufficient for the Israeli market. The unique combination of Principal Linkage (Hatzmada), Purchase Tax Brackets (and their current freeze), and the Real vs. Nominal capital gains tax regime requires a specialized calculation engine.By implementing the logic detailed in this report—specifically the Prime = BoI + 1.5% mechanism, the Spitzer Linkage Order, and the 2025-2027 Tax Freeze—the Tamheel simulator will achieve a "True-to-Life" accuracy level that empowers users to make informed decisions in a complex economic environment. The inclusion of the identified Scenario Presets will further enhance the tool's utility, allowing users to move beyond static spreadsheets into dynamic risk management.Final Checklist for Developers:[ ] Hard-code the Purchase Tax Freeze through 2027.[ ] Implement the dual-layer Spitzer calculation (Link Principal $\rightarrow$ Calc Interest).[ ] Create the "Oleh" tax bracket toggle.[ ] Verify the "Floor" logic for deflationary CPI months (Principal does not drop below par).[ ] Populate the historical data tables for user reference.This report serves as the architectural blueprint for these features.
+9.
+ברור — מעכשיו **כל האסמכתאות/דאטה שאפשר** אני מביא *ממקורות בעברית* (בנק ישראל, הלמ״ס, GOV.IL/רשות המסים, ואתרי בנקים). איפה שאין מקור ישראלי “רשמי” (למשל S&P), אסמן **unknown** ואמליץ להפוך את זה ל־**בחירת מקור נתונים/קלט משתמש**.
+
+---
+
+## 1) סדרות היסטוריות (להחליף מערכים קשיחים ב־API/CSV)
+
+### 1.1 S&P returns (H_SP)
+
+* **מקור ישראלי רשמי:** **unknown** (בנק ישראל/הלמ״ס לא מספקים *תשואת Total Return* של S&P באופן רשמי לצרכי סימולטור).
+* **מה כן בעברית (אבל לא “רשמי”):** יש מקורות בעברית עם הורדת נתונים היסטוריים של המדד (למשל Investing/גלובס) — זה לרוב *מחיר* ולא בהכרח *Total Return*, וגם עלול להיות מוגבל רישוי. ([Investing.com Israel][1])
+* **המלצה לסימולטור:** להפוך ל־**בחירת מקור**:
+
+  1. **ETF proxy (עדיף)**: “Adjusted Close” של ETF (כולל דיבידנדים) + חישוב תשואה חודשית.
+  2. Index price-only (פחות מדויק לעושר).
+* **תדירות:** לעבור ל־**חודשי** (לא שנתי) כדי ליישר עם CPI/ריבית/תזרים.
+
+### 1.2 RE appreciation (H_RE)
+
+* **מקור רשמי בעברית:** “מדד מחירי הדירות” של הלמ״ס דרך API. ([Central Bureau of Statistics][2])
+* **חשוב מאוד לתיקוף:** המדד הוא **דו־חודשי**, ושלושת המדדים האחרונים **ארעיים ועשויים להתעדכן** (הלמ״ס אף מציינת שהצמדה לתקופה שעדיין ארעית אינה מומלצת). ([Central Bureau of Statistics][2])
+* **גאוגרפיה (ת״א/מחוז/ארצי):** צריך לבחור דרך קטלוג ה־API (לא לנחש).
+* **איך למשוך (CSV):**
+
+```text
+# קטלוג למציאת קוד מדד (כולל חיפוש):
+https://api.cbs.gov.il/index/catalog/tree?format=json&download=false&period=MQ&q=דירות
+
+# משיכת סדרה לפי קוד מדד (id):
+https://api.cbs.gov.il/index/data/price?id=<ID>&format=csv&download=true&startPeriod=01-2000&endPeriod=12-2025
+```
+
+ה־endpoints האלה מוגדרים רשמית בדף ה־API של הלמ״ס. ([Central Bureau of Statistics][2])
+
+### 1.3 USD/ILS (H_EX)
+
+* **מקור רשמי בעברית:** בנק ישראל “שערי חליפין יציגים” + שליפה ממאגר הסדרות (SDMX) כולל CSV. ([Bank of Israel][3])
+* **האם EOY או ממוצע?** זה חייב להיות בחירה. בבנק ישראל יש גם יכולת לבצע אגרגציה (למשל ממוצע חודשי) דרך פרמטרים.
+* **URL template רשמי (CSV) + דוגמת סדרה:** במסמך בנק ישראל מופיע פורמט ה־URL והסדרות לדוגמה `RER_GBP_ILS`; עבור דולר תשתמשו לרוב ב־`RER_USD_ILS`.
+
+דוגמה (CSV):
+
+```text
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv
+```
+
+### 1.4 CPI (H_CPI)
+
+* **מקור רשמי בעברית:** הלמ״ס API למדדי מחירים.
+* **תיקון מודל:** לשמור **רמת מדד** (Index level) ולגזור MoM/YoY, לא לשמור “שינוי חודשי” כמקור.
+* **איך למשוך (CSV):** ה־endpoint הרשמי הוא `/index/data/price` עם `id` של המדד. ([Central Bureau of Statistics][2])
+
+```text
+https://api.cbs.gov.il/index/data/price?id=<CPI_ID>&format=csv&download=true&startPeriod=01-2000&endPeriod=12-2025
+```
+
+(הלמ״ס מציגה דוגמה עם `id=120010`, אבל בסימולטור נכון יותר **למצוא את ה־id בקטלוג** ולא להניח). ([Central Bureau of Statistics][2])
+
+### 1.5 ריבית בנק ישראל + פריים (H_BOI)
+
+* **ריבית בנק ישראל (נוכחית):** בנק ישראל מציג גם באתר הבית וגם בהחלטה את הרמה **4.25% (החלטה 24/11/2025)**. ([Bank of Israel][4])
+* **API רשמי לריבית נוכחית:** `Boi.org.il/PublicApi/GetInterest` (מחזיר JSON עם currentInterest ותאריך החלטה הבא). ([Bank of Israel][5])
+* **פריים:** לבנק ישראל יש עמוד “ריבית ממוצעת בסיסית… (פריים)” כסדרה רשמית. ([Bank of Israel][6])
+  כלל האצבע “פריים = ריבית בנק ישראל + 1.5%” מופיע באופן עקבי באתרי בנקים גדולים (מקור בעברית). ([Mizrahi Tefahot][7])
+  **לסימולטור:** עדיף לחשב Prime כ־(BOI + 1.5) כברירת מחדל, אבל להשאיר **מרווח הפריים** כקלט משתמש.
+
+---
+
+## 2) תרחישי Bear/Base/Bull
+
+אלו **הנחות**, לא “נתונים”, אז אי אפשר “לאמת” כמו CPI. ההמלצה שלי:
+
+* להשאיר את כל שדות התרחיש **Editable**, ולהוסיף כפתור “כיול מהיסטוריה” שמחשב ממוצעים/סטיות תקן מהסדרות שנמשכו מהלמ״ס/בנק ישראל (CPI/HPI/ריבית/FX).
+* FX drift בפרט: להפוך ל־**קלט משתמש** (ברירת מחדל 0).
+
+---
+
+## 3) סליידרים וגבולות (מבנה עסקה)
+
+### 3.1 מקדמה מינ׳
+
+זה לא “טיפ שוק” — זו מגבלה רגולטורית:
+
+* דירה יחידה: **75% LTV** (מקדמה מינ׳ 25%)
+* דירה חליפית: **70% LTV** (מקדמה מינ׳ 30%)
+* דירה להשקעה: **50% LTV** (מקדמה מינ׳ 50%)
+  ולכן: **המינימום חייב להיות תלוי סוג רוכש** (דירה יחידה/משפר/משקיע).
+
+### 3.2 תקופת המשכנתא (10–30)
+
+כל-זכות מסכמת את הכלל: **לא תאושר משכנתא ליותר מ־30 שנים**. ([Kol Zchut][8])
+
+---
+
+## 4) מסלולי משכנתא וריביות (Prime / קל״צ / קצ״צ)
+
+**אל תעשו hardcode לריביות.** יש מקור רשמי בעברית:
+
+* בנק ישראל מפרסם “**הריבית הממוצעת על משכנתאות**” בתכיפות **חודשית**, כריבית **אפקטיבית שנתית**, ממוצע משוקלל של הלוואות חדשות, ויש קבצי אקסל מלאים מעודכנים. ([Bank of Israel][9])
+
+לכן:
+
+* **Kalatz 4.8% / Katz 3.2%:** לא ניתן “לאשר” בלי למשוך את טבלת בנק ישראל או לצטט הצעות בנקים (lender quotes). ברירת מחדל נכונה: **למשוך מבנק ישראל** לפי מסלול/צמוד/לא צמוד/תקופה. ([Bank of Israel][9])
+* Prime track spread/discount: להשאיר **כקלט משתמש** (כי משתנה לפי בנק/לקוח/LTV), אבל Prime עצמו אפשר לסנכרן.
+
+---
+
+## 5) מסים וספים
+
+### 5.1 מס על שכר דירה (תקרת פטור + מסלול 10%)
+
+* לפי GOV.IL (רשות המסים), קיים **מסלול מס מופחת 10%** לפי סעיף 122 לפקודה, בתנאים מסוימים. ([Gov.il][10])
+* לפי כל-זכות: בשנת 2025 פטור מלא עד **5,654 ₪ לחודש**, ופטור חלקי עד **11,308 ₪ לחודש** (נכון ל־2025), ויש כמה מסלולי מיסוי לבחירה. ([Kol Zchut][11])
+
+**תיקון למודל שלכם:** “10% מעל הסף” זה לא כלל אוטומטי; זה **מסלול בחירה**.
+
+### 5.2 מס רווחי הון 25% (ניירות ערך)
+
+* בנקים בישראל מציינים שככלל ינוכה מס במקור בשיעור **25%** ליחיד על הכנסות משוק ההון (רווח הון/דיבידנד/ריבית וכו’), לפי כללים. ([Mercantile Bank][12])
+  **לסימולטור:** להשאיר “25%” כברירת מחדל, אבל זה צריך להיות **Toggle + קלט** (כי יש חריגים, קיזוז הפסדים, מס ריאלי וכו’).
+
+### 5.3 נדל״ן (מס שבח/פטורים)
+
+כללי מס שבח ופטורים מורכבים; עבור “דירה יחידה” יש פטורים ותקרות – למשל כל-זכות מסכמת תנאים ותקרה לפטור לדירה יחידה. ([Kol Zchut][13])
+לכן: “25% קבוע” בנדל״ן = **לא נכון כקיבוע** → להפוך ל־**קלט משתמש + מצב ‘דירה יחידה/השקעה’**.
+
+---
+
+## 6) עמלות וחיכוך
+
+אין “נתון רשמי” אחד ל־ETF fee / עמלות מסחר / המרה. זה תלוי בית השקעות/חשבון.
+
+* להשאיר Management fee / Trade fee כקלט משתמש עם presets.
+
+---
+
+## 7) אופטימייזר ונעילות
+
+* טווחי החיפוש תקינים *רק אם* אתם מכבדים את מגבלות ה־LTV לפי סוג הרוכש (ואז “מקדמה מינ׳” משתנה).
+* Horizon locked ל־term: החלטת מוצר – סביר.
+
+---
+
+## 8) תזרים ושכ״ד
+
+* ה־CPI וה־HPI מגיעים מהלמ״ס; שימו לב ש־HPI **דו־חודשי וארעי** בחודשים האחרונים → רצוי להוסיף מצב “Known index vs Actual index” וגם להזהיר מפני שימוש בתקופה ארעית. ([Central Bureau of Statistics][2])
+* מס שכר דירה: מומלץ לחשב **חודשי** ולבחור מסלול (פטור/חלקי/10%/מדרגות). ([Kol Zchut][11])
+
+---
+
+## 9) Outputs & KPIs
+
+מומלץ להוסיף:
+
+* DSCR, מסלול LTV לאורך זמן, NPV/IRR, Cash-on-cash, ושיא Drawdown של רכיב שוק ההון (אם עוברים לחודשי).
+
+---
+
+## 10) ברירות מחדל מוצעות (יותר “ישראליות”)
+
+* Buyer type (דירה יחידה/חליפית/השקעה) — **חובה**, כי זה משפיע על מינימום מקדמה.
+* Down: דירה יחידה **25%** (לא 30% כברירת מחדל), משפר **30%**, משקיע **50%**.
+* Prime auto sync: (BOI + 1.5) כברירת מחדל, עם אפשרות לשנות את המרווח. ([Mizrahi Tefahot][7])
+* Rent tax: ברירת מחדל “פטור/חלקי לפי תקרה” + אפשרות לבחור מסלול 10% (לא “אוטומט מעל התקרה”). ([Kol Zchut][11])
+* קל״צ/קצ״צ: ברירת מחדל = **שאיבה מטבלת בנק ישראל** (לא מספר קשיח). ([Bank of Israel][9])
+
+---
+
+# מה צריך להיות **User-configurable** ולא קבוע
+
+* מקור תשואות S&P (ETF/Index/מטבע) + תדירות (חודשי מומלץ)
+* אזור נדל״ן (ארצי/מחוז ת״א/וכו’)
+* EOY vs Average ל־USD/ILS
+* מרווח/דיסקאונט על Prime
+* מסלולי מס שכר דירה (פטור/חלקי/10%/מדרגות) + עדכון תקרות
+* מס שבח/פטורים/מס רכישה (מודול נפרד, לא “2% קבוע”)
+
+---
+
+אם תדביק כאן את ה־arrays הקיימים (H_SP/H_RE/H_EX/H_CPI/H_BOI) או לפחות את **שנות ההתחלה/סוף + 5 ערכים ראשונים/אחרונים**, אני אמפה אחד־לאחד:
+
+* מה בדיוק הם משקפים (מחיר/Total Return, סוף שנה/ממוצע, בסיס מדד וכו’)
+* ואספק לכם **כתובות API מדויקות** + כללי המרה כדי להחליף אותם בנתונים חיים.
+
+[1]: https://il.investing.com/indices/us-spx-500-historical-data?utm_source=chatgpt.com "S&P 500 - נתונים היסטוריים"
+[2]: https://www.cbs.gov.il/he/Pages/%D7%9E%D7%93%D7%93%D7%99-%D7%9E%D7%97%D7%99%D7%A8%D7%99%D7%9D-%D7%91%D7%90%D7%9E%D7%A6%D7%A2%D7%95%D7%AA-API.aspx "
+
+                הלשכה המרכזית לסטטיסטיקה - מדדי מחירים באמצעות API
+
+"
+[3]: https://www.boi.org.il/roles/markets/exchangerates/?utm_source=chatgpt.com "שערי חליפין יציגים"
+[4]: https://www.boi.org.il/?utm_source=chatgpt.com "דף הבית | בנק ישראל - הבנק המרכזי של ישראל"
+[5]: https://boi.org.il/qawebsite/?utm_source=chatgpt.com "שאלות ותשובות על השימוש באתר החדש"
+[6]: https://www.boi.org.il/information/interestrates/primerates/?utm_source=chatgpt.com "ריבית ממוצעת בסיסית בחח\"ד (פריים)"
+[7]: https://www.mizrahi-tefahot.co.il/brokerage/index-table/?utm_source=chatgpt.com "ריבית פריים - ריביות ומדדי מחירים עדכניים | בנק ..."
+[8]: https://www.kolzchut.org.il/he/%D7%9E%D7%92%D7%91%D7%9C%D7%95%D7%AA_%D7%A2%D7%9C_%D7%9C%D7%A7%D7%99%D7%97%D7%AA_%D7%9E%D7%A9%D7%9B%D7%A0%D7%AA%D7%90?utm_source=chatgpt.com "מגבלות על לקיחת משכנתא (מושג) – כל-זכות"
+[9]: https://www.boi.org.il/information/interestrates/mortgage/ "הריבית הממוצעת על משכנתאות ומועדי פרסומם | בנק ישראל - הבנק המרכזי של ישראל"
+[10]: https://www.gov.il/he/pages/detail-tracks-payment-tax-relief-rental-apartments?chapterIndex=2&utm_source=chatgpt.com "מדריך לפירוט המסלולים לתשלום ולהקלות במס על הכנסה מהשכרת ..."
+[11]: https://www.kolzchut.org.il/he/%D7%A0%D7%99%D7%9B%D7%95%D7%99_%D7%9E%D7%A1_%D7%94%D7%9B%D7%A0%D7%A1%D7%94_%D7%9E%D7%93%D7%9E%D7%99_%D7%A9%D7%9B%D7%99%D7%A8%D7%95%D7%AA_%D7%A9%D7%9C_%D7%93%D7%99%D7%A8%D7%94_%D7%9C%D7%9E%D7%92%D7%95%D7%A8%D7%99%D7%9D?utm_source=chatgpt.com "ניכוי מס הכנסה מדמי שכירות של דירה למגורים (הליך) - Kolzchut.org.il"
+[12]: https://www.mercantile.co.il/private/investments-savings/taxation/securities-taxation/?utm_source=chatgpt.com "כדאי לדעת - מיסוי בניירות ערך"
+[13]: https://www.kolzchut.org.il/he/%D7%A4%D7%98%D7%95%D7%A8_%D7%9E%D7%9E%D7%A1_%D7%A9%D7%91%D7%97_%D7%91%D7%9E%D7%9B%D7%99%D7%A8%D7%AA_%D7%93%D7%99%D7%A8%D7%94_%D7%99%D7%97%D7%99%D7%93%D7%94?utm_source=chatgpt.com "פטור ממס שבח במכירת דירה יחידה (זכות)"
+
+10.
+קיבלתי — **לכל נתון “השקעה בישראל”** (מדד, דיור, ריביות בנק ישראל/משכנתאות, מסים, מט״ח) אני נשען מכאן והלאה **על מקורות בעברית**: בנק ישראל, הלמ״ס, gov.il / רשות המסים, ומסמכי בנקים/מחשבים רשמיים. (לנתוני S&P עצמם כמעט כל המקורות הראשוניים הם באנגלית — אבל כל מה שישראלי יהיה בעברית.)
+
+להלן כבר עכשיו “עוגנים” בעברית + איך למשוך כ־CSV/API, ומה לשים כ־*user input*:
+
+---
+
+## 1) USD/ILS (שער דולר/שקל יציג) – CSV/API בעברית
+
+בנק ישראל פרסם **מדריך בעברית לשליפת סדרות** ממאגר הסדרות (כולל דוגמאות ל־CSV ו־normalisefreq).
+
+דוגמאות URL (CSV) מתוך המדריך (להטמעה בסימולטור):
+
+```txt
+# סדרה יומית (דוגמה – החליפו ל-USD)
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv
+
+# טווח תאריכים יומי
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?startperiod=2008-01-01&endperiod=2008-12-31&format=csv
+
+# המרה לתדירות חודשית + ממוצע (normalisefreq)
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/RER_USD_ILS?format=csv&normalisefreq=M;mean
+```
+
+הערה תכנונית: אם אתם רוצים **H_EX שנתי** – הגדירו במפורש האם זה *ממוצע שנתי* (mean) או *סוף שנה* (lastperiod). המדריך מציין סוגי חישוב כמו `mean` / `lastperiod`.
+➡️ **המלצה**: להפוך את “סוג דגימה” (Average vs End-of-period) ל־*user input*.
+
+---
+
+## 2) CPI (מדד המחירים לצרכן) – בסיס המדד ומה “נכון”
+
+בלמ״ס (הודעות מדד) מצוין שהבסיס הוא **ממוצע 2022 = 100 נקודות**. ([Central Bureau of Statistics][1])
+בנוסף, דף ממשק ה־API של הלמ״ס בעברית מסביר איך לצרוך סדרות/מדדים בצורה אוטומטית (כולל דרישת User-Agent). ([Central Bureau of Statistics][2])
+
+➡️ מה זה אומר לסימולטור:
+
+* אם אצלכם `H_CPI` הוא “שינוי חודשי באחוזים” — עדיף לשמור מקור כ-**מדד רמה (index level)** ואז לחשב שינוי חודשי:
+  [
+  \Delta_t = \frac{Index_t}{Index_{t-1}} - 1
+  ]
+* “מדד ידוע/לא ידוע” (לצמודים) הוא נושא **חוזי/בנקאי** ולא רק סטטיסטי → אם אין לכם מקור חוזי חד-משמעי: **סמנו unknown והציגו כבחירה למשתמש** (Known vs Actual CPI timing).
+
+---
+
+## 3) מינימום הון עצמי (Down Payment) – רגולציה רשמית בעברית
+
+ב”הוראות ניהול בנקאי תקין” של בנק ישראל (מסמך 329) מופיעה מגבלת LTV:
+
+* דירה יחידה: **75%** מימון מקס’ ⇒ מינימום הון עצמי **25%**
+* דירה חלופית: **70%** ⇒ מינימום **30%**
+* דירה להשקעה: **50%** ⇒ מינימום **50%**
+
+➡️ לכן הסליידר שלכם “מינימום 25%” **נכון רק לדירה יחידה**; אם יש לכם מצב “משקיע/דירה נוספת” כדאי שה־min יתעדכן אוטומטית או שיהיה *user input* של “סוג רוכש”.
+
+---
+
+## 4) מס על שכ״ד – תקרת פטור מעודכנת בעברית (ולא 5,690)
+
+בלוח הניכויים החודשי של רשות המסים (gov.il) מופיעה לשנת 2025:
+**“תקרת הכנסה משכר דירה – פטור ממס 5,654 לחודש”**. ([Gov.il][3])
+➡️ כלומר ההנחה אצלכם **5,690** כנראה לא מעודכנת (לפחות ל־2025).
+
+הערת מודל: מסלול 10% ושיטות החישוב/תיאומים יכולים להיות תלויי תנאים. אם אתם לא מקודדים את כל החריגים – עדיף:
+
+* ערך תקרה = נשלף אוטומטית (לפי שנת מס)
+* “כללי החיוב” = *user input / advanced toggle* (כי זה נהיה מהר מורכב).
+
+---
+
+## 5) Prime (פריים) – מקור וסיכון בהנחת “BoI+1.5%”
+
+בנק ישראל מפרסם את **סדרת “ריבית ממוצעת בסיסית בחח״ד (פריים)”** ומתאר שהיא ממוצע חודשי משוקלל. ([Bank of Israel][4])
+לגבי הנוסחה: בפועל בישראל נהוג “ריבית בנק ישראל + 1.5%”, ומקורות בנקאיים בעברית מציינים זאת (למשל מזרחי טפחות). ([Mizrahi Tefahot][5])
+אבל שימו לב: בנק ירושלים מדגיש שהמרווח הוא החלטת בנקים ולא “נקבע” ע״י בנק ישראל (גם אם בפועל זה סביב 1.5%). ([בנק ירושלים][6])
+
+➡️ המלצה לסימולטור:
+
+* ברירת מחדל: **Prime = BoI + 1.5%**
+* אבל להשאיר **“מרווח פריים” כ־user input** (כי זה לא חוק טבע).
+
+---
+
+## 6) ריביות משכנתא ממוצעות (קל״צ/ק״צ/פריים וכו’) – מקור רשמי בעברית
+
+בנק ישראל מפעיל עמוד “הריבית הממוצעת על משכנתאות” עם הסבר שהריבית **אפקטיבית שנתית** ומחושבת כממוצע משוקלל על ההלוואות החדשות בחודש. ([Bank of Israel][7])
+בנוסף יש לבנק ישראל עמוד “השוואת ריביות – הלוואות למטרת מגורים” תחת תחום הריביות. ([Bank of Israel][8])
+
+➡️ המשמעות לפרמטרים כמו “קל״צ 4.8%” / “ק״צ ריאלי 3.2%”:
+
+* אפשר (ורצוי) למשוך **ממוצעים רשמיים חודשיים** מהנתונים של בנק ישראל, במקום לקבע מספר “אווירה”.
+* אם אתם לא מחברים API כרגע: סמנו את ברירת המחדל כ־**unknown** ותנו למשתמש לבחור/להזין.
+
+---
+
+### מה כבר אפשר “לתקן עכשיו” בלי עוד מידע מכם
+
+* **Rent tax threshold**: עדכון ל־**5,654 ₪/חודש (2025)** במקום 5,690. ([Gov.il][3])
+* **Down payment min**: לתמוך רגולטורית ב־25/30/50 בהתאם לסוג רוכש (יחידה/חלופית/השקעה).
+* **FX series**: למשוך מ־BoI SDMX כ־CSV (ולבחור במפורש avg vs end-of-period).
+* **CPI base**: לעבוד על בסיס **ממוצע 2022=100** ולחשב שינוי חודשי מהרמה. ([Central Bureau of Statistics][1])
+* **Prime spread**: ברירת מחדל 1.5% אבל להפוך להגדרת משתמש. ([Mizrahi Tefahot][5])
+
+---
+
+אם תרצו, בהודעה הבאה אני יכול כבר “למפות” את כל 10 הסעיפים שלכם אחד־אחד בפורמט טבלאי של: **הנחה → סטטוס (מאושר/מתוקן/unknown) → מקור בעברית → איך למשוך CSV/API → האם להפוך ל־user input** — פשוט קחו בחשבון שחלק מהסדרות (בעיקר הלמ״ס) דורשות מכם בחירת מזהה סדרה/טבלה ספציפית, ואת זה הכי נכון לקבע אחרי שמחליטים *איזה מדד בדיוק* אתם רוצים (כלל־ארצי/מחוז תל אביב/גוש דן וכו’).
+
+[1]: https://www.cbs.gov.il/he/mediarelease/Madad/DocLib/2023/227/10_23_227b.pdf?utm_source=chatgpt.com "מדדי המחירים לצרכן – מאי 2023"
+[2]: https://www.cbs.gov.il/he/Pages/%D7%9E%D7%9E%D7%A9%D7%A7-API.aspx "
+
+                הלשכה המרכזית לסטטיסטיקה - ממשק API
+
+"
+[3]: https://www.gov.il/BlobFolder/generalpage/income-tax-monthly-deductions-booklet/he/generalInformation_income-tax-monthly-deductions-booklet_monthly-deductions-booklet-2025.pdf "לוח ניכויים חודשי ינואר 2025"
+[4]: https://www.boi.org.il/information/interestrates/primerates/?utm_source=chatgpt.com "ריבית ממוצעת בסיסית בחח\"ד (פריים)"
+[5]: https://www.mizrahi-tefahot.co.il/brokerage/index-table/?utm_source=chatgpt.com "ריבית פריים - ריביות ומדדי מחירים עדכניים | בנק ..."
+[6]: https://www.bankjerusalem.co.il/deposits-savings/prime/?utm_source=chatgpt.com "מהי ריבית פריים: או מי מזיז את הפיקדון שלי?"
+[7]: https://www.boi.org.il/information/interestrates/mortgage/?utm_source=chatgpt.com "הריבית הממוצעת על משכנתאות ומועדי פרסומם"
+[8]: https://www.boi.org.il/information/interestrates/?utm_source=chatgpt.com "ריביות ועמלת פירעון מוקדם"
+
+11.
+And a very good one:
+מעולה — מקבל. להלן תיקוף/תיקון לכל ההנחות **עם מקורות בעברית לכל מה שקשור לישראל** (בנק ישראל/הלמ״ס/רשות המסים), ובכל מקום שאין לי דרך להביא מספר “שוק” רשמי/ממוצע נגיש־API אני מסמן **unknown** כדי שתחשפו למשתמש כ־input.
+
+---
+
+## 0) עיקרון על (כדי שהסימולטור יהיה “אמיתי”)
+
+במקום מערכים קשיחים: השתמשו ב־**API חי** לסדרות רשמיות:
+
+* **בנק ישראל**: מאגר סדרות Edge + API SDMX (כולל הורדה CSV + המרות תדירות/ממוצעים) ([Bank of Israel][1])
+* **הלמ״ס**: API למדדים (מדד מחירים לצרכן, מדדי נדל״ן וכו׳) ([CBS API][2])
+
+---
+
+## 1) Historical Series (H_SP, H_RE, H_EX, H_CPI, H_BOI)
+
+### 1.1 S&P returns (H_SP)
+
+**מה לתקן/לאשר**
+
+* אם אתם מדמים השקעה במדד: אתם צריכים **Total Return (כולל דיבידנדים)**, לא Price Return.
+* עדיף **חודשי** ולא שנתי, כי אצלכם יש תזרימים/משכנתא/שכ״ד חודשי.
+
+**מקורות/דאטה**
+
+* FRED מצהיר במפורש שה־S&P 500 שם הוא **Price Index ללא דיבידנדים** (כלומר לא TR). ([FRED][3])
+* דאטה חודשי כולל מחיר+דיבידנד (מאפשר לבנות TR) אצל Shiller (Yale). ([Shiller Data][4])
+* S&P Global: זהו גוף המקור למתודולוגיות אינדקס; TR מוגדר כ־Total Return Index (אך דאטה מלאה לעיתים ברישוי). ([S&P Global][5])
+
+**הנחה שלא ניתן לאמת בלי לראות את המערך שלכם**
+
+* תקופת השנים והאם הרשימה שלכם TR/PR: **unknown** (צריך metadata בתוך הקוד: startYear/endYear + flag TR/PR).
+
+**מה אני ממליץ ליישם**
+
+* לשמור **סדרה חודשית** (TR) ואז לגזור שנתית כשצריך.
+
+---
+
+### 1.2 RE appreciation (H_RE)
+
+**תיקון קריטי**
+אם ההנחה שלכם היא “ת״א/גוש דן” — זה לא יכול להיות “מדד כללי” בלי לבחור גיאוגרפיה.
+המקור הרשמי הנכון להתחלה הוא **מדד מחירי הדירות של הלמ״ס** (אפשר לעתים לפי מחוז/אזור אם ה־API תומך).
+
+**המלצה**
+
+* בסיס: **מדד מחירי הדירות (נומינלי)** + אופציה “ריאלי” ע״י דיפלציה עם CPI.
+* גיאוגרפיה: אם אין סדרה רשמית נגישה API “ת״א בלבד” אצלכם כרגע → **unknown** וחשפו “בחירת אזור” למשתמש (ארצי/מחוז/גוש דן אם קיים ב־API).
+
+**מקור API הלמ״ס למדדים** ([CBS API][2])
+
+---
+
+### 1.3 USD/ILS (H_EX)
+
+**מה לתקן/לאשר**
+
+* חשוב להחליט: **סוף שנה (EoY)** או **ממוצע שנתי**.
+
+  * לשווי נכס שמדווח “בנקודת זמן” → EoY / last business day
+  * לתזרימי שנה/שכר/צריכה → ממוצע שנתי
+* בבנק ישראל Edge אפשר לבצע המרה תדירות וממוצע דרך normalisefreq (כולל mean חודשי/שנתי). ([Bank of Israel][1])
+
+**יישום מומלץ**
+
+* לשמור daily “שער יציג” ואז להפיק:
+
+  * annual_avg = mean על שנה
+  * annual_eoy = הערך האחרון בשנה
+
+---
+
+### 1.4 CPI (H_CPI)
+
+**תיקון קריטי**
+
+* עדיף לשמור **רמת מדד** (Index level) ולא “שינוי חודשי” כערך ראשי. שינוי חודשי נגזר.
+* בסיס המדד בישראל מתעדכן תקופתית (למשל “בסיס 2024=100” מופיע בהקשרי מדדים חדשים). ([Bank of Israel][6])
+
+**מקור API הלמ״ס**
+
+* API למדדי מחירים (כולל CPI) ([CBS API][2])
+
+---
+
+### 1.5 BoI base rate (H_BOI) + Prime rule
+
+**מה לתקן/לאשר**
+
+* ריבית בנק ישראל היא החלטת הוועדה המוניטרית; לדוגמה באתר בנק ישראל: ב־24/11/2025 הוזכרה ריבית 4.25%. ([Bank of Israel][7])
+* “Prime” אצלכם: כלל שוק נפוץ הוא **ריבית בנק ישראל + 1.5%**, אבל זה *לא תמיד* מופיע כהגדרה אחת “רשמית” באותו דף. מקור בנקאי שמגדיר זאת במפורש: בנק הפועלים. ([משכנתאמן][8])
+* בנק ישראל מפרסם גם “ריבית ממוצעת בסיסית בחח״ד (פריים)” כנתון **ממוצע חודשי משוקלל לפי ימי תוקף**, על בסיס דיווחי הבנקים הגדולים. ([Bank of Israel][9])
+
+**המלצה**
+
+* בסימולטור: חשבו Prime = BoI_rate + 1.5% (ברירת מחדל), אבל השאירו “מרווח פריים” כ־user input (כי בבנקים זה לרוב P- משהו / P+ משהו לפי לקוח/סיכון).
+
+---
+
+## 2) Scenario Presets (Bear/Base/Bull)
+
+### 2.1 האם הסטים שלכם “ריאליסטיים”?
+
+בלי לכייל מול סדרות היסטוריות אמיתיות (SP TR / מדד דירות / CPI / ריבית) — זה נשאר “דעה”. לכן אני ממליץ:
+
+* להפיק presets מתוך **אחוזונים** של תשואות גלילה (rolling) על 10–20 שנים לכל סדרה.
+
+ועדיין, כדי שלא תישארו בלי מספרים:
+
+**הצעת presets (נומינלי, שנתי) — מומלץ כ־default אבל editable**
+
+* **Bear:** SP 4.5%, RE App 1.5%, Inf 3.2%, Mortgage Int 6.0%, Rent Yld 3.2%, FX drift +1.0% (USD מתייקר מול ₪)
+* **Base:** SP 7.0%, RE App 3.5%, Inf 2.1%, Mortgage Int 4.8%, Rent Yld 2.8%, FX drift 0.0%
+* **Bull:** SP 9.5%, RE App 5.5%, Inf 1.5%, Mortgage Int 3.8%, Rent Yld 2.5%, FX drift -0.5%
+
+**הערות ריאליזם (ישראל)**
+
+* תשואת שכ״ד “נורמלית” בישראל לעיתים נמוכה (יש מסמך כנסת שמציין סדר גודל ~2.6% בשנת 2023). ([Knesset][10])
+* ריבית בנק ישראל נכון ל־24/11/2025 היא 4.25% ולכן פריים “טכני” סביב 5.75% אם משתמשים בכלל +1.5%. ([Bank of Israel][7])
+
+### 2.2 Yield glide (Historic mode) 4.2% → 2.8% ל־20y
+
+זה **כמעט בטוח לא אוניברסלי**; תלוי סגמנט.
+המלצה:
+
+* אל תקבעו glide קשיח. עשו **Mean reversion**:
+
+  * target_yield = user-selected long-run yield (למשל 2.8%)
+  * speed = פרמטר (למשל half-life 7–10 שנים) → editable.
+
+### 2.3 FX drift
+
+FX drift הוא אחד הפרמטרים הכי “שובר סימולציה” ולכן חייב להיות **user-configurable**.
+הסטים שלכם (2.5 / -0.5 / -2.0) נראים אגרסיביים מדי כברירת מחדל. הייתי מצמצם לטווח סביב [-1%, +1.5%] עד שיש לכם כיול היסטורי אמיתי מתוך BoI.
+
+---
+
+## 3) Sliders & Bounds (Deal Structure)
+
+### 3.1 Down payment min 25%
+
+**נכון רק לדירה יחידה**. לפי הוראת בנק ישראל “מגבלות למתן הלוואות לדיור”:
+
+* דירה יחידה: LTV עד 75% (כלומר מינ’ הון עצמי 25%)
+* דירה חליפית: LTV עד 70%
+* דירה להשקעה: LTV עד 50% ([Bank of Israel][11])
+
+➡️ לכן: “מינימום down payment” צריך להיות נגזר מ־**סוג הרוכש** (דירה יחידה/חליפית/השקעה) ולא סליידר אחד קשיח.
+
+### 3.2 Mortgage term 10–30y
+
+מקסימום 30 שנים מופיע באותה הוראה. ([Bank of Israel][11])
+מינימום 10 זה בחירת UI (סביר). Step 1y סביר.
+
+### 3.3 Horizon
+
+Default=term locked זה בחירה טובה (רוב המשתמשים חושבים כך).
+אם unlock: 5–50y step 2 זה בסדר, אבל מומלץ step 1 או 5 כדי לא “לפספס” sweet spots.
+
+### 3.4 Costs: Buy 2%, Sell 2%, Maintenance/Vacancy 10%
+
+**זה חייב להתפצל**, אחרת זה לא “אמיתי” בישראל:
+
+* בקנייה יש רכיבים כבדים שהם *מיסים* (מס רכישה) ותלויים במעמד (דירה יחידה/משקיע), מחיר הדירה, מדרגות וכו׳ → **אין % אחד נכון**.
+* במכירה לרוב יש מתווך (~2%+מע״מ) *אם* משתמשים במתווך; לפעמים 0.
+* תחזוקה/ריקנות: משתנה לפי נכס/אזור/סיכון (5%–15% הגיוני).
+
+➡️ המלצה: להפוך ל־inputs:
+
+* Buy friction = (עו״ד, תיווך, שמאות, רישום) + **מס רכישה (מחושב לפי טבלאות/כללים)**
+* Sell friction = תיווך (on/off) + עו״ד + עלויות סגירה
+* OPEX/Vacancy = % מהשכ״ד + מינימום ₪ חודשי (אופציונלי)
+
+---
+
+## 4) Tamheel Tracks & Rates (Prime / קל״צ / ק״צ)
+
+### 4.1 Prime track spread (default)
+
+ה־Prime עצמו אפשר לחשב כ־BoI+1.5 כברירת מחדל ([משכנתאמן][8])
+אבל **המרווח שהבנק נותן בהצעת משכנתא הוא לא קבוע** ולכן: **unknown** כברירת מחדל אמיתית.
+
+הכי נכון מוצרית:
+
+* default spread = **user input** (למשל -0.5%) + כפתור “כיול לפי הצעה שקיבלתי”.
+
+### 4.2 קל״צ 4.8% / ק״צ ריאלי 3.2%
+
+בלי גישה לנתון ממוצע־שוק ב־API (או קו המשווה משכנתאות שאינו API פשוט אצלכם), זה: **unknown**.
+
+**מה כן יש רשמי**
+
+* בנק ישראל מפרסם עמוד “הריבית הממוצעת על משכנתאות”/מועדי פרסום — זה מקור נכון להתחבר אליו (גם אם תצטרכו ידנית להביא קובץ/קוד סדרה). ([Bank of Israel][12])
+
+### 4.3 Default mix ו־presets
+
+כדי להתיישר עם המגבלות הרגולטוריות:
+
+* יש מגבלה על חלק ההלוואה בריבית משתנה (כללי 2/3 ו־1/3). זה מופיע באותה הוראה. ([Bank of Israel][11])
+
+➡️ לכן גם “משקלים” צריכים להיות כפופים לחסם הזה; והמספרים הספציפיים שלכם לריביות הם **unknown** בלי מקור.
+
+---
+
+## 5) Taxes & Thresholds
+
+### 5.1 Rent tax threshold (שכר דירה למגורים)
+
+המספר 5,690 ₪ אצלכם **לא מאומת**.
+ב“חוברת הניכויים” (ינואר 2025, gov.il) מופיעה **תקרת פטור משכ״ד למגורים: 5,654 ₪ לחודש**. ([Gov.il][13])
+
+**כלל הצמדה**
+
+* ברמה הפרקטית זה מתעדכן **שנת מס** (לא “חודשי”), אז בסימולציה: threshold פר־שנה, ולא מדד־חודשי.
+
+### 5.2 “10% מעל התקרה”
+
+זה **לא נכון כמכניקה יחידה**. בישראל יש *מסלולים* (פטור/מס 10% על ברוטו/מס שולי עם הוצאות).
+אם אתם משאירים מודל פשוט: לפחות תציגו זאת כ־**Mode**:
+
+* Mode A: פטור + פטור מתקפל (R בין T ל־2T)
+* Mode B: 10% על ברוטו
+* Mode C: שולי (advanced) → אפשר future
+
+### 5.3 Capital gains tax 25% toggle
+
+* בנדל״ן זה בעצם “מס שבח”: מקורות “זכויות” מציינים 25% על **השבח הריאלי** (צמוד מדד) ([Kol Zchut][14])
+* בשוק ההון בישראל שיעור 25% נפוץ ליחיד תושב ישראל (עם חריגים), וברוב המקרים החישוב הוא על “רווח ריאלי” (CPI) בנכסים מסוימים; בניירות ערך זרים יש אלמנט מטבע. (מקור בנקאי מסכם היטב את הכללים.) ([Discount Bank][15])
+
+**חשוב להוסיף לסימולטור (2025+)**
+
+* מס יסף/היטל על הכנסות גבוהות יכול לחול על רווחי הון מעל ספים מסוימים; קיימת הוראת ביצוע רשמית בנושא. ([Gov.il][16])
+  ➡️ לכן toggle נכון יותר: “מס רווחי הון בסיסי” + “מס יסף (אם חל)”.
+
+### 5.4 Tax basis options
+
+מה שאתם מתארים (“Real vs CPI”, “Nominal vs USD”) — שימושי, אבל זה חייב להיות **מוגדר לפי נכס**:
+
+* נדל״ן: חישוב שבח ריאלי מול מדד (CPI) — כן.
+* נכס דולר/ETF זר: יש רכיב מטבע.
+  הייתי מציע להציג: “בסיס מס לפי: CPI / מטבע נכס / ללא התאמה” (Editable).
+
+---
+
+## 6) Fees & Friction (S&P mgmt, transaction, timing)
+
+* **0.15% דמי ניהול**: סביר כאומדן, אבל זה תלוי מוצר/ברוקר/עטיפה → עדיף user input.
+* **0.10% עמלת עסקה**: בישראל הרבה פעמים זו עמלת מינימום/פיקס ולא אחוז קבוע → ממליץ להפוך ל־(אחוז + מינימום ₪) כ־inputs.
+* “Trade fee רק על positive injections”: זה **הנחה התנהגותית**, לא ריאלית כברירת מחדל. נכון יותר:
+
+  * כל קנייה/מכירה של ני״ע משלמת עמלה לפי notional (או min/flat).
+
+---
+
+## 7) Optimizer & Locks
+
+הטווחים סבירים, אבל:
+
+* תבחרו “סוג רוכש” → זה ישנה את טווח ה־Down המותר (25/30/50 מינימום) לפי LTV רגולטורי. ([Bank of Israel][11])
+* Horizon locked=term כברירת מחדל: כן, זה user-friendly.
+
+---
+
+## 8) Cashflow & Rent Modeling
+
+* “שכ״ד נגזר מתשואה” — OK למודל בסיס, אבל עדיף:
+
+  * Rent(t) גדל עם CPI (או CPI + realRentGrowth) ולא “נדד יחד עם מחיר דירה”.
+* מס שכ״ד: threshold פר־שנה (ולא CPI חודשי) + מצב מס (פטור/10%/שולי). ([Gov.il][13])
+* CPI linkage במשכנתא צמודה: בלי מקור רגולטורי קצר־וקטור — מסמן **unknown** ברמת ה־“איזה מדד ידוע/פיגור” וממליץ להפוך ל־input: `indexLagMonths` (ברירת מחדל 2).
+
+---
+
+## 9) Outputs & KPIs
+
+ה־KPIs שלכם טובים. הייתי מוסיף (כמעט חובה במשכנתא/השכרה):
+
+* DSCR לאורך זמן
+* LTV path (עם/בלי עליית ערך)
+* IRR (לשתי אלטרנטיבות)
+* NPV (עם דיסקאונט rate)
+* Max drawdown / worst-year
+* Payback / cash-on-cash
+
+---
+
+## 10) Defaults to Verify (עדכון מומלץ)
+
+להלן “אימות/תיקון” לדיפולטים שלכם:
+
+* Down 30%: ✅ סביר כברירת מחדל, אבל חייב להיגזר מ־סוג רוכש (דירה יחידה/חליפית/השקעה) לפי 75/70/50 LTV. ([Bank of Israel][11])
+* Term 20y: ✅ נפוץ; מקסימום 30y רגולטורי. ([Bank of Israel][11])
+* Horizon locked: ✅
+* App 4%: ⚠️ סביר אבל תלוי סדרה (מדד דירות) → עדיף Base 3–4 ולהציע historic-mode עם הלמ״ס.
+* Yld 3.2%: ⚠️ ייתכן גבוה להרבה אזורי ביקוש; יש עדויות לתשואות סביב ~2.6% בתקופות מסוימות. ([Knesset][10])
+* SP 10%: ⚠️ גבוה כברירת מחדל; עדיף Base 7–8 נומינלי ולתת Bull 9–10 (וב־historic לקחת TR חודשי).
+* Int 4.25%: ❌ אם זה “ריבית משכנתא” זה לא זה; 4.25% הוא **ריבית בנק ישראל** (נכון ל־24/11/2025). ([Bank of Israel][7])
+* CPI 2.5%: ✅ סביר כ־base, אבל עדיף להאכיל מסדרת הלמ״ס.
+* Prime auto sync (BoI + 1.5%): ✅ כהנחת ברירת מחדל; מקור בנקאי תומך. ([משכנתאמן][8])
+* Mgmt fee 0.15%: ✅ אבל editable
+* Trade fee 0.1%: ✅ אבל עדיף אחוז+מינימום
+* Buy 2%, Sell 2%: ⚠️ לא ריאלי כמקשה אחת בישראל (בגלל מס רכישה/תיווך/וכו׳) → לפרק ל־inputs.
+* Maint 10%: ✅ כ־base שמרני; editable
+* Rent tax on: ✅ אבל המכניקה אצלכם חייבת לעבור ל־Modes, והסף לעדכון: 5,654 לחודש (2025). ([Gov.il][13])
+* Cap gains tax on: ✅ אבל להפריד: ני״ע (25% בסיסי) מול נדל״ן (מס שבח ריאלי) + מס יסף אם חל. ([Kol Zchut][14])
+
+---
+
+## “CSV/API” שאתם יכולים לחבר מיד (תבניות)
+
+(שימו ב־code כי אתם תעתיקו לקוד)
+
+```txt
+# בנק ישראל (Edge) – דוגמת הורדה CSV + המרות תדירות
+# (ראו מדריך של בנק ישראל להורדה/normalisefreq)
+https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/<FLOW>/<VERSION>/?...&format=csv
+
+# הלמ"ס – API למדדים (כולל CPI ומדדי נדל"ן)
+https://api.cbs.gov.il/index/
+```
+
+מקור למבנה/יכולות (CSV + normalisefreq וכו׳): ([Bank of Israel][1])
+
+---
+
+## מה חייב להיות User-configurable (ולא “קבוע בקוד”)
+
+במוצר ישראלי אמיתי, אלו חייבים להיות inputs:
+
+* סוג רוכש (דירה יחידה/חליפית/השקעה) ⇒ משנה LTV min/max ([Bank of Israel][11])
+* מס רכישה ומס שבח (לפחות toggles/מצבים)
+* מרווחי ריבית פריים/קל״צ/ק״צ (כי זה הצעת בנק בפועל) — **unknown**
+* FX drift, rent growth, vacancy/OPEX
+* משטר מס שכ״ד (פטור/10%/שולי) + תקרות שנתיות ([Gov.il][13])
+
+---
+
+אם תרצו, בפנייה הבאה הדביקו את 5 המערכים הקשיחים שלכם (H_SP/H_RE/H_EX/H_CPI/H_BOI) כמו שהם — ואני אשווה אל מול המקורות והסדרות הרשמיות ואחזיר לכם:
+
+* “השנים שהמערך מכסה”
+* “האם זה TR/PR/נומינלי/ריאלי”
+* ו־CSV תואם לפורמט שהסימולטור שלכם מצפה (columns + dates).
+
+[1]: https://www.boi.org.il/media/ljsokufq/%D7%9E%D7%93%D7%A8%D7%99%D7%9A-%D7%9C%D7%A9%D7%9C%D7%99%D7%A4%D7%AA-%D7%A1%D7%93%D7%A8%D7%95%D7%AA-%D7%9E%D7%9E%D7%90%D7%92%D7%A8-%D7%94%D7%A1%D7%93%D7%A8%D7%95%D7%AA-%D7%94%D7%97%D7%93%D7%A9-%D7%94%D7%93%D7%92%D7%9E%D7%94-%D7%A2%D7%9C-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A9%D7%A2%D7%A8%D7%99-%D7%97%D7%9C%D7%99%D7%A4%D7%99%D7%9F-%D7%99%D7%A6%D7%99%D7%92%D7%99%D7%9D.pdf?utm_source=chatgpt.com "הדגמה על נתוני שערי חליפין יציגים"
+[2]: https://api.cbs.gov.il/index/data/price?download=false&format=xml&id=120010&utm_source=chatgpt.com "https://api.cbs.gov.il/index/data/price?id=120010&format= ..."
+[3]: https://fred.stlouisfed.org/series/SP500?utm_source=chatgpt.com "S&P 500 (SP500) | FRED | St. Louis Fed"
+[4]: https://shillerdata.com/?utm_source=chatgpt.com "Shiller Data"
+[5]: https://www.spglobal.com/spdji/en/indices/equity/sp-500/?utm_source=chatgpt.com "S&P 500® | S&P Dow Jones Indices"
+[6]: https://www.boi.org.il/media/jnglq52x/%D7%99%D7%99%D7%A9%D7%95%D7%9D-%D7%AA%D7%A7%D7%9F-%D7%91%D7%99%D7%9F-%D7%9C%D7%90%D7%95%D7%9E%D7%99-sdmx-%D7%9C%D7%90%D7%A4%D7%99%D7%95%D7%9F-%D7%9E%D7%99%D7%93%D7%A2-%D7%A1%D7%98%D7%98%D7%99%D7%A1%D7%98%D7%99.pdf?utm_source=chatgpt.com "( באפיון מידע SDMX )י לאומ - יישום תקן בין סטטיסטי"
+[7]: https://www.boi.org.il/?utm_source=chatgpt.com "דף הבית | בנק ישראל - הבנק המרכזי של ישראל"
+[8]: https://mashcantaman.co.il/%D7%A8%D7%99%D7%91%D7%99%D7%AA-%D7%9E%D7%A9%D7%9B%D7%A0%D7%AA%D7%90-%D7%9E%D7%9E%D7%95%D7%A6%D7%A2%D7%AA/?utm_source=chatgpt.com "ריבית משכנתא ממוצעת היום - לחצו לצפיה בנתון הרשמי"
+[9]: https://www.boi.org.il/information/interestrates/primerates/ "ריבית ממוצעת בסיסית בחח\"ד (פריים) | בנק ישראל - הבנק המרכזי של ישראל"
+[10]: https://fs.knesset.gov.il/globaldocs/MMM/787f33ac-56d6-ee11-8162-005056aa4246/2_787f33ac-56d6-ee11-8162-005056aa4246_11_20517.pdf?utm_source=chatgpt.com "מיסוי הכנסות משכר דירה והחלת חובת דיווח"
+[11]: https://boi.org.il/media/4cuhemz3/h2559.pdf "Microsoft Word - h2559.docx"
+[12]: https://www.boi.org.il/information/interestrates/mortgage/?utm_source=chatgpt.com "הריבית הממוצעת על משכנתאות ומועדי פרסומם"
+[13]: https://www.gov.il/BlobFolder/generalpage/income-tax-monthly-deductions-booklet/he/generalInformation_income-tax-monthly-deductions-booklet_monthly-deductions-booklet-2025.pdf "לוח ניכויים חודשי ינואר 2025"
+[14]: https://www.kolzchut.org.il/he/%D7%A9%D7%90%D7%9C%D7%95%D7%AA_%D7%95%D7%AA%D7%A9%D7%95%D7%91%D7%95%D7%AA_%D7%91%D7%A0%D7%95%D7%A9%D7%90_%D7%9E%D7%A1_%D7%A9%D7%91%D7%97?utm_source=chatgpt.com "שאלות ותשובות בנושא מס שבח"
+[15]: https://www.discountbank.co.il/private/savings-investments/securities-taxation/updates/?utm_source=chatgpt.com "מיסוי ניירות ערך"
+[16]: https://www.gov.il/BlobFolder/policy/inst-05-2025/he/IncomeTax_inst-05-2025.pdf?utm_source=chatgpt.com "הוראת ביצוע מס יסף - Gov.il"

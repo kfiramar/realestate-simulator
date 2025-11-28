@@ -1,0 +1,115 @@
+/**
+ * @jest-environment jsdom
+ */
+
+const fs = require('fs');
+const path = require('path');
+const Logic = require('../src/logic.js');
+
+// Mock Globals
+global.window = window;
+global.document = window.document;
+global.Logic = Logic;
+global.Chart = class { constructor() {} destroy() {} resize() {} update() {} };
+
+const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
+
+describe('Surplus Logic: Integration & Math', () => {
+    
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <input id="inpEquity" value="1000000">
+            <input id="rDown" value="80">
+            <input id="rDur" value="30">
+            <input id="rHor" value="30">
+            <input id="sInt" value="2.0">
+            <input id="sSP" value="10">
+            <input id="sApp" value="0">
+            <input id="sInf" value="0">
+            <input id="sYld" value="10.0">
+            
+            <input id="rBuyCost" value="0"><input id="rMaint" value="0"><input id="rSellCost" value="0"><input id="rTrade" value="0"><input id="rMer" value="0">
+            <input id="pctPrime" value="100"><input id="ratePrime" value="2.0"><input id="termPrime" value="30">
+            <input id="pctKalats" value="0"><input id="rateKalats" value="0"><input id="termKalats" value="30">
+            <input id="pctKatz" value="0"><input id="rateKatz" value="0"><input id="termKatz" value="30">
+            
+            <!-- Pills -->
+            <div id="surplusPills">
+                <div id="surplusConsume"></div>
+                <div id="surplusMatch"></div>
+                <div id="surplusInvest"></div>
+            </div>
+            <div id="surplusDesc"></div>
+            
+            <input type="checkbox" id="cTax">
+            <input type="checkbox" id="cRentTax">
+            
+            <div id="dDown"></div><div id="dDur"></div><div id="dHor"></div><div id="vTrade"></div><div id="vMer"></div>
+            <div id="vBuyCost"></div><div id="vMaint"></div><div id="vSellCost"></div><div id="valAsset"></div><div id="valLev"></div><div id="barLev"></div>
+            <div id="kRE"></div><div id="kSP"></div><div id="kRECagr"></div><div id="kSPCagr"></div><div id="kInt"></div><div id="kRent"></div><div id="kDiff"></div><div id="valMixSum"></div>
+            <div id="scenBear" class=""></div><div id="scenBase" class=""></div><div id="scenBull" class=""></div><div id="pGlobal"><div></div><div></div></div><div id="scenBox"></div>
+            <div id="btnCurr"></div><div id="btnPct"></div><div id="equityBox"></div><div id="pHor"><div></div><div></div></div><div id="bHor"></div>
+            <div id="infMeter"><div></div><div></div><div></div></div><div id="txReal"></div><div id="txForex"></div><div id="spotDown"></div><div id="spotDur"></div><div id="spotHor"></div>
+            <canvas id="wealthChart"></canvas><canvas id="flowChart"></canvas>
+            <div id="vSP"></div><input id="bSP"><div id="vApp"></div><input id="bApp"><div id="vInt"></div><input id="bInt"><div id="vInf"></div><input id="bInf"><div id="vYld"></div><input id="bYld">
+            <div id="pSP"><div></div><div></div></div><div id="pApp"><div></div><div></div></div><div id="pInt"><div></div><div></div></div><div id="pInf"><div></div><div></div></div><div id="pYld"><div></div><div></div></div>
+        `;
+        eval(appJsContent);
+    });
+
+    test('Auto-Invest increases RE Net Wealth vs Consume', () => {
+        // 1. Consume
+        window.setSurplusMode('consume');
+        window.runSim();
+        const snapConsume = window.__lastSim;
+        
+        // 2. Invest
+        window.setSurplusMode('invest');
+        window.runSim();
+        const snapInvest = window.__lastSim;
+        
+        expect(snapInvest.reSideStockValue).toBeGreaterThan(0);
+        expect(snapConsume.reSideStockValue).toBe(0);
+        expect(snapInvest.finalNetRE).toBeGreaterThan(snapConsume.finalNetRE);
+    });
+
+    test('Match S&P Mode reduces S&P Value', () => {
+        window.setSurplusMode('consume');
+        window.runSim();
+        const snapConsume = window.__lastSim;
+        
+        window.setSurplusMode('match');
+        window.runSim();
+        const snapMatch = window.__lastSim;
+        
+        expect(snapMatch.spValueHedged).toBeLessThan(snapConsume.spValueHedged);
+    });
+
+    test('Manual Math Verify: Surplus Compounding', () => {
+        // Manual calculation of 12 months of 12,000 surplus at 12% annual return
+        const mRate = Math.pow(1.12, 1/12) - 1;
+        const monthlySurplus = 12000;
+        let expectedVal = 0;
+        for(let i=0; i<12; i++) {
+            expectedVal += monthlySurplus;
+            expectedVal *= (1+mRate);
+        }
+        
+        // Use calcCAGR directly to isolate math
+        const res = Logic.calcCAGR(
+            1200000, 1.0, 20, 1, // 1 Year
+            false, 0, 0, 'hedged', 'real',
+            {SP:{is:false}, App:{is:false}, Int:{is:false}, Inf:{is:false}, Yld:{is:false}},
+            {SP:0.12, App:0, Int:0, Inf:0, Yld:0.12, RateP:0, RateK:0, RateZ:0},
+            false,
+            {prime:0, kalats:0, katz:0},
+            0, 0, 0, 0, true // Invest Surplus = TRUE
+        );
+        
+        const finalEq = (1 + res/100) * 1200000;
+        const sideVal = finalEq - 1200000;
+        
+        expect(sideVal).toBeCloseTo(expectedVal, 0);
+    });
+
+});
