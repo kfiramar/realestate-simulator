@@ -16,8 +16,13 @@ describe('Sweet spot positioning', () => {
 
         global.updateSweetSpots();
 
-        const downPos = parseFloat(document.getElementById('spotDown').style.left);
-        const durPos = parseFloat(document.getElementById('spotDur').style.left);
+        const parseLeft = el => {
+            const raw = el.style.left || '';
+            const match = raw.match(/([0-9.]+)%/);
+            return match ? parseFloat(match[1]) : NaN;
+        };
+        const downPos = parseLeft(document.getElementById('spotDown'));
+        const durPos = parseLeft(document.getElementById('spotDur'));
 
         const expectedDown = ((50 - 25) / 75) * 100;
         const expectedDur = ((18 - 10) / 20) * 100;

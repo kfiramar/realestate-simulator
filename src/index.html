@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Investment Dashboard (V25 - Fixed)</title>
+    <title>Brickfolio</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
 <header>
-    <h1>Investment Simulator <span class="version-badge">V25</span></h1>
+    <h1>Brickfolio <span class="version-badge">BETA</span></h1>
     <div class="view-toggles">
         <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')">₪ Value</div>
         <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')">% ROI</div>
@@ -173,11 +174,11 @@
                         <span class="card-lbl">Rent Surplus</span>
                         <div style="display:flex; flex-direction:column; width:60%;">
                             <div class="pills" id="surplusPills" style="width:100%;">
-                                <div class="pill active" id="surplusInvest" onclick="setSurplusMode('invest')" style="flex:1; text-align:center;">Reinvest</div>
+                                <div class="pill" id="surplusInvest" onclick="setSurplusMode('invest')" style="flex:1; text-align:center;">Reinvest</div>
                                 <div class="pill" id="surplusConsume" onclick="setSurplusMode('consume')" style="flex:1; text-align:center;">Pocket</div>
-                                <div class="pill" id="surplusMatch" onclick="setSurplusMode('match')" style="flex:1; text-align:center;">Match</div>
+                                <div class="pill active" id="surplusMatch" onclick="setSurplusMode('match')" style="flex:1; text-align:center;">Match</div>
                             </div>
-                            <div id="surplusDescText" class="card-sub" style="margin-top:4px; text-align:right; font-size:0.65rem;">Maximize Wealth: Buy stocks with profit</div>
+                            <div id="surplusDescText" class="card-sub" style="margin-top:4px; text-align:right; font-size:0.65rem;">Sells S&P 500 to match rent surplus cashflow</div>
                         </div>
                     </div>
                 </div>

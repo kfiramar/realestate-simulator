@@ -20,12 +20,17 @@ describe('Sweet spot arrows respect locks', () => {
         global.updateSweetSpots();
 
         // Arrow position for down should stay at locked value
-        const downPos = parseFloat(document.getElementById('spotDown').style.left);
+        const parseLeft = el => {
+            const raw = el.style.left || '';
+            const match = raw.match(/([0-9.]+)%/);
+            return match ? parseFloat(match[1]) : NaN;
+        };
+        const downPos = parseLeft(document.getElementById('spotDown'));
         const expectedDown = ((40 - 25) / 75) * 100;
         expect(Math.abs(downPos - expectedDown)).toBeLessThan(1);
 
         // Term arrow should move toward 15 years (within slider range)
-        const termPos = parseFloat(document.getElementById('spotDur').style.left);
+        const termPos = parseLeft(document.getElementById('spotDur'));
         const expectedTerm = ((15 - 10) / 20) * 100;
         expect(Math.abs(termPos - expectedTerm)).toBeLessThan(5);
 

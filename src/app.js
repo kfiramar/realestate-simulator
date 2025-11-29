@@ -109,17 +109,18 @@ function applyTamheel(type) {
 }
 function refreshRatesForProfile() {
     // Rates follow unified anchors (BoI + tier spreads), independent of Tamheel mix selection
-    const tier = getCreditTier(creditScore);
+    const tier = getCreditTier(parseInt(creditScore, 10));
     const base = parseFloat(document.getElementById('sInt').value) || 4.25;
     const primeEl = document.getElementById('ratePrime');
     const kalatsEl = document.getElementById('rateKalats');
     const katzEl = document.getElementById('rateKatz');
-    const spreadP = tier.spreadPrime;
-    const spreadK = tier.spreadKalatz;
-    const spreadZ = tier.spreadKatz;
-    if (primeEl && spreadP !== null) primeEl.value = (base + spreadP).toFixed(2);
-    if (kalatsEl && spreadK !== null) kalatsEl.value = (base + spreadK).toFixed(2);
-    if (katzEl && spreadZ !== null) katzEl.value = (base + spreadZ).toFixed(2);
+    // Fallback anchors if tier is reject/null spreads
+    const spreadP = tier.spreadPrime !== null ? tier.spreadPrime : 1.5;
+    const spreadK = tier.spreadKalatz !== null ? tier.spreadKalatz : 0.65;
+    const spreadZ = tier.spreadKatz !== null ? tier.spreadKatz : -1.15;
+    if (primeEl) primeEl.value = (base + spreadP).toFixed(2);
+    if (kalatsEl) kalatsEl.value = (base + spreadK).toFixed(2);
+    if (katzEl) katzEl.value = (base + spreadZ).toFixed(2);
 }
 function setCreditScore(v) {
     creditScore = parseInt(v, 10) || creditScore;
@@ -151,7 +152,7 @@ function setGlobalMode(isHist) {
     document.getElementById('scenBox').classList.toggle('show', !isHist);
     for(let k in cfg) { tgl(k, isHist); }
 }
-function applyScenario(type) {
+function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
     document.getElementById('sSP').value = s.sp;
     document.getElementById('sApp').value = s.app;
@@ -163,9 +164,12 @@ function applyScenario(type) {
     document.getElementById('scenBase').classList.toggle('active', type==='base');
     document.getElementById('scenBull').classList.toggle('active', type==='bull');
 
-    refreshRatesForProfile(); // Rates follow base + spread + credit tier
+    // Reprice with credit tier and base-rate changes
+    refreshRatesForProfile();
+    updateCreditUI();
+    applyLtvCaps();
     updMeter();
-    runSim();
+    if (!opts.skipSim) runSim();
 }
 function tglHor(isAuto) {
     horMode = isAuto ? 'auto' : 'custom';
@@ -326,16 +330,16 @@ function syncPrime() {
 }
 
 // Global Surplus Mode State
-let surplusMode = 'invest'; 
+let surplusMode = 'match'; 
 
 function setSurplusMode(m) {
     surplusMode = m;
-    
+
     // Update UI
     document.getElementById('surplusConsume').classList.toggle('active', m==='consume');
     document.getElementById('surplusMatch').classList.toggle('active', m==='match');
     document.getElementById('surplusInvest').classList.toggle('active', m==='invest');
-    
+
     // Update Description
     const descEl = document.getElementById('surplusDescText') || document.getElementById('surplusDesc');
     if (descEl) {
@@ -343,7 +347,7 @@ function setSurplusMode(m) {
         else if(m === 'consume') descEl.innerText = "Keeps rent surplus as cash (Uninvested)";
         else if(m === 'match') descEl.innerText = "Sells S&P 500 to match rent surplus cashflow";
     }
-    
+
     runSim();
 }
 
@@ -356,7 +360,7 @@ function updateSweetSpots() {
     let useRentTax = document.getElementById('cRentTax') ? document.getElementById('cRentTax').checked : false;
     let tradeFee = parseFloat(document.getElementById('rTrade').value)/100;
     let merFee = parseFloat(document.getElementById('rMer').value)/100;
-    
+
     let buyCostPct = parseFloat(document.getElementById('rBuyCost').value)/100;
     let maintPct = parseFloat(document.getElementById('rMaint').value)/100;
     let sellCostPct = parseFloat(document.getElementById('rSellCost').value)/100;
@@ -405,7 +409,17 @@ function updateSweetSpots() {
         cfg,
         exMode,
         taxMode,
-        calcOverride: window.__calcCagrOverride || undefined,
+        calcOverride: ((eqI, dPct, tYears, simH, useTaxI, tradeFeeI, merFeeI, exModeI, taxModeI, cfgI, overridesI, useRentTaxI, mixI, buyCostPctI, maintPctI, sellCostPctI, driftI, surplusModeI) => {
+            if (typeof window !== 'undefined' && typeof window.__calcCagrOverride === 'function') {
+                return window.__calcCagrOverride(eqI, dPct, tYears, simH, useTaxI, tradeFeeI, merFeeI, exModeI, taxModeI, cfgI, overridesI, useRentTaxI, mixI, buyCostPctI, maintPctI, sellCostPctI, driftI, surplusModeI);
+            }
+            // Pure numeric ROI gap: RE CAGR vs SP CAGR proxy
+            const reCagr = AppLogic.calcCAGR(eqI, dPct, tYears, simH, useTaxI, tradeFeeI, merFeeI, exModeI, taxModeI, cfgI, overridesI, useRentTaxI, mixI, buyCostPctI, maintPctI, sellCostPctI, driftI, surplusModeI);
+            const spCagr = ((overridesI.SP || 0) - (merFeeI || 0)) * 100;
+            const diff = reCagr - spCagr;
+            // Minimize absolute gap; tiny nudge if RE leads
+            return -Math.abs(diff) + (diff > 0 ? 0.0001 : 0);
+        }),
         surplusMode
     });
 
@@ -413,17 +427,17 @@ function updateSweetSpots() {
     const downMax = 100;
 
     let posDown = ((best.d - downMin) / (downMax - downMin)) * 100;
-    document.getElementById('spotDown').style.left = `${posDown}%`;
+    document.getElementById('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
     document.getElementById('spotDown').classList.add('visible');
 
     let posDur = ((best.t - 10) / (30 - 10)) * 100;
-    document.getElementById('spotDur').style.left = `${posDur}%`;
+    document.getElementById('spotDur').style.left = `calc(${posDur}% + (8px - (0.16px * ${posDur})))`;
     document.getElementById('spotDur').classList.add('visible');
 
     if (horMode === 'custom' || lockHor) {
         let posHor = ((best.h - 5) / (50 - 5)) * 100;
         let spotH = document.getElementById('spotHor');
-        spotH.style.left = `${posHor}%`;
+        spotH.style.left = `calc(${posHor}% + (8px - (0.16px * ${posHor})))`;
         spotH.classList.add('visible');
         spotH.title = `Best CAGR at ${best.h} Years`;
     } else {
@@ -450,7 +464,7 @@ function runSim(opts = {}) {
     let buyCostPct = parseFloat(document.getElementById('rBuyCost').value)/100;
     let maintPct = parseFloat(document.getElementById('rMaint').value)/100;
     let sellCostPct = parseFloat(document.getElementById('rSellCost').value)/100;
-    
+
     // Logic Update: Use Global State
     const useSPWithdrawal = (surplusMode === 'match');
     const autoInvestSurplus = (surplusMode === 'invest');
@@ -492,7 +506,7 @@ function runSim(opts = {}) {
             }
         }
     }
-    
+
     let initialLoan = assetPriceStart - eq;
     const valMortgageEl = document.getElementById('valMortgage');
     if (valMortgageEl) valMortgageEl.innerText = fmt(initialLoan)+' ₪';
@@ -540,6 +554,7 @@ function runSim(opts = {}) {
     let firstPosMonth = null;
 
     let labels=[], reDataPct=[], spDataPct=[], reDataVal=[], spDataVal=[];
+    let surplusValSeries=[], surplusPctSeries=[];
     let flowMort=[], flowRent=[], flowNet=[], flowInt=[], flowPrinc=[];
     let loanMonths = mortDur * 12;
     let cpiIndex = 1.0;
@@ -594,7 +609,7 @@ function runSim(opts = {}) {
         simDur = effectiveMax;
     }
 
-    updateSweetSpots();
+    if (!opts.skipSweetSpots) updateSweetSpots();
 
     let taxThresholdBase = 5654;
 
@@ -604,7 +619,7 @@ function runSim(opts = {}) {
 
     let currentEx = startEx;
     let mDrift = Math.pow(1 + (activeDrift/100), 1/12) - 1;
-    
+
     // Track status for UI
     let isCashflowPositive = false;
 
@@ -684,12 +699,12 @@ function runSim(opts = {}) {
 
             totalRentCollected += netRent;
             let oop = pmtTotal - netRent;
-            
+
             // Check Initial Status
             if (y===0 && m===0) {
                 isCashflowPositive = oop < 0;
                 const pillsEl = document.getElementById('surplusPills');
-                
+
                 // Update Start Cashflow Metric
                 const startCF = -oop;
                 const cfEl = document.getElementById('valCashflow');
@@ -697,7 +712,7 @@ function runSim(opts = {}) {
                     cfEl.innerText = (startCF >= 0 ? '+' : '') + fmtNum(startCF) + ' ₪';
                     cfEl.style.color = startCF >= 0 ? '#16a34a' : '#ef4444';
                 }
-                
+
                 // Always enable pills so user can plan for future surplus
                 if (pillsEl) {
                     pillsEl.style.opacity = "1";
@@ -713,13 +728,13 @@ function runSim(opts = {}) {
             if(oop > 0) { spInvestedILS += oop; totalCashInvested += oop; }
 
             spBasisLinked *= (1+mInf);
-            
+
             // --- SURPLUS / S&P LOGIC ---
-            
+
             // 1. Handle Surplus (oop < 0)
             if (oop < 0) {
                 const surplus = Math.abs(oop);
-                
+
                 if (autoInvestSurplus) {
                     // THE FIX: Invest in RE-Side Stock Portfolio
                     // RE Investor keeps cash, pays trade fee, buys S&P
@@ -733,17 +748,17 @@ function runSim(opts = {}) {
                     // So if oop < 0 (Surplus), both sides effectively save it.
                     // But since the S&P side *is* the Savings account, it stays in the S&P.
                     // The logic for S&P side: It naturally keeps its capital if we don't withdraw.
-                    
+
                     // Current logic below handles S&P side:
                     // If oop < 0, and useSPWithdrawal=false... S&P side keeps the money.
                     // So we just need to make sure RE side *also* gets the asset.
-                    
+
                     // reset oop to 0 for the "Matching" logic below, so we don't trigger basis reduction
-                    // oop = 0; 
+                    // oop = 0;
                     // Actually, if we don't touch oop, the block below "if(oop < 0)" handles basis.
                     // If we invest surplus, we act as if we consumed it? No.
                     // We treat it as accumulation.
-                    
+
                 } else if (useSPWithdrawal) {
                     // Sell S&P to match consumption
                     const grossTarget = surplus / (1 - tradeFee);
@@ -775,11 +790,11 @@ function runSim(opts = {}) {
                 if(exMode === 'hedged') spValueHedged += netInject;
                 else spUnits += (netInject / currentEx);
             }
-            
+
             // 3. Grow Portfolios
             if(exMode === 'hedged') spValueHedged *= (1+mSP);
             else spUnits *= (1+mSP);
-            
+
             reSideStockValue *= (1+mSP);
 
             if(firstPosMonth === null && oop < 0) {
@@ -794,13 +809,13 @@ function runSim(opts = {}) {
                 flowNet.push( yrNet/12 );
 
                 let exitVal = assetVal * (1 - sellCostPct);
-                
+
                 // Tax on RE Side Stock
                 let reSideTax = 0;
                 if(useTax && reSideStockValue > reSideStockBasis) {
                     reSideTax = (reSideStockValue - reSideStockBasis) * 0.25;
                 }
-                
+
                 let netRE = (exitVal - (balP + balK + balZ)) + (reSideStockValue - reSideTax);
 
                 let spValILS = 0;
@@ -830,6 +845,8 @@ function runSim(opts = {}) {
                 spDataPct.push(((finalSP-spInvestedILS)/spInvestedILS)*100);
                 reDataVal.push(netRE);
                 spDataVal.push(finalSP);
+                surplusValSeries.push(reSideStockValue);
+                surplusPctSeries.push((reSideStockValue/spInvestedILS)*100);
             }
         }
     }
@@ -878,26 +895,34 @@ function runSim(opts = {}) {
                 posCFYears: posYears
             };
         }
-        drawCharts(labels, reDataVal, reDataPct, spDataVal, spDataPct, flowRent, flowInt, flowPrinc, flowNet);
+        drawCharts(labels, reDataVal, reDataPct, spDataVal, spDataPct, flowRent, flowInt, flowPrinc, flowNet, surplusValSeries, surplusPctSeries);
     }
 }
 
-function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet) {
+function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries) {
     const ctx1 = document.getElementById('wealthChart').getContext('2d');
     if(wealthChart) wealthChart.destroy();
 
     let plotR = mode === 'percent' ? rPct : rVal;
     let plotS = mode === 'percent' ? sPct : sVal;
+    let plotSurp = mode === 'percent' ? surplusPctSeries : surplusValSeries;
+    const reinvestActive = (surplusMode === 'invest');
     let yTxt = mode==='percent' ? 'Cumulative ROI (%)' : 'Net Wealth (₪)';
+
+    let datasets = [
+        { label: 'Real Estate', data: plotR, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 },
+        { label: 'S&P 500', data: plotS, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 }
+    ];
+
+    if (reinvestActive && plotSurp.some(v => v > 0)) {
+        datasets.push({ label: 'Reinvested Surplus', data: plotSurp, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)', borderWidth: 2, fill: true, pointRadius: 0, pointHoverRadius: 6, borderDash:[6,4] });
+    }
 
     wealthChart = new Chart(ctx1, {
         type: 'line',
         data: {
             labels: l,
-            datasets: [
-                { label: 'Real Estate', data: plotR, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 },
-                { label: 'S&P 500', data: plotS, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 }
-            ]
+            datasets: datasets
         },
         options: {
             responsive: true, maintainAspectRatio: false,
@@ -906,6 +931,7 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet) {
                 let idx = c.dataIndex;
                 let val = 0, pct = 0;
                 if(c.dataset.label === 'Real Estate') { val = rVal[idx]; pct = rPct[idx]; }
+                else if(c.dataset.label === 'Surplus Reinvest') { val = surplusValSeries[idx]; pct = surplusPctSeries[idx]; }
                 else { val = sVal[idx]; pct = sPct[idx]; }
                 return `${c.dataset.label}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
             }}}},
@@ -955,9 +981,10 @@ function bootstrap() {
     updateCreditUI();
     applyLtvCaps();
     refreshRatesForProfile();
-    // Ensure we start on Fixed rates with scenarios visible
+    // Ensure we start on Fixed rates with scenarios visible; set surplus mode before first sim
+    setSurplusMode(surplusMode, { skipSim: true });
     setGlobalMode(false);
-    applyScenario('base');
+    applyScenario('base', { skipSim: true });
     setMode('currency');
     checkMix(); // initialize mix UI state (hide sum if 100%)
     runSim();
