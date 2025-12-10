@@ -36,6 +36,7 @@ describe('App Logic: UI Interaction', () => {
             <input id="sApp" value="4">
             <input id="sInf" value="2.5">
             <input id="sYld" value="3.2">
+            <input id="rDiscount" value="1">
             <input id="rBuyCost" value="2.0">
             <input id="rMaint" value="10">
             <input id="rSellCost" value="2.0">
@@ -45,14 +46,33 @@ describe('App Logic: UI Interaction', () => {
             <input id="pctPrime" value="33">
             <input id="ratePrime" value="5.75">
             <input id="termPrime" value="20">
+            <input id="sliderPrime" type="range" value="33">
+            <div id="dispPrime">33%</div>
             
             <input id="pctKalats" value="33">
             <input id="rateKalats" value="4.8">
             <input id="termKalats" value="20">
+            <input id="sliderKalats" type="range" value="33">
+            <div id="dispKalats">33%</div>
             
             <input id="pctKatz" value="34">
             <input id="rateKatz" value="3.2">
             <input id="termKatz" value="20">
+            <input id="sliderKatz" type="range" value="34">
+            <div id="dispKatz">34%</div>
+
+            <!-- New Tracks -->
+            <input id="pctMalatz" value="0">
+            <input id="rateMalatz" value="4.5">
+            <input id="termMalatz" value="20">
+            <input id="sliderMalatz" type="range" value="0">
+            <div id="dispMalatz">0%</div>
+
+            <input id="pctMatz" value="0">
+            <input id="rateMatz" value="2.15">
+            <input id="termMatz" value="20">
+            <input id="sliderMatz" type="range" value="0">
+            <div id="dispMatz">0%</div>
             
             <!-- Surplus Pills -->
             <div id="surplusPills">
@@ -62,21 +82,38 @@ describe('App Logic: UI Interaction', () => {
             </div>
             <div id="surplusDesc"></div>
             
+            <!-- Repay Method Toggle -->
+            <div id="pRepayMethod">
+                <div id="repaySpitzer" class="pill active"></div>
+                <div id="repayEqualPrincipal" class="pill"></div>
+            </div>
+            <div id="surplusDescText"></div>
+            
             <input type="checkbox" id="cTax">
             <input type="checkbox" id="cRentTax">
             
+            <!-- Credit Inputs -->
+            <input id="creditScore" value="750">
+            <div id="creditScoreVal"></div>
+            <div id="creditTierLabel"></div>
+            <div id="creditWarn"></div>
+
             <!-- Outputs -->
             <div id="dDown"></div>
             <div id="dDur"></div>
             <div id="dHor"></div>
             <div id="vTrade"></div>
             <div id="vMer"></div>
+            <div id="vDiscount"></div>
             <div id="vBuyCost"></div>
             <div id="vMaint"></div>
             <div id="vSellCost"></div>
             <div id="valAsset"></div>
             <div id="valLev"></div>
             <div id="barLev"></div>
+            <div id="valPosCF"></div>
+            <div id="valMortgage"></div>
+            <div id="valCashflow"></div>
             
             <div id="kRE"></div>
             <div id="kSP"></div>
@@ -84,6 +121,7 @@ describe('App Logic: UI Interaction', () => {
             <div id="kSPCagr"></div>
             <div id="kInt"></div>
             <div id="kRent"></div>
+            <div id="kInvested"></div>
             <div id="kDiff"></div>
             
             <div id="valMixSum"></div>
@@ -190,7 +228,9 @@ describe('App Logic: UI Interaction', () => {
         
         expect(document.getElementById('surplusInvest').classList.contains('active')).toBe(true);
         expect(document.getElementById('surplusConsume').classList.contains('active')).toBe(false);
-        expect(document.getElementById('surplusDesc').innerText).toContain("Buy S&P");
+        
+        const descText = document.getElementById('surplusDescText').innerText || document.getElementById('surplusDesc').innerText;
+        expect(descText).toContain("Buy S&P");
 
         // Click Match
         const btnMatch = document.getElementById('surplusMatch');

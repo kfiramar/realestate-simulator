@@ -28,10 +28,12 @@ describe('Surplus Logic: Integration & Math', () => {
             <input id="sInf" value="0">
             <input id="sYld" value="10.0">
             
-            <input id="rBuyCost" value="0"><input id="rMaint" value="0"><input id="rSellCost" value="0"><input id="rTrade" value="0"><input id="rMer" value="0">
+            <input id="rDiscount" value="0"><input id="rBuyCost" value="0"><input id="rMaint" value="0"><input id="rSellCost" value="0"><input id="rTrade" value="0"><input id="rMer" value="0">
             <input id="pctPrime" value="100"><input id="ratePrime" value="2.0"><input id="termPrime" value="30">
             <input id="pctKalats" value="0"><input id="rateKalats" value="0"><input id="termKalats" value="30">
             <input id="pctKatz" value="0"><input id="rateKatz" value="0"><input id="termKatz" value="30">
+            <input id="pctMalatz" value="0"><input id="rateMalatz" value="0"><input id="termMalatz" value="30">
+            <input id="pctMatz" value="0"><input id="rateMatz" value="0"><input id="termMatz" value="30">
             
             <!-- Pills -->
             <div id="surplusPills">
@@ -40,13 +42,21 @@ describe('Surplus Logic: Integration & Math', () => {
                 <div id="surplusInvest"></div>
             </div>
             <div id="surplusDesc"></div>
+            <div id="surplusDescText"></div>
             
             <input type="checkbox" id="cTax">
             <input type="checkbox" id="cRentTax">
             
+            <!-- Credit -->
+            <input id="creditScore" value="750">
+            <div id="creditScoreVal"></div>
+            <div id="creditTierLabel"></div>
+            <div id="creditWarn"></div>
+
             <div id="dDown"></div><div id="dDur"></div><div id="dHor"></div><div id="vTrade"></div><div id="vMer"></div>
-            <div id="vBuyCost"></div><div id="vMaint"></div><div id="vSellCost"></div><div id="valAsset"></div><div id="valLev"></div><div id="barLev"></div>
-            <div id="kRE"></div><div id="kSP"></div><div id="kRECagr"></div><div id="kSPCagr"></div><div id="kInt"></div><div id="kRent"></div><div id="kDiff"></div><div id="valMixSum"></div>
+            <div id="vDiscount"></div><div id="vBuyCost"></div><div id="vMaint"></div><div id="vSellCost"></div><div id="valAsset"></div><div id="valLev"></div><div id="barLev"></div>
+            <div id="valPosCF"></div><div id="valMortgage"></div><div id="valCashflow"></div>
+            <div id="kRE"></div><div id="kSP"></div><div id="kRECagr"></div><div id="kSPCagr"></div><div id="kInt"></div><div id="kRent"></div><div id="kInvested"></div><div id="kDiff"></div><div id="valMixSum"></div>
             <div id="scenBear" class=""></div><div id="scenBase" class=""></div><div id="scenBull" class=""></div><div id="pGlobal"><div></div><div></div></div><div id="scenBox"></div>
             <div id="btnCurr"></div><div id="btnPct"></div><div id="equityBox"></div><div id="pHor"><div></div><div></div></div><div id="bHor"></div>
             <div id="infMeter"><div></div><div></div><div></div></div><div id="txReal"></div><div id="txForex"></div><div id="spotDown"></div><div id="spotDur"></div><div id="spotHor"></div>

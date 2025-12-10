@@ -46,6 +46,7 @@ describe('Integration V2: Tamheel & Friction', () => {
             <input id="sYld" value="3.2">
             
             <!-- Friction Inputs -->
+            <input id="rDiscount" value="1">
             <input id="rBuyCost" value="2.0">
             <input id="rMaint" value="10">
             <input id="rSellCost" value="2.0">
@@ -61,22 +62,32 @@ describe('Integration V2: Tamheel & Friction', () => {
             <input id="rateKalats" value="4.8">
             <input id="termKalats" value="20">
             
-            <input id="pctKatz" value="34">
-            <input id="rateKatz" value="3.2">
-            <input id="termKatz" value="20">
+            <input id="pctKatz" value="34"><input id="rateKatz" value="3.2"><input id="termKatz" value="20">
+            <input id="pctMalatz" value="0"><input id="rateMalatz" value="0"><input id="termMalatz" value="20">
+            <input id="pctMatz" value="0"><input id="rateMatz" value="0"><input id="termMatz" value="20">
             
+            <!-- Surplus Pills -->
+            <div id="surplusPills">
+                <div id="surplusConsume" class="pill active"></div>
+                <div id="surplusMatch" class="pill"></div>
+                <div id="surplusInvest" class="pill"></div>
+            </div>
+            <div id="surplusDesc"></div>
+            <div id="surplusDescText"></div>
+            
+            <input type="checkbox" id="cTax">
+            <input type="checkbox" id="cRentTax">
+            
+            <!-- Credit Inputs -->
+            <input id="creditScore" value="750">
+            <div id="creditScoreVal"></div>
+            <div id="creditTierLabel"></div>
+            <div id="creditWarn"></div>
+
             <!-- Output Elements -->
-            <div id="dDown"></div>
-            <div id="dDur"></div>
-            <div id="dHor"></div>
-            <div id="vTrade"></div>
-            <div id="vMer"></div>
-            <div id="vBuyCost"></div>
-            <div id="vMaint"></div>
-            <div id="vSellCost"></div>
-            <div id="valAsset"></div>
-            <div id="valLev"></div>
-            <div id="barLev"></div>
+            <div id="dDown"></div><div id="dDur"></div><div id="dHor"></div><div id="vTrade"></div><div id="vMer"></div>
+            <div id="vDiscount"></div><div id="vBuyCost"></div><div id="vMaint"></div><div id="vSellCost"></div><div id="valAsset"></div><div id="valLev"></div><div id="barLev"></div>
+            <div id="valPosCF"></div><div id="valMortgage"></div><div id="valCashflow"></div>
             
             <div id="kRE"></div>
             <div id="kSP"></div>
@@ -84,6 +95,7 @@ describe('Integration V2: Tamheel & Friction', () => {
             <div id="kSPCagr"></div>
             <div id="kInt"></div>
             <div id="kRent"></div>
+            <div id="kInvested"></div>
             <div id="kDiff"></div>
             
             <div id="valMixSum"></div>

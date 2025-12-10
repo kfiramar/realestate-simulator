@@ -66,6 +66,10 @@ describe('Simulation timeframe sync', () => {
         document.getElementById('pctKatz').value = 50;
         document.getElementById('termKatz').value = 25;
 
+        // Set Malatz/Matz to 0% (they have defaults that could interfere)
+        document.getElementById('pctMalatz').value = 0;
+        document.getElementById('pctMatz').value = 0;
+
         checkMix(); // updates disabled state and runs sim
 
         const hor = document.getElementById('rHor');
