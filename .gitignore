@@ -2,3 +2,11 @@ node_modules
 coverage
 .DS_Store
 npm-debug.log*
+.venv
+
+# Prompts and dev notes
+prompt_*.txt
+Answers.txt
+debug_logic.js
+project_specs.md
+test_plan.md
