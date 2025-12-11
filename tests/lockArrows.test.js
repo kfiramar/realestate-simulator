@@ -29,9 +29,9 @@ describe('Sweet spot arrows respect locks', () => {
         const expectedDown = ((40 - 25) / 75) * 100;
         expect(Math.abs(downPos - expectedDown)).toBeLessThan(1);
 
-        // Term arrow should move toward 15 years (within slider range)
+        // Term arrow should move toward 15 years (min=1, max=30)
         const termPos = parseLeft(document.getElementById('spotDur'));
-        const expectedTerm = ((15 - 10) / 20) * 100;
+        const expectedTerm = ((15 - 1) / (30 - 1)) * 100;
         expect(Math.abs(termPos - expectedTerm)).toBeLessThan(5);
 
         // ensure override was called with locked downPct

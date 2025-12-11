@@ -10,6 +10,8 @@ function loadDom() {
 
 function bootstrapApp() {
     loadDom();
+    // Clear localStorage to prevent state leaking between tests
+    localStorage.clear();
     // Load logic before app so globals exist
     require('../src/logic.js');
     // require after DOM is set

@@ -25,7 +25,7 @@ describe('Sweet spot positioning', () => {
         const durPos = parseLeft(document.getElementById('spotDur'));
 
         const expectedDown = ((50 - 25) / 75) * 100;
-        const expectedDur = ((18 - 10) / 20) * 100;
+        const expectedDur = ((18 - 1) / (30 - 1)) * 100; // min=1, max=30
 
         expect(Math.abs(downPos - expectedDown)).toBeLessThan(1);
         expect(Math.abs(durPos - expectedDur)).toBeLessThan(1);

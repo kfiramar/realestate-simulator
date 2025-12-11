@@ -53,6 +53,7 @@ let lockTerm = false;
 let lockHor = true;
 let buyerType = 'first';
 let advancedTermMode = false;
+let bootstrapping = false;
 let creditScore = 900;
 let surplusMode = 'match';
 let repayMethod = 'spitzer';
@@ -75,27 +76,27 @@ const cfg = {
 };
 
 // --- UI FUNCTIONS ---
-function setMode(m) {
+function setMode(m, opts = {}) {
     mode = m;
     document.getElementById('btnCurr').classList.toggle('active', m === 'currency');
     document.getElementById('btnPct').classList.toggle('active', m === 'percent');
     document.getElementById('equityBox').classList.toggle('show', m === 'currency');
-    runSim();
+    if (!opts.skipSim) runSim();
 }
-function tgl(k, h) {
+function tgl(k, h, opts = {}) {
     cfg[k].is = h;
     const pills = document.getElementById(cfg[k].p).children;
     pills[0].classList.toggle('active', h); pills[1].classList.toggle('active', !h);
     document.getElementById(cfg[k].b).classList.toggle('show', !h);
     if (k === 'Inf') updMeter();
-    runSim();
+    if (!opts.skipSim) runSim();
 }
-function setGlobalMode(isHist) {
+function setGlobalMode(isHist, opts = {}) {
     const globalPills = document.getElementById('pGlobal').children;
     globalPills[0].classList.toggle('active', isHist);
     globalPills[1].classList.toggle('active', !isHist);
     document.getElementById('scenBox').classList.toggle('show', !isHist);
-    for (let k in cfg) { tgl(k, isHist); }
+    for (let k in cfg) { tgl(k, isHist, opts); }
 }
 function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
@@ -367,6 +368,7 @@ function syncMixInput(track) {
     disp.innerText = newVal + '%';
 
     checkMix();
+    renderPrepayments(); // Update prepayment dropdowns when tracks change
 }
 
 function showMaxTooltip(el, maxVal) {
@@ -472,6 +474,213 @@ function toggleRateEdit() {
     });
 }
 
+function togglePrepaySection() {
+    const container = document.getElementById('prepayContainer');
+    const arrow = document.getElementById('prepayArrow');
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        arrow.classList.add('open');
+    } else {
+        container.style.display = 'none';
+        arrow.classList.remove('open');
+    }
+}
+
+let prepayments = [];
+let prepayIdCounter = 0;
+
+function getActiveTracksForPrepay() {
+    const tracks = [
+        { id: 'p', name: 'Prime', pct: parseFloat(document.getElementById('pctPrime').value) || 0 },
+        { id: 'k', name: 'Kalats', pct: parseFloat(document.getElementById('pctKalats').value) || 0 },
+        { id: 'm', name: 'Malatz', pct: parseFloat(document.getElementById('pctMalatz').value) || 0 },
+        { id: 'z', name: 'Katz', pct: parseFloat(document.getElementById('pctKatz').value) || 0 },
+        { id: 'mt', name: 'Matz', pct: parseFloat(document.getElementById('pctMatz').value) || 0 }
+    ];
+    return tracks.filter(t => t.pct > 0);
+}
+
+function addPrepayment() {
+    const active = getActiveTracksForPrepay();
+    if (active.length === 0) {
+        alert('No active tracks to prepay. Add allocation to at least one track first.');
+        return;
+    }
+    // Find first track with remaining balance
+    const trackWithBalance = active.find(t => getRemainingForTrack(t.id) > 0);
+    if (!trackWithBalance) {
+        alert('All track balances are fully allocated to existing prepayments.');
+        return;
+    }
+    const remaining = getRemainingForTrack(trackWithBalance.id);
+    const id = prepayIdCounter++;
+    prepayments.push({ id, track: trackWithBalance.id, amt: Math.min(100000, remaining), yr: 5 });
+    renderPrepayments();
+    runSim();
+}
+
+function removePrepayment(id) {
+    prepayments = prepayments.filter(p => p.id !== id);
+    renderPrepayments();
+    runSim();
+}
+
+function getTrackInitialBalance(trackId) {
+    const eq = parseFloat(document.getElementById('inpEquity')?.value) || 0;
+    const downPct = (parseFloat(document.getElementById('rDown')?.value) || 25) / 100;
+    const loan = eq / downPct - eq;
+    const pctMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
+    const elId = pctMap[trackId];
+    if (!elId) return 0;
+    const pct = parseFloat(document.getElementById('pct' + elId)?.value) || 0;
+    return loan * pct / 100;
+}
+
+function getTrackBalanceAtYear(trackId, year) {
+    const initial = getTrackInitialBalance(trackId);
+    if (initial <= 0 || year <= 0) return initial;
+    
+    const rateMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
+    const termMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
+    const rateName = rateMap[trackId];
+    const termName = termMap[trackId];
+    
+    const rate = (parseFloat(document.getElementById('rate' + rateName)?.value) || 5) / 100;
+    const termYears = parseInt(document.getElementById('term' + termName)?.value) || 
+                      parseInt(document.getElementById('rDur')?.value) || 25;
+    
+    // Calculate remaining balance using amortization formula
+    const monthlyRate = rate / 12;
+    const totalMonths = termYears * 12;
+    const paidMonths = year * 12;
+    
+    if (monthlyRate === 0) {
+        // Simple linear payoff
+        return initial * (1 - paidMonths / totalMonths);
+    }
+    
+    // Remaining balance formula: P * [(1+r)^n - (1+r)^p] / [(1+r)^n - 1]
+    const factor = Math.pow(1 + monthlyRate, totalMonths);
+    const paidFactor = Math.pow(1 + monthlyRate, paidMonths);
+    const remaining = initial * (factor - paidFactor) / (factor - 1);
+    
+    return Math.max(0, remaining);
+}
+
+function getRemainingForTrack(trackId, excludeId = null, atYear = null) {
+    // Get balance at the specified year (or initial if no year)
+    const p = excludeId !== null ? prepayments.find(x => x.id === excludeId) : null;
+    const year = atYear !== null ? atYear : (p ? p.yr : 0);
+    
+    const balanceAtYear = year > 0 ? getTrackBalanceAtYear(trackId, year) : getTrackInitialBalance(trackId);
+    
+    // Subtract other prepayments on this track that happen before or at this year
+    const used = prepayments
+        .filter(pp => pp.track === trackId && pp.id !== excludeId && pp.yr <= year)
+        .reduce((sum, pp) => sum + pp.amt, 0);
+    
+    return Math.max(0, balanceAtYear - used);
+}
+
+function getMaxPrepayForTrack(trackId, year, excludeId) {
+    const balanceAtYear = getTrackBalanceAtYear(trackId, year);
+    const otherPrepays = prepayments
+        .filter(pp => pp.track === trackId && pp.id !== excludeId && pp.yr <= year)
+        .reduce((sum, pp) => sum + pp.amt, 0);
+    return Math.round(Math.max(0, balanceAtYear - otherPrepays));
+}
+
+function updatePrepayment(id, field, value) {
+    const p = prepayments.find(x => x.id === id);
+    if (!p) return;
+    
+    let needsRender = false;
+    
+    if (field === 'yr') {
+        const newYr = Math.max(1, Math.min(30, parseInt(value) || 1));
+        if (newYr !== p.yr) {
+            const oldMax = getMaxPrepayForTrack(p.track, p.yr, id);
+            const wasAtMax = p.amt >= oldMax - 1; // tolerance for rounding
+            p.yr = newYr;
+            const newMax = getMaxPrepayForTrack(p.track, p.yr, id);
+            if (wasAtMax) {
+                p.amt = newMax; // Keep at max
+            } else if (p.amt > newMax) {
+                p.amt = newMax; // Cap if exceeds
+            }
+            needsRender = true;
+        }
+    } else if (field === 'amt') {
+        const requested = parseFloat(value) || 0;
+        const max = getMaxPrepayForTrack(p.track, p.yr, id);
+        p.amt = Math.round(Math.min(requested, max));
+        // Update display without full re-render
+        const items = document.querySelectorAll('.prepay-item');
+        const idx = prepayments.findIndex(x => x.id === id);
+        if (items[idx]) {
+            items[idx].querySelector('.prepay-max').textContent = `/ ${Math.round(max/1000)}K`;
+            const inp = items[idx].querySelector('input[type="number"]');
+            if (inp && requested >= max) {
+                inp.value = p.amt;
+                inp.blur(); // Kick out when max reached
+            }
+        }
+    } else if (field === 'track') {
+        p.track = value;
+        const max = getMaxPrepayForTrack(value, p.yr, id);
+        if (p.amt > max) p.amt = max;
+        needsRender = true;
+    }
+    
+    if (needsRender) renderPrepayments();
+    runSim();
+}
+
+function renderPrepayments() {
+    const list = document.getElementById('prepayList');
+    if (!list) return;
+    const active = getActiveTracksForPrepay();
+    
+    list.innerHTML = prepayments.map(p => {
+        const trackValid = active.some(t => t.id === p.track);
+        if (!trackValid && active.length > 0) p.track = active[0].id;
+        
+        // Max is balance at year minus other prepayments (not including this one's current value)
+        const balanceAtYear = getTrackBalanceAtYear(p.track, p.yr);
+        const otherPrepays = prepayments
+            .filter(pp => pp.track === p.track && pp.id !== p.id && pp.yr <= p.yr)
+            .reduce((sum, pp) => sum + pp.amt, 0);
+        const maxVal = Math.max(0, balanceAtYear - otherPrepays);
+        
+        // Cap current amount if it exceeds max
+        if (p.amt > maxVal) p.amt = maxVal;
+        
+        const options = active.map(t => {
+            return `<option value="${t.id}" ${p.track === t.id ? 'selected' : ''}>${t.name}</option>`;
+        }).join('');
+        
+        return `<div class="prepay-item">
+            <select onchange="updatePrepayment(${p.id},'track',this.value)">${options}</select>
+            <span class="prepay-label">₪</span>
+            <div class="prepay-amt-group">
+                <input type="number" value="${p.amt}" min="0" max="${maxVal}" step="10000" oninput="updatePrepayment(${p.id},'amt',this.value)">
+                <span class="prepay-max-btn" onclick="maxPrepayment(${p.id})">MAX</span>
+            </div>
+            <span class="prepay-label">Yr</span>
+            <input type="number" value="${p.yr}" min="1" max="30" style="width:45px" oninput="updatePrepayment(${p.id},'yr',this.value)">
+            <span class="prepay-remove" onclick="removePrepayment(${p.id})">✕</span>
+        </div>`;
+    }).join('');
+}
+
+function maxPrepayment(id) {
+    const p = prepayments.find(x => x.id === id);
+    if (!p) return;
+    p.amt = getMaxPrepayForTrack(p.track, p.yr, id);
+    renderPrepayments();
+    runSim();
+}
+
 function syncPrime() {
     refreshRatesForProfile();
     updateRateLabels();
@@ -568,12 +777,12 @@ function updateSweetSpots() {
     document.getElementById('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
     document.getElementById('spotDown').classList.add('visible');
 
-    let posDur = ((best.t - 10) / (30 - 10)) * 100;
+    let posDur = ((best.t - 1) / (30 - 1)) * 100;
     document.getElementById('spotDur').style.left = `calc(${posDur}% + (8px - (0.16px * ${posDur})))`;
     document.getElementById('spotDur').classList.add('visible');
 
     if (horMode === 'custom' || lockHor) {
-        let posHor = ((best.h - 5) / (50 - 5)) * 100;
+        let posHor = ((best.h - 1) / (50 - 1)) * 100;
         let spotH = document.getElementById('spotHor');
         spotH.style.left = `calc(${posHor}% + (8px - (0.16px * ${posHor})))`;
         spotH.classList.add('visible');
@@ -584,6 +793,7 @@ function updateSweetSpots() {
 }
 
 function runSim(opts = {}) {
+    if (bootstrapping) return;
     const skipCharts = !!opts.skipCharts;
 
     let eq = parseFloat(document.getElementById('inpEquity').value) || 400000;
@@ -619,7 +829,7 @@ function runSim(opts = {}) {
         const el = document.getElementById('disp'+t);
         if (el) {
             const amt = initialLoan * pct / 100;
-            el.innerHTML = `${pct}%<span style="font-size:0.6rem;color:#64748b;font-weight:400"> ₪${Math.round(amt/1000)}K</span>`;
+            el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(amt/1000)}K</span>`;
         }
     });
 
@@ -729,6 +939,7 @@ function runSim(opts = {}) {
             history: cfg,
             repayMethod: repayMethod
         },
+        prepay: prepayments,
         returnSeries: !skipCharts
     };
 
@@ -777,9 +988,15 @@ function runSim(opts = {}) {
             res.series.flowRent, res.series.flowInt, res.series.flowPrinc, res.series.flowNet,
             res.series.surplusVal, res.series.surplusPct);
     }
+    saveState();
+    document.body.classList.remove('loading');
 }
 
 function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries) {
+    const isDark = document.body.classList.contains('dark');
+    const textColor = isDark ? '#e2e8f0' : '#666';
+    const gridColor = isDark ? '#475569' : 'rgba(0,0,0,0.1)';
+
     const ctx1 = document.getElementById('wealthChart').getContext('2d');
     if (wealthChart) wealthChart.destroy();
 
@@ -819,9 +1036,13 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
                             return `${c.dataset.label}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
                         }
                     }
-                }
+                },
+                legend: { labels: { color: textColor } }
             },
-            scales: { y: { title: { display: true, text: yTxt }, ticks: { callback: v => mode === 'percent' ? v + '%' : fmt(v) } } }
+            scales: {
+                y: { title: { display: true, text: yTxt, color: textColor }, ticks: { color: textColor, callback: v => mode === 'percent' ? v + '%' : fmt(v) }, grid: { color: gridColor } },
+                x: { ticks: { color: textColor }, grid: { color: gridColor } }
+            }
         }
     });
 
@@ -839,7 +1060,7 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
         data: {
             labels: l,
             datasets: [
-                { type: 'line', label: 'Net Cashflow', data: fNet, borderColor: '#0f172a', borderWidth: 4, pointRadius: 3, tension: 0.3, order: 1, fill: false },
+                { type: 'line', label: 'Net Cashflow', data: fNet, borderColor: isDark ? '#e2e8f0' : '#0f172a', borderWidth: 4, pointRadius: 3, tension: 0.3, order: 1, fill: false },
                 { type: 'line', label: 'Rent minus Interest', data: netRentAfterInt, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 0, tension: 0.2, order: 2, fill: false, borderDash: [6, 3] },
                 { type: 'bar', label: 'Revenue (Rent)', data: fRent, backgroundColor: '#22c55e', stack: 'Stack 0', order: 3, borderWidth: 0 },
                 { type: 'bar', label: 'Interest (Cost)', data: fInt, backgroundColor: '#ef4444', stack: 'Stack 0', order: 4, borderWidth: 0 },
@@ -875,26 +1096,158 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
                             return `Net: ${fmtNum(c.raw)}`;
                         }
                     }
-                }
+                },
+                legend: { labels: { color: textColor } }
             },
-            scales: { y: { title: { display: true, text: 'Monthly ₪' } }, x: { stacked: true } }
+            scales: {
+                y: { title: { display: true, text: 'Monthly ₪', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } },
+                x: { stacked: true, ticks: { color: textColor }, grid: { color: gridColor } }
+            }
         }
     });
 }
 
+// --- PERSISTENCE ---
+const STORAGE_KEY = 'mortgageCalcState';
+
+function saveState() {
+    const state = {
+        // Sliders
+        equity: document.getElementById('inpEquity')?.value,
+        down: document.getElementById('rDown')?.value,
+        dur: document.getElementById('rDur')?.value,
+        hor: document.getElementById('rHor')?.value,
+        // Mix
+        pctPrime: document.getElementById('pctPrime')?.value,
+        pctKalats: document.getElementById('pctKalats')?.value,
+        pctMalatz: document.getElementById('pctMalatz')?.value,
+        pctKatz: document.getElementById('pctKatz')?.value,
+        pctMatz: document.getElementById('pctMatz')?.value,
+        // Rates
+        ratePrime: document.getElementById('ratePrime')?.value,
+        rateKalats: document.getElementById('rateKalats')?.value,
+        rateMalatz: document.getElementById('rateMalatz')?.value,
+        rateKatz: document.getElementById('rateKatz')?.value,
+        rateMatz: document.getElementById('rateMatz')?.value,
+        // Advanced terms
+        termPrime: document.getElementById('termPrime')?.value,
+        termKalats: document.getElementById('termKalats')?.value,
+        termMalatz: document.getElementById('termMalatz')?.value,
+        termKatz: document.getElementById('termKatz')?.value,
+        termMatz: document.getElementById('termMatz')?.value,
+        advancedTermMode,
+        // Market assumptions
+        sSP: document.getElementById('sSP')?.value,
+        sApp: document.getElementById('sApp')?.value,
+        sInf: document.getElementById('sInf')?.value,
+        sInt: document.getElementById('sInt')?.value,
+        sYld: document.getElementById('sYld')?.value,
+        // Fees
+        rBuyCost: document.getElementById('rBuyCost')?.value,
+        rSellCost: document.getElementById('rSellCost')?.value,
+        rTrade: document.getElementById('rTrade')?.value,
+        rMer: document.getElementById('rMer')?.value,
+        rMaint: document.getElementById('rMaint')?.value,
+        rDiscount: document.getElementById('rDiscount')?.value,
+        // State
+        horMode, surplusMode, repayMethod, creditScore, taxMode, exMode,
+        lockDown, lockTerm, lockHor, buyerType, mode,
+        prepayments
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return false;
+        const s = JSON.parse(saved);
+        
+        // Restore inputs
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+        setVal('inpEquity', s.equity);
+        setVal('rDown', s.down);
+        setVal('rDur', s.dur);
+        setVal('rHor', s.hor);
+        setVal('pctPrime', s.pctPrime); setVal('sliderPrime', s.pctPrime);
+        setVal('pctKalats', s.pctKalats); setVal('sliderKalats', s.pctKalats);
+        setVal('pctMalatz', s.pctMalatz); setVal('sliderMalatz', s.pctMalatz);
+        setVal('pctKatz', s.pctKatz); setVal('sliderKatz', s.pctKatz);
+        setVal('pctMatz', s.pctMatz); setVal('sliderMatz', s.pctMatz);
+        setVal('ratePrime', s.ratePrime);
+        setVal('rateKalats', s.rateKalats);
+        setVal('rateMalatz', s.rateMalatz);
+        setVal('rateKatz', s.rateKatz);
+        setVal('rateMatz', s.rateMatz);
+        setVal('termPrime', s.termPrime);
+        setVal('termKalats', s.termKalats);
+        setVal('termMalatz', s.termMalatz);
+        setVal('termKatz', s.termKatz);
+        setVal('termMatz', s.termMatz);
+        setVal('sSP', s.sSP);
+        setVal('sApp', s.sApp);
+        setVal('sInf', s.sInf);
+        setVal('sInt', s.sInt);
+        setVal('sYld', s.sYld);
+        setVal('rBuyCost', s.rBuyCost);
+        setVal('rSellCost', s.rSellCost);
+        setVal('rTrade', s.rTrade);
+        setVal('rMer', s.rMer);
+        setVal('rMaint', s.rMaint);
+        setVal('rDiscount', s.rDiscount);
+        
+        // Restore state vars
+        if (s.horMode) horMode = s.horMode;
+        if (s.surplusMode) surplusMode = s.surplusMode;
+        if (s.repayMethod) repayMethod = s.repayMethod;
+        if (s.creditScore) creditScore = s.creditScore;
+        if (s.taxMode) taxMode = s.taxMode;
+        if (s.exMode) exMode = s.exMode;
+        if (s.lockDown != null) lockDown = s.lockDown;
+        if (s.lockTerm != null) lockTerm = s.lockTerm;
+        if (s.lockHor != null) lockHor = s.lockHor;
+        if (s.prepayments) prepayments = s.prepayments;
+        if (s.advancedTermMode != null) advancedTermMode = s.advancedTermMode;
+        if (s.buyerType) buyerType = s.buyerType;
+        if (s.mode) mode = s.mode;
+        
+        return true;
+    } catch(e) { return false; }
+}
+
 function bootstrap() {
+    bootstrapping = true;
+    // Restore dark mode first (before any rendering)
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+    const hadSaved = loadState();
     updMeter();
     updateLockUI();
     updateCreditUI();
     applyLtvCaps();
-    refreshRatesForProfile();
+    if (!hadSaved) refreshRatesForProfile();
     updateRateLabels();
-    // Ensure we start on Fixed rates with scenarios visible; set surplus mode before first sim
     setSurplusMode(surplusMode, { skipSim: true });
-    setGlobalMode(false);
-    applyScenario('base', { skipSim: true });
-    setMode('currency');
-    checkMix(); // initialize mix UI state (hide sum if 100%)
+    setGlobalMode(false, { skipSim: true });
+    if (!hadSaved) applyScenario('base', { skipSim: true });
+    setMode(hadSaved && mode ? mode : 'currency', { skipSim: true });
+    checkMix();
+    renderPrepayments();
+    if (advancedTermMode) {
+        const panel = document.getElementById('advancedTermBox');
+        const basic = document.getElementById('basicTermBox');
+        const btn = document.getElementById('btnAdvancedTerm');
+        if (panel) panel.style.display = 'block';
+        if (basic) basic.style.display = 'none';
+        if (btn) btn.classList.add('active');
+        // Update term display values
+        ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => {
+            const inp = document.getElementById('term' + t);
+            if (inp) showTermVal('term' + t + 'Val', inp.value);
+        });
+    }
+    bootstrapping = false;
     runSim();
 }
 
@@ -908,6 +1261,23 @@ function updateRateLabels() {
             lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
         }
     });
+}
+
+// --- UTILITY FUNCTIONS ---
+function resetAll() {
+    if (!confirm('Reset all settings to defaults?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    runSim(); // Redraw charts with new colors
+}
+
+function printResults() {
+    window.print();
 }
 
 // Expose functions for inline handlers and tests
@@ -935,5 +1305,8 @@ window.toggleAdvancedTerms = toggleAdvancedTerms;
 window.setSurplusMode = setSurplusMode;
 window.syncMixInput = syncMixInput;
 window.toggleRateEdit = toggleRateEdit;
+window.resetAll = resetAll;
+window.toggleDarkMode = toggleDarkMode;
+window.printResults = printResults;
 
 document.addEventListener('DOMContentLoaded', bootstrap);

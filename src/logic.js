@@ -50,6 +50,7 @@ function simulate(params) {
         fees, // { buy, sell, trade, mgmt }
         tax, // { use, useRent, mode }
         config, // { drift, surplusMode, exMode, history, repayMethod }
+        prepay, // { p, k, m, z, mt } each with { amt, yr }
         returnSeries // boolean
     } = params;
 
@@ -171,6 +172,32 @@ function simulate(params) {
 
         // Annual Aggregates for Charts
         let yrRent = 0, yrNet = 0, yrInt = 0, yrPrinc = 0;
+        let firstMonthRent = 0, firstMonthInt = 0, firstMonthPrinc = 0, firstMonthNet = 0;
+
+        // Apply prepayments at start of specified year (array format)
+        if (prepay && Array.isArray(prepay)) {
+            prepay.filter(p => p.yr - 1 === y && p.amt > 0).forEach(p => {
+                let amt = 0;
+                if (p.track === 'p') { amt = Math.min(p.amt, balP); balP -= amt; }
+                else if (p.track === 'k') { amt = Math.min(p.amt, balK); balK -= amt; }
+                else if (p.track === 'm') { amt = Math.min(p.amt, balM); balM -= amt; }
+                else if (p.track === 'z') { amt = Math.min(p.amt, balZ); balZ -= amt; }
+                else if (p.track === 'mt') { amt = Math.min(p.amt, balMT); balMT -= amt; }
+                if (amt > 0) {
+                    totalCashInvested += amt;
+                    spCashFlows.push({ month: y * 12, amount: amt });
+                    reCashFlows.push({ month: y * 12, amount: amt });
+                    // Also invest same amount in S&P for fair comparison
+                    spValueHedged += amt;
+                    spInvestedILS += amt;
+                    spBasisLinked += amt;
+                    if (config.exMode !== 'hedged') {
+                        spUnits += amt / currentEx;
+                        spBasisUSD += amt / currentEx;
+                    }
+                }
+            });
+        }
 
         for (let m = 0; m < 12; m++) {
             const globalM = (y * 12) + m;
@@ -181,12 +208,7 @@ function simulate(params) {
                 rateMatz = baseBoI + spreadMatz;
             }
 
-            cpiIndex *= (1 + mInf);
-            assetVal *= (1 + mApp);
             const taxLimit = taxThresholdBase * cpiIndex;
-
-            if (config.exMode !== 'hist') currentEx *= (1 + mDrift);
-            else currentEx = getH(H_EX, y);
 
             // Payments
             let pmtTotal = 0, intTotal = 0, princTotal = 0;
@@ -266,6 +288,13 @@ function simulate(params) {
             yrPrinc += princTotal;
             yrNet += (netRent - pmtTotal);
 
+            if (m === 0) {
+                firstMonthRent = netRent;
+                firstMonthInt = intTotal;
+                firstMonthPrinc = princTotal;
+                firstMonthNet = netRent - pmtTotal;
+            }
+
             if (firstPosMonth === null && oop < 0) firstPosMonth = globalM;
 
             // Surplus / Deficit
@@ -328,13 +357,19 @@ function simulate(params) {
             else spUnits *= (1 + mSP);
             reSideStockValue *= (1 + mSP);
 
+            // End-of-month appreciation/inflation/exchange updates
+            cpiIndex *= (1 + mInf);
+            assetVal *= (1 + mApp);
+            if (config.exMode !== 'hist') currentEx *= (1 + mDrift);
+            else currentEx = getH(H_EX, y);
+
             // Chart Data (End of Year)
             if (m === 11 && returnSeries) {
                 series.labels.push(y + 1);
-                series.flowRent.push(yrRent / 12);
-                series.flowInt.push((yrInt / 12) * -1);
-                series.flowPrinc.push((yrPrinc / 12) * -1);
-                series.flowNet.push(yrNet / 12);
+                series.flowRent.push(firstMonthRent);
+                series.flowInt.push(firstMonthInt * -1);
+                series.flowPrinc.push(firstMonthPrinc * -1);
+                series.flowNet.push(firstMonthNet);
 
                 // Net Worth Calc at Snapshot
                 const exitVal = assetVal * (1 - fees.sell);

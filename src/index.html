@@ -10,13 +10,20 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 
-<body>
+<body class="loading">
 
     <header>
         <h1>Brickfolio <span class="version-badge">BETA</span></h1>
-        <div class="view-toggles">
-            <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')">₪ Value</div>
-            <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')">% ROI</div>
+        <div class="header-controls">
+            <div class="view-toggles">
+                <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')">₪ Value</div>
+                <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')">% ROI</div>
+            </div>
+            <div class="util-btns">
+                <button class="util-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+                <button class="util-btn" onclick="printResults()" title="Print results">🖨️</button>
+                <button class="util-btn" onclick="resetAll()" title="Reset to defaults">↺</button>
+            </div>
         </div>
     </header>
 
@@ -150,6 +157,18 @@
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctMatz" value="0">
+                    </div>
+
+                    <!-- Early Repayments Section -->
+                    <div class="prepay-section">
+                        <div class="prepay-header" onclick="togglePrepaySection()">
+                            <span>Early Repayments</span>
+                            <span class="prepay-arrow" id="prepayArrow">+</span>
+                        </div>
+                        <div class="prepay-container" id="prepayContainer" style="display:none;">
+                            <div id="prepayList"></div>
+                            <button class="prepay-add-btn" onclick="addPrepayment()">+ Add Prepayment</button>
+                        </div>
                     </div>
 
                     <div class="card-divider"></div>
@@ -294,7 +313,7 @@
                     <div class="input-box show" id="bSP"><input type="range" id="sSP" min="4" max="15" step="0.5"
                             value="9" oninput="runSim()"></div>
 
-                    <div style="background:#f1f5f9; padding:8px; border-radius:6px; margin-top:10px;">
+                    <div class="fees-box">
                         <div class="card-row" style="margin-bottom:2px;"><span class="card-lbl"
                                 style="font-weight:400; font-size:0.7rem">Annual Mgmt Fee</span><span class="card-val"
                                 style="font-size:0.7rem" id="vMer">0%</span></div>
@@ -398,11 +417,11 @@
 
         <div class="main">
             <div class="kpi-grid">
-                <div class="kpi-box" style="border-bottom: 4px solid var(--success); background: #f0fdf4;">
+                <div class="kpi-box kpi-re">
                     <div class="kpi-num" style="color:var(--success)" id="kRECagr">0%</div>
                     <div class="kpi-lbl">RE Annual ROI</div>
                 </div>
-                <div class="kpi-box" style="border-bottom: 4px solid var(--primary); background:#eff6ff">
+                <div class="kpi-box kpi-sp">
                     <div class="kpi-num" style="color:var(--primary)" id="kSPCagr">0%</div>
                     <div class="kpi-lbl">S&P Annual ROI</div>
                 </div>
@@ -410,19 +429,19 @@
                     <div class="kpi-num" style="color:#64748b" id="kDiff">0</div>
                     <div class="kpi-lbl">ROI Difference</div>
                 </div>
-                <div class="kpi-box" style="border-bottom: 4px solid var(--success)">
+                <div class="kpi-box kpi-re-border">
                     <div class="kpi-num" style="color:var(--success)" id="kRE">0</div>
                     <div class="kpi-lbl">Real Estate Net</div>
                 </div>
-                <div class="kpi-box" style="border-bottom: 4px solid var(--primary)">
+                <div class="kpi-box kpi-sp-border">
                     <div class="kpi-num" style="color:var(--primary)" id="kSP">0</div>
                     <div class="kpi-lbl">S&P 500 Net</div>
                 </div>
-                <div class="kpi-box" style="background:#fff1f2; border-color:#fecdd3">
+                <div class="kpi-box kpi-bad">
                     <div class="kpi-num wrap" style="color:#e11d48" id="kInt">0</div>
                     <div class="kpi-lbl">Interest Paid</div>
                 </div>
-                <div class="kpi-box" style="background:#f0fdf4; border-color:#bbf7d0">
+                <div class="kpi-box kpi-good">
                     <div class="kpi-num" style="color:#15803d" id="kRent">0</div>
                     <div class="kpi-lbl">Rent Collected</div>
                 </div>

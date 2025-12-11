@@ -9,6 +9,9 @@
     --text: #0f172a;
 }
 
+body.loading { opacity: 0; }
+body { transition: opacity 0.1s; }
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg);
@@ -53,12 +56,41 @@ h1 {
     letter-spacing: 0.05em;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .view-toggles {
     display: flex;
     background: #f1f5f9;
     padding: 3px;
     border-radius: 6px;
     gap: 2px;
+}
+
+.util-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.util-btn {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.util-btn:hover { background: #e2e8f0; }
+
+/* Print styles */
+@media print {
+    header, .sidebar, .util-btns { display: none !important; }
+    .main { margin: 0; padding: 20px; }
+    .kpi-grid { break-inside: avoid; }
 }
 
 .toggle-btn {
@@ -367,6 +399,13 @@ input[type="number"] {
     margin-bottom: 5px;
 }
 
+.fees-box {
+    background: #f1f5f9;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
 /* MORTGAGE MIX */
 .mix-visual-bar {
     height: 12px;
@@ -409,9 +448,9 @@ input[type="number"] {
     font-size: 0.75rem;
     font-weight: 700;
     color: #0f172a;
-    min-width: 55px;
+    min-width: 32px;
     text-align: right;
-    white-space: nowrap;
+    line-height: 1.1;
     margin-left: 4px;
 }
 
@@ -420,16 +459,17 @@ input[type="number"] {
     align-items: center;
     gap: 4px;
     margin-left: 4px;
-    width: 78px;
+    min-width: 70px;
     justify-content: flex-end;
 }
 
 .mix-rate-val {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: #64748b;
     font-family: monospace;
     cursor: pointer;
     border-bottom: 1px dashed #cbd5e1;
+    white-space: nowrap;
 }
 
 .mix-rate-input {
@@ -444,6 +484,96 @@ input[type="number"] {
 .mix-rate-input.show {
     display: block;
 }
+
+.prepay-section {
+    margin-top: 12px;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 8px;
+}
+.prepay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #64748b;
+    padding: 4px 0;
+}
+.prepay-header:hover { color: var(--primary); }
+.prepay-arrow {
+    font-size: 0.85rem;
+    font-weight: 300;
+    width: 18px;
+    height: 18px;
+    line-height: 16px;
+    text-align: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.prepay-header:hover .prepay-arrow { border-color: var(--primary); }
+.prepay-arrow.open { transform: rotate(45deg); background: var(--primary); color: #fff; border-color: var(--primary); }
+.prepay-container { padding: 8px 0; }
+.prepay-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: #f8fafc;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 0.7rem;
+}
+.prepay-item select, .prepay-item input {
+    padding: 4px 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+.prepay-item select { width: 80px; }
+.prepay-item input[type="number"] { width: 70px; }
+.prepay-item select:disabled { opacity: 0.5; cursor: not-allowed; }
+.prepay-remove { color: #ef4444; cursor: pointer; margin-left: auto; font-weight: bold; }
+.prepay-remove:hover { color: #dc2626; }
+.prepay-max {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    margin-right: 4px;
+}
+.prepay-amt-group {
+    display: flex;
+    align-items: stretch;
+}
+.prepay-amt-group input {
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+}
+.prepay-max-btn {
+    font-size: 0.6rem;
+    color: var(--primary);
+    background: #eff6ff;
+    padding: 4px 6px;
+    border-radius: 0 4px 4px 0;
+    border: 1px solid #e2e8f0;
+    border-left: none;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+.prepay-max-btn:hover { background: var(--primary); color: #fff; }
+.prepay-add-btn {
+    background: none;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    color: #64748b;
+    cursor: pointer;
+    width: 100%;
+}
+.prepay-add-btn:hover { border-color: var(--primary); color: var(--primary); }
+.prepay-label { color: #64748b; white-space: nowrap; }
 
 .track-badge {
     display: inline-block;
@@ -655,6 +785,12 @@ input[type="number"] {
     text-align: center;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
+.kpi-re { background: #f0fdf4; border-bottom: 4px solid var(--success); }
+.kpi-sp { background: #eff6ff; border-bottom: 4px solid var(--primary); }
+.kpi-re-border { border-bottom: 4px solid var(--success); }
+.kpi-sp-border { border-bottom: 4px solid var(--primary); }
+.kpi-bad { background: #fff1f2; border-color: #fecdd3; }
+.kpi-good { background: #f0fdf4; border-color: #bbf7d0; }
 
 .kpi-num {
     font-size: 1.2rem;
@@ -821,3 +957,138 @@ input[type="checkbox"] {
         min-height: 800px;
     }
 }
+
+
+/* ========== DARK MODE - MUST BE LAST ========== */
+body.dark {
+    background: #0f172a !important;
+    color-scheme: dark;
+}
+
+/* Main containers */
+body.dark .sidebar,
+body.dark .main,
+body.dark .layout,
+body.dark .sidebar-content {
+    background: #0f172a !important;
+}
+
+/* All text */
+body.dark * {
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+}
+
+/* Header */
+body.dark header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%) !important; }
+
+/* Cards - primary background #1e293b */
+body.dark .control-card,
+body.dark .kpi-card,
+body.dark .chart-card,
+body.dark .chart-wrapper,
+body.dark .equity-box,
+body.dark .kpi-box,
+body.dark .kpi-re,
+body.dark .kpi-sp,
+body.dark .kpi-bad,
+body.dark .kpi-good,
+body.dark .scenario-box,
+body.dark .specs-card,
+body.dark .inline-spec,
+body.dark .scen-btn,
+body.dark .scen-btn.active,
+body.dark .scen-btn:hover,
+body.dark .select-item,
+body.dark .pill.toggle,
+body.dark .lock-toggle { 
+    background: #1e293b !important; 
+}
+
+/* Secondary elements - #334155 */
+body.dark .card-row,
+body.dark .pills,
+body.dark .view-toggles,
+body.dark .util-btn,
+body.dark .prepay-item,
+body.dark .prepay-section,
+body.dark .mix-visual-bar,
+body.dark .version-badge,
+body.dark #infMeter span,
+body.dark .prepay-amt-group,
+body.dark .header-controls,
+body.dark .lev-bar-bg,
+body.dark .compact,
+body.dark .locked,
+body.dark .toggle.active,
+body.dark .meter-seg,
+body.dark .fees-box { 
+    background: #334155 !important; 
+}
+
+/* Inputs */
+body.dark input,
+body.dark select,
+body.dark textarea,
+body.dark .pill { 
+    background: #0f172a !important; 
+}
+body.dark input[type="range"] { background: #475569 !important; }
+body.dark .pill.active { background: var(--primary) !important; }
+body.dark .toggle-btn.active { background: #1e293b !important; }
+body.dark .prepay-add-btn { background: transparent !important; }
+body.dark .prepay-max-btn { background: #475569 !important; }
+
+/* Muted text */
+body.dark .card-lbl,
+body.dark .section-title,
+body.dark .mix-label,
+body.dark .prepay-label,
+body.dark .lock-toggle,
+body.dark .rate-toggle-btn,
+body.dark .mix-rate-val,
+body.dark .prepay-max,
+body.dark .toggle-btn,
+body.dark .prepay-header span,
+body.dark .kpi-lbl { 
+    color: #94a3b8 !important; 
+}
+
+/* Override ALL inline background styles */
+body.dark [style*="background:#f"],
+body.dark [style*="background: #f"],
+body.dark [style*="background:#e"],
+body.dark [style*="background: #e"],
+body.dark [style*="background:#d"],
+body.dark [style*="background:#c"],
+body.dark [style*="background:#b"],
+body.dark [style*="background:#a"],
+body.dark [style*="background:#9"],
+body.dark [style*="background:#8"],
+body.dark [style*="background:#fff"],
+body.dark [style*="background: #fff"],
+body.dark [style*="background:white"],
+body.dark [style*="background: white"] { 
+    background: #1e293b !important; 
+}
+
+/* Keep track colors */
+body.dark .mix-bar-seg[style*="#3b82f6"] { background: #3b82f6 !important; }
+body.dark .mix-bar-seg[style*="#a855f7"] { background: #a855f7 !important; }
+body.dark .mix-bar-seg[style*="#14b8a6"] { background: #14b8a6 !important; }
+body.dark .mix-bar-seg[style*="#f97316"] { background: #f97316 !important; }
+body.dark .mix-bar-seg[style*="#f43f5e"] { background: #f43f5e !important; }
+body.dark .track-badge[style*="#3b82f6"] { background: #3b82f6 !important; }
+body.dark .track-badge[style*="#a855f7"] { background: #a855f7 !important; }
+body.dark .track-badge[style*="#14b8a6"] { background: #14b8a6 !important; }
+body.dark .track-badge[style*="#f97316"] { background: #f97316 !important; }
+body.dark .track-badge[style*="#f43f5e"] { background: #f43f5e !important; }
+
+/* Keep meter colors */
+body.dark .meter-seg[style*="#86efac"] { background: #86efac !important; }
+body.dark .meter-seg[style*="#fcd34d"] { background: #fcd34d !important; }
+body.dark .meter-seg[style*="#fca5a5"] { background: #fca5a5 !important; }
+
+/* KPI borders */
+body.dark .kpi-re, body.dark .kpi-re-border { border-bottom-color: var(--success) !important; }
+body.dark .kpi-sp, body.dark .kpi-sp-border { border-bottom-color: var(--primary) !important; }
