@@ -16,8 +16,8 @@
         <h1>Brickfolio <span class="version-badge">BETA</span></h1>
         <div class="header-controls">
             <div class="view-toggles">
-                <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')">₪ Value</div>
-                <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')">% ROI</div>
+                <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')" data-t="value">₪ Value</div>
+                <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')" data-t="roi">% ROI</div>
             </div>
             <div class="util-btns">
                 <button class="util-btn" onclick="toggleLang()" title="עברית / English">🌐</button>
@@ -174,7 +174,7 @@
 
                     <div class="card-divider"></div>
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
-                        <span class="card-lbl">Repayment Method</span>
+                        <span class="card-lbl" data-t="repayMethod">Repayment Method</span>
                         <div class="pills" id="pRepayMethod">
                             <div class="pill active" id="repaySpitzer" onclick="setRepayMethod('spitzer')">Spitzer <span class="opt-star" id="starSpitzer">★</span></div>
                             <div class="pill" id="repayEqualPrincipal" onclick="setRepayMethod('equalPrincipal')">Equal Principal <span class="opt-star" id="starEqual">★</span></div>
@@ -230,7 +230,7 @@
 
                     <div class="card-divider"></div>
                     <div class="card-row" style="margin-bottom:10px;">
-                        <span class="card-lbl">Credit Score</span>
+                        <span class="card-lbl" data-t="creditScore">Credit Score</span>
                         <span class="card-val" id="creditScoreVal">900-950</span>
                     </div>
                     <div class="range-wrapper">
@@ -271,15 +271,15 @@
                         style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:4px;">
                         QUICK SCENARIOS</div>
                     <div class="scenario-grid">
-                        <div class="scen-btn bear" id="scenBear" onclick="applyScenario('bear')">🐻 Bear</div>
-                        <div class="scen-btn base active" id="scenBase" onclick="applyScenario('base')">😐 Base</div>
-                        <div class="scen-btn bull" id="scenBull" onclick="applyScenario('bull')">🚀 Bull</div>
+                        <div class="scen-btn bear" id="scenBear" onclick="applyScenario('bear')" data-t="pessimistic">🐻 Bear</div>
+                        <div class="scen-btn base active" id="scenBase" onclick="applyScenario('base')" data-t="base">😐 Base</div>
+                        <div class="scen-btn bull" id="scenBull" onclick="applyScenario('bull')" data-t="optimistic">🚀 Bull</div>
                     </div>
                 </div>
 
                 <div class="control-card">
                     <!-- RE APPRECIATION -->
-                    <div class="card-row"><span class="card-lbl">Home Appreciation</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="appreciation">Home Appreciation</span> <span class="card-val"
                             id="vApp">Fixed</span></div>
                     <div class="pills" id="pApp">
                         <div class="pill" onclick="tgl('App',true)">Hist</div>
@@ -289,7 +289,7 @@
                             value="4" oninput="runSim()"></div>
 
                     <div style="margin-top:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
-                        <div class="card-row"><span class="card-lbl">Rental Yield</span> <span class="card-val"
+                        <div class="card-row"><span class="card-lbl" data-t="rentYield">Rental Yield</span> <span class="card-val"
                                 id="vYld">Fixed</span></div>
                         <div class="pills" id="pYld">
                             <div class="pill" onclick="tgl('Yld',true)">Hist</div>
@@ -305,7 +305,7 @@
                 </div>
 
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl">S&P 500 Return</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="spReturn">S>S&P 500 Return<P 500 Return</span> <span class="card-val"
                             id="vSP">Fixed</span></div>
                     <div class="pills" id="pSP">
                         <div class="pill" onclick="tgl('SP',true)">Hist</div>
@@ -343,7 +343,7 @@
                 </div>
 
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl">Interest (Base)</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="interest">Interest (Base)</span> <span class="card-val"
                             id="vInt">Fixed</span></div>
                     <div class="pills" id="pInt">
                         <div class="pill" onclick="tgl('Int',true)">Hist</div>
@@ -357,7 +357,7 @@
                 </div>
 
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl">Inflation (CPI)</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="inflation">Inflation (CPI)</span> <span class="card-val"
                             id="vInf">Fixed</span></div>
                     <div class="pills" id="pInf">
                         <div class="pill" onclick="tgl('Inf',true)">Hist</div>
@@ -376,28 +376,28 @@
 
                 <div class="section-title" data-t="costs">Hidden Costs & Friction</div>
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl">Purchase Discount</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="discount">Purchase Discount</span> <span class="card-val"
                             id="vDiscount">1%</span></div>
                     <input type="range" id="rDiscount" min="-10" max="10" step="1" value="1" oninput="runSim()">
                     <div class="card-sub">Below market price (negative = overpay)</div>
 
-                    <div class="card-row" style="margin-top:8px;"><span class="card-lbl">Buying Friction</span> <span class="card-val"
+                    <div class="card-row" style="margin-top:8px;"><span class="card-lbl" data-t="buyCost">Buying Friction</span> <span class="card-val"
                             id="vBuyCost">2.0%</span></div>
                     <input type="range" id="rBuyCost" min="0" max="15" step="0.5" value="2.0" oninput="runSim()">
                     <div class="card-sub">Entry costs (legal/registration; no purchase tax/broker)</div>
 
-                    <div class="card-row" style="margin-top:8px;"><span class="card-lbl">Maint. & Vacancy</span> <span
+                    <div class="card-row" style="margin-top:8px;"><span class="card-lbl" data-t="maintenance">Maint. & Vacancy</span> <span
                             class="card-val" id="vMaint">8%</span></div>
                     <input type="range" id="rMaint" min="0" max="30" step="1" value="8" oninput="runSim()">
                     <div class="card-sub">% of Gross Rent lost annually</div>
 
-                    <div class="card-row" style="margin-top:8px;"><span class="card-lbl">Selling Friction</span> <span
+                    <div class="card-row" style="margin-top:8px;"><span class="card-lbl" data-t="sellCost">Selling Friction</span> <span
                             class="card-val" id="vSellCost">2.0%</span></div>
                     <input type="range" id="rSellCost" min="0" max="10" step="0.5" value="2.0" oninput="runSim()">
                     <div class="card-sub">Agent & Lawyer at Exit</div>
                 </div>
 
-                <div class="section-title">Advanced Configuration</div>
+                <div class="section-title" data-t="advancedConfig">Advanced Configuration</div>
                 <div class="control-card" style="border-left:3px solid #8b5cf6">
                     <div class="card-row"><span class="card-lbl">Taxation Basis</span> <span class="card-val"
                             id="vTaxMode">Real</span></div>
@@ -420,23 +420,23 @@
             <div class="kpi-grid">
                 <div class="kpi-box kpi-re">
                     <div class="kpi-num" style="color:var(--success)" id="kRECagr">0%</div>
-                    <div class="kpi-lbl" data-t="realEstate">RE Annual ROI</div>
+                    <div class="kpi-lbl" data-t="reAnnualRoi">RE Annual ROI</div>
                 </div>
                 <div class="kpi-box kpi-sp">
                     <div class="kpi-num" style="color:var(--primary)" id="kSPCagr">0%</div>
-                    <div class="kpi-lbl" data-t="sp500">S&P Annual ROI</div>
+                    <div class="kpi-lbl" data-t="spAnnualRoi">S&P Annual ROI</div>
                 </div>
                 <div class="kpi-box">
                     <div class="kpi-num" style="color:#64748b" id="kDiff">0</div>
-                    <div class="kpi-lbl">ROI Difference</div>
+                    <div class="kpi-lbl" data-t="roiDiff">ROI Difference</div>
                 </div>
                 <div class="kpi-box kpi-re-border">
                     <div class="kpi-num" style="color:var(--success)" id="kRE">0</div>
-                    <div class="kpi-lbl" data-t="realEstate">Real Estate Net</div>
+                    <div class="kpi-lbl" data-t="reNet">Real Estate Net</div>
                 </div>
                 <div class="kpi-box kpi-sp-border">
                     <div class="kpi-num" style="color:var(--primary)" id="kSP">0</div>
-                    <div class="kpi-lbl" data-t="sp500">S&P 500 Net</div>
+                    <div class="kpi-lbl" data-t="spNet">S&P 500 Net</div>
                 </div>
                 <div class="kpi-box kpi-bad">
                     <div class="kpi-num wrap" style="color:#e11d48" id="kInt">0</div>
@@ -444,21 +444,21 @@
                 </div>
                 <div class="kpi-box kpi-good">
                     <div class="kpi-num" style="color:#15803d" id="kRent">0</div>
-                    <div class="kpi-lbl">Rent Collected</div>
+                    <div class="kpi-lbl" data-t="rentIncome">Rent Collected</div>
                 </div>
             </div>
 
             <div class="inline-summary" style="margin-top:0; margin-bottom:8px;">
                 <div class="inline-spec">
-                    <span class="inline-label">Asset Price</span>
+                    <span class="inline-label" data-t="asset">Asset Price</span>
                     <span class="inline-value" id="valAsset">1.8M</span>
                 </div>
                 <div class="inline-spec">
-                    <span class="inline-label">Mortgage</span>
+                    <span class="inline-label" data-t="mortgage">Mortgage</span>
                     <span class="inline-value" id="valMortgage">1.2M</span>
                 </div>
                 <div class="inline-spec">
-                    <span class="inline-label">Leverage</span>
+                    <span class="inline-label" data-t="leverage">Leverage</span>
                     <span class="inline-value" id="valLev">x3.3</span>
                     <div class="lev-bar-bg compact">
                         <div class="lev-bar-fill" id="barLev"></div>
