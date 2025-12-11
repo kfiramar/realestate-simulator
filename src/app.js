@@ -1,5 +1,143 @@
 const AppLogic = window.Logic || {};
 
+// --- TRANSLATIONS ---
+let lang = localStorage.getItem('lang') || 'en';
+const T = {
+    en: {
+        title: 'Brickfolio',
+        startingCash: 'Starting Cash',
+        dealStructure: 'Deal Structure',
+        buyerType: 'Buyer Type',
+        firstHome: 'First Home (75% LTV)',
+        replacement: 'Replacement (70% LTV)',
+        investor: 'Investment (50% LTV)',
+        downPayment: 'Down Payment',
+        duration: 'Duration',
+        horizon: 'Horizon',
+        mortgageMix: 'Mortgage Mix',
+        prime: 'Prime',
+        kalatz: 'Kalatz',
+        malatz: 'Malatz',
+        katz: 'Katz (CPI)',
+        matz: 'Matz (CPI)',
+        prepayments: 'Prepayments',
+        addPrepay: '+ Add Prepayment',
+        assumptions: 'Assumptions',
+        spReturn: 'S&P Return',
+        appreciation: 'Appreciation',
+        inflation: 'Inflation',
+        interest: 'Interest',
+        rentYield: 'Rent Yield',
+        scenario: 'Scenario',
+        base: 'Base',
+        optimistic: 'Optimistic',
+        pessimistic: 'Pessimistic',
+        costs: 'Costs & Fees',
+        buyCost: 'Buy Cost',
+        sellCost: 'Sell Cost',
+        maintenance: 'Maintenance',
+        spFee: 'S&P Fee',
+        fxSpread: 'FX Spread',
+        results: 'Results',
+        realEstate: 'Real Estate',
+        sp500: 'S&P 500',
+        finalEquity: 'Final Equity',
+        cagr: 'CAGR',
+        totalInterest: 'Total Interest',
+        wealthGrowth: 'Wealth Growth',
+        cashFlow: 'Cash Flow',
+        rent: 'Rent',
+        interestPmt: 'Interest',
+        principal: 'Principal',
+        netCashflow: 'Net Cashflow',
+        year: 'Year',
+        years: 'years',
+        asset: 'Asset',
+        mortgage: 'Mortgage',
+        leverage: 'Leverage',
+        creditScore: 'Credit Score',
+        value: 'Value',
+        roi: 'ROI'
+    },
+    he: {
+        title: 'בריקפוליו',
+        startingCash: 'הון עצמי',
+        dealStructure: 'מבנה העסקה',
+        buyerType: 'סוג רוכש',
+        firstHome: 'דירה ראשונה (75% מימון)',
+        replacement: 'דירה חלופית (70% מימון)',
+        investor: 'משקיע (50% מימון)',
+        downPayment: 'מקדמה',
+        duration: 'תקופה',
+        horizon: 'אופק',
+        mortgageMix: 'תמהיל משכנתא',
+        prime: 'פריים',
+        kalatz: 'קל"צ',
+        malatz: 'מל"צ',
+        katz: 'ק"צ (צמוד)',
+        matz: 'מ"צ (צמוד)',
+        prepayments: 'פירעונות מוקדמים',
+        addPrepay: '+ הוסף פירעון',
+        assumptions: 'הנחות',
+        spReturn: 'תשואת S&P',
+        appreciation: 'עליית ערך',
+        inflation: 'אינפלציה',
+        interest: 'ריבית',
+        rentYield: 'תשואת שכירות',
+        scenario: 'תרחיש',
+        base: 'בסיס',
+        optimistic: 'אופטימי',
+        pessimistic: 'פסימי',
+        costs: 'עלויות ועמלות',
+        buyCost: 'עלות רכישה',
+        sellCost: 'עלות מכירה',
+        maintenance: 'תחזוקה',
+        spFee: 'דמי ניהול',
+        fxSpread: 'מרווח מט"ח',
+        results: 'תוצאות',
+        realEstate: 'נדל"ן',
+        sp500: 'S&P 500',
+        finalEquity: 'הון סופי',
+        cagr: 'תשואה שנתית',
+        totalInterest: 'סה"כ ריבית',
+        wealthGrowth: 'צמיחת הון',
+        cashFlow: 'תזרים מזומנים',
+        rent: 'שכירות',
+        interestPmt: 'ריבית',
+        principal: 'קרן',
+        netCashflow: 'תזרים נטו',
+        year: 'שנה',
+        years: 'שנים',
+        asset: 'נכס',
+        mortgage: 'משכנתא',
+        leverage: 'מינוף',
+        creditScore: 'דירוג אשראי',
+        value: 'ערך',
+        roi: 'תשואה'
+    }
+};
+
+function t(key) { return T[lang][key] || T['en'][key] || key; }
+
+function toggleLang() {
+    lang = lang === 'en' ? 'he' : 'en';
+    localStorage.setItem('lang', lang);
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+    applyTranslations();
+}
+
+function applyTranslations() {
+    document.querySelectorAll('[data-t]').forEach(el => {
+        el.textContent = t(el.dataset.t);
+    });
+    document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.tPlaceholder);
+    });
+    // Update chart labels on language change
+    if (wealthChart || flowChart) runSim();
+}
+
 const SCENARIOS = {
     // Based on CBS official data (2018-2024 district indices, 2023 rent tables)
     // RE appreciation: ~5-6% nominal, Rent yield: ~2.5-3% gross, S&P: ~7-10% nominal
@@ -1221,6 +1359,12 @@ function bootstrap() {
     if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark');
     }
+    // Restore language
+    if (lang === 'he') {
+        document.documentElement.lang = 'he';
+        document.documentElement.dir = 'rtl';
+    }
+    applyTranslations();
     const hadSaved = loadState();
     updMeter();
     updateLockUI();
@@ -1305,6 +1449,7 @@ window.toggleAdvancedTerms = toggleAdvancedTerms;
 window.setSurplusMode = setSurplusMode;
 window.syncMixInput = syncMixInput;
 window.toggleRateEdit = toggleRateEdit;
+window.toggleLang = toggleLang;
 window.resetAll = resetAll;
 window.toggleDarkMode = toggleDarkMode;
 window.printResults = printResults;

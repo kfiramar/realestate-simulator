@@ -9,6 +9,13 @@
     --text: #0f172a;
 }
 
+/* RTL Support */
+[dir="rtl"] { direction: rtl; text-align: right; }
+[dir="rtl"] .sidebar { border-right: none; border-left: 1px solid var(--border); }
+[dir="rtl"] .card-row { flex-direction: row-reverse; }
+[dir="rtl"] .mix-row { flex-direction: row-reverse; }
+[dir="rtl"] .kpi-box { text-align: center; }
+
 body.loading { opacity: 0; }
 body { transition: opacity 0.1s; }
 

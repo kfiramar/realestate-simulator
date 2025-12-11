@@ -20,6 +20,7 @@
                 <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')">% ROI</div>
             </div>
             <div class="util-btns">
+                <button class="util-btn" onclick="toggleLang()" title="עברית / English">🌐</button>
                 <button class="util-btn" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
                 <button class="util-btn" onclick="printResults()" title="Print results">🖨️</button>
                 <button class="util-btn" onclick="resetAll()" title="Reset to defaults">↺</button>
@@ -32,13 +33,13 @@
             <div class="sidebar-content">
 
                 <div class="equity-box" id="equityBox">
-                    <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;">Starting Cash</div>
+                    <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;" data-t="startingCash">Starting Cash</div>
                     <input type="number" id="inpEquity" value="400000" step="10000" oninput="runSim()">
                 </div>
 
-                <div class="section-title">Deal Structure</div>
+                <div class="section-title" data-t="dealStructure">Deal Structure</div>
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl">Buyer Type</span>
+                    <div class="card-row"><span class="card-lbl" data-t="buyerType">Buyer Type</span>
                         <select id="buyerType"
                             style="padding:6px; border-radius:6px; border:1px solid var(--border); font-weight:600; color:#475569;"
                             onchange="setBuyerType(this.value)">
@@ -47,7 +48,7 @@
                             <option value="investor">Investment (50% LTV)</option>
                         </select>
                     </div>
-                    <div class="card-row"><span class="card-lbl">Down Payment <span class="lock-toggle" id="lockDownBtn"
+                    <div class="card-row"><span class="card-lbl">Down Payment<span class="lock-toggle" id="lockDownBtn"
                                 onclick="toggleLock('down')">Free</span></span> <span class="card-val"
                             id="dDown">30%</span></div>
                     <div class="range-wrapper">
@@ -56,7 +57,7 @@
                     </div>
 
                     <div class="card-divider"></div>
-                    <div class="card-row"><span class="card-lbl">Mortgage Mix (Tamheel)</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="mortgageMix">Mortgage Mix (Tamheel)</span> <span class="card-val"
                             id="valMixSum" style="color:#16a34a; display:none;">100%</span></div>
                     <div class="scenario-grid" style="margin-bottom:10px;">
                         <div class="scen-btn" style="flex:1" onclick="applyTamheel('defaultEven')">🧭 Default</div>
@@ -81,7 +82,7 @@
 
                     <div class="mix-row">
                         <span class="track-badge" style="background:#3b82f6"></span>
-                        <div class="mix-label">Prime</div>
+                        <div class="mix-label" data-t="prime">Prime</div>
                         <div class="mix-slider-container">
                             <input type="range" id="sliderPrime" min="0" max="100" step="1" value="34"
                                 oninput="syncMixInput('Prime')">
@@ -97,7 +98,7 @@
 
                     <div class="mix-row">
                         <span class="track-badge" style="background:#a855f7"></span>
-                        <div class="mix-label">Kalats</div>
+                        <div class="mix-label" data-t="kalatz">Kalats</div>
                         <div class="mix-slider-container">
                             <input type="range" id="sliderKalats" min="0" max="100" step="1" value="33"
                                 oninput="syncMixInput('Kalats')">
@@ -113,7 +114,7 @@
 
                     <div class="mix-row">
                         <span class="track-badge" style="background:#14b8a6"></span>
-                        <div class="mix-label">Malatz</div>
+                        <div class="mix-label" data-t="malatz">Malatz</div>
                         <div class="mix-slider-container">
                             <input type="range" id="sliderMalatz" min="0" max="100" step="1" value="33"
                                 oninput="syncMixInput('Malatz')">
@@ -129,7 +130,7 @@
 
                     <div class="mix-row">
                         <span class="track-badge" style="background:#f97316"></span>
-                        <div class="mix-label">Katz (CPI)</div>
+                        <div class="mix-label" data-t="katz">Katz (CPI)</div>
                         <div class="mix-slider-container">
                             <input type="range" id="sliderKatz" min="0" max="100" step="1" value="0"
                                 oninput="syncMixInput('Katz')">
@@ -145,7 +146,7 @@
 
                     <div class="mix-row" style="margin-bottom:0;">
                         <span class="track-badge" style="background:#f43f5e"></span>
-                        <div class="mix-label">Matz (CPI)</div>
+                        <div class="mix-label" data-t="matz">Matz (CPI)</div>
                         <div class="mix-slider-container">
                             <input type="range" id="sliderMatz" min="0" max="100" step="1" value="0"
                                 oninput="syncMixInput('Matz')">
@@ -194,31 +195,31 @@
                     </div>
                     <div id="advancedTermBox" style="display:none; margin-top:8px;">
                         <div class="mix-row">
-                            <div class="mix-label">Prime</div>
+                            <div class="mix-label" data-t="prime">Prime</div>
                             <input type="range" id="termPrime" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termPrimeVal', this.value); runSim()">
                             <span class="card-val" id="termPrimeVal" style="width:45px; text-align:right;">25y</span>
                         </div>
                         <div class="mix-row">
-                            <div class="mix-label">Kalats</div>
+                            <div class="mix-label" data-t="kalatz">Kalats</div>
                             <input type="range" id="termKalats" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termKalatsVal', this.value); runSim()">
                             <span class="card-val" id="termKalatsVal" style="width:45px; text-align:right;">25y</span>
                         </div>
                         <div class="mix-row">
-                            <div class="mix-label">Malatz</div>
+                            <div class="mix-label" data-t="malatz">Malatz</div>
                             <input type="range" id="termMalatz" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termMalatzVal', this.value); runSim()">
                             <span class="card-val" id="termMalatzVal" style="width:45px; text-align:right;">25y</span>
                         </div>
                         <div class="mix-row">
-                            <div class="mix-label">Katz</div>
+                            <div class="mix-label" data-t="katz">Katz</div>
                             <input type="range" id="termKatz" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termKatzVal', this.value); runSim()">
                             <span class="card-val" id="termKatzVal" style="width:45px; text-align:right;">25y</span>
                         </div>
                         <div class="mix-row">
-                            <div class="mix-label">Matz</div>
+                            <div class="mix-label" data-t="matz">Matz</div>
                             <input type="range" id="termMatz" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termMatzVal', this.value); runSim()">
                             <span class="card-val" id="termMatzVal" style="width:45px; text-align:right;">25y</span>
@@ -373,7 +374,7 @@
                     </div>
                 </div>
 
-                <div class="section-title">Hidden Costs & Friction</div>
+                <div class="section-title" data-t="costs">Hidden Costs & Friction</div>
                 <div class="control-card">
                     <div class="card-row"><span class="card-lbl">Purchase Discount</span> <span class="card-val"
                             id="vDiscount">1%</span></div>
@@ -419,11 +420,11 @@
             <div class="kpi-grid">
                 <div class="kpi-box kpi-re">
                     <div class="kpi-num" style="color:var(--success)" id="kRECagr">0%</div>
-                    <div class="kpi-lbl">RE Annual ROI</div>
+                    <div class="kpi-lbl" data-t="realEstate">RE Annual ROI</div>
                 </div>
                 <div class="kpi-box kpi-sp">
                     <div class="kpi-num" style="color:var(--primary)" id="kSPCagr">0%</div>
-                    <div class="kpi-lbl">S&P Annual ROI</div>
+                    <div class="kpi-lbl" data-t="sp500">S&P Annual ROI</div>
                 </div>
                 <div class="kpi-box">
                     <div class="kpi-num" style="color:#64748b" id="kDiff">0</div>
@@ -431,15 +432,15 @@
                 </div>
                 <div class="kpi-box kpi-re-border">
                     <div class="kpi-num" style="color:var(--success)" id="kRE">0</div>
-                    <div class="kpi-lbl">Real Estate Net</div>
+                    <div class="kpi-lbl" data-t="realEstate">Real Estate Net</div>
                 </div>
                 <div class="kpi-box kpi-sp-border">
                     <div class="kpi-num" style="color:var(--primary)" id="kSP">0</div>
-                    <div class="kpi-lbl">S&P 500 Net</div>
+                    <div class="kpi-lbl" data-t="sp500">S&P 500 Net</div>
                 </div>
                 <div class="kpi-box kpi-bad">
                     <div class="kpi-num wrap" style="color:#e11d48" id="kInt">0</div>
-                    <div class="kpi-lbl">Interest Paid</div>
+                    <div class="kpi-lbl" data-t="totalInterest">Interest Paid</div>
                 </div>
                 <div class="kpi-box kpi-good">
                     <div class="kpi-num" style="color:#15803d" id="kRent">0</div>
