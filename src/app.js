@@ -6,6 +6,7 @@ const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX,
 const $ = id => document.getElementById(id);
 const $pct = id => parseFloat($(id)?.value || 0) / 100;
 const $int = id => parseInt($(id)?.value || 0);
+const $pill = (id, isFirst) => { const p = $(id); if (p) { p.children[0]?.classList.toggle('active', isFirst); p.children[1]?.classList.toggle('active', !isFirst); } };
 
 // --- TRANSLATIONS ---
 let lang = window.i18n?.getLang() || 'en';
@@ -94,24 +95,14 @@ function setMode(m, opts = {}) {
 function tgl(k, h, opts = {}) {
     cfg[k].is = h;
     setState('hist' + k, h); // Sync to Alpine store
-    // Keep for non-Alpine environments
-    const pEl = document.getElementById(cfg[k].p);
-    if (pEl) {
-        pEl.children[0]?.classList.toggle('active', h);
-        pEl.children[1]?.classList.toggle('active', !h);
-    }
-    document.getElementById(cfg[k].b)?.classList.toggle('show', !h);
+    $pill(cfg[k].p, h);
+    $(cfg[k].b)?.classList.toggle('show', !h);
     if (k === 'Inf') updMeter();
     if (!opts.skipSim) runSim();
 }
 function setGlobalMode(isHist, opts = {}) {
     setState('globalHistMode', isHist);
-    // Keep for non-Alpine environments
-    const pGlobal = $('pGlobal');
-    if (pGlobal) {
-        pGlobal.children[0]?.classList.toggle('active', isHist);
-        pGlobal.children[1]?.classList.toggle('active', !isHist);
-    }
+    $pill('pGlobal', isHist);
     $('scenBox')?.classList.toggle('show', !isHist);
     for (let k in cfg) { tgl(k, isHist, opts); }
 }
@@ -137,33 +128,19 @@ function applyScenario(type, opts = {}) {
 
 function applyTamheel(type) {
     const p = TAMHEEL_PROFILES[type];
-    $('pctPrime').value = p.p;
-    $('pctKalats').value = p.k;
-    $('pctKatz').value = p.z;
-    $('pctMalatz').value = p.m || 0;
-    $('pctMatz').value = p.mt || 0;
-    $('termPrime').value = p.tP;
-    $('termKalats').value = p.tK;
-    $('termKatz').value = p.tZ;
-    $('termMalatz').value = p.tM;
-    $('termMatz').value = p.tMt;
-    ['termPrimeVal','termKalatsVal','termKatzVal','termMalatzVal','termMatzVal'].forEach((id, i) => {
-        $(id).textContent = [p.tP, p.tK, p.tZ, p.tM, p.tMt][i] + 'y';
+    const map = {Prime: ['p','tP'], Kalats: ['k','tK'], Katz: ['z','tZ'], Malatz: ['m','tM'], Matz: ['mt','tMt']};
+    Object.entries(map).forEach(([track, [pctKey, termKey]]) => {
+        $('pct' + track).value = p[pctKey] || 0;
+        $('term' + track).value = p[termKey];
+        $('term' + track + 'Val').textContent = p[termKey] + 'y';
     });
     if (!advancedTermMode) toggleAdvancedTerms();
     checkMix();
 }
 
 function mapScoreToTierKey(score) {
-    const s = score || 0;
-    if (s >= 950) return 'A';
-    if (s >= 900) return 'B';
-    if (s >= 850) return 'C';
-    if (s >= 800) return 'D';
-    if (s >= 750) return 'E';
-    if (s >= 700) return 'F';
-    if (s >= 660) return 'G';
-    return 'H';
+    const thresholds = [[950,'A'],[900,'B'],[850,'C'],[800,'D'],[750,'E'],[700,'F'],[660,'G']];
+    return thresholds.find(([t]) => (score || 0) >= t)?.[1] || 'H';
 }
 
 function getCreditTier(score) {
@@ -234,12 +211,7 @@ function setCreditScore(v) {
 
 function tglHor(isAuto) {
     setState('horMode', isAuto ? 'auto' : 'custom');
-    // Keep for non-Alpine environments (tests)
-    const pHor = $('pHor');
-    if (pHor) {
-        pHor.children[0]?.classList.toggle('active', isAuto);
-        pHor.children[1]?.classList.toggle('active', !isAuto);
-    }
+    $pill('pHor', isAuto);
     $('bHor')?.classList.toggle('show', !isAuto);
     if (isAuto) { setState('lockHor', true); }
     runSim();
@@ -307,16 +279,10 @@ function showTermVal(elId, v) {
 
 function syncTrackTermsToMain() {
     const dur = $('rDur').value;
-    $('termPrime').value = dur;
-    $('termKalats').value = dur;
-    $('termKatz').value = dur;
-    $('termMalatz').value = dur;
-    $('termMatz').value = dur;
-    showTermVal('termPrimeVal', dur);
-    showTermVal('termKalatsVal', dur);
-    showTermVal('termKatzVal', dur);
-    showTermVal('termMalatzVal', dur);
-    showTermVal('termMatzVal', dur);
+    ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => {
+        $('term' + t).value = dur;
+        showTermVal('term' + t + 'Val', dur);
+    });
 }
 
 function toggleAdvancedTerms() {
@@ -386,52 +352,27 @@ function updateDealDisplay(eq, downPct, initialLoan) {
 }
 
 function updateTrackTermEnabled() {
-    const pP = parseFloat($('pctPrime').value) || 0;
-    const pK = parseFloat($('pctKalats').value) || 0;
-    const pZ = parseFloat($('pctKatz').value) || 0;
-    const pM = parseFloat($('pctMalatz').value) || 0;
-    const pMT = parseFloat($('pctMatz').value) || 0;
-
-    const setDisabled = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = val <= 0;
-    };
-
-    setDisabled('termPrime', pP);
-    setDisabled('termKalats', pK);
-    setDisabled('termKatz', pZ);
-    setDisabled('termMalatz', pM);
-    setDisabled('termMatz', pMT);
+    const tracks = {Prime: 'pctPrime', Kalats: 'pctKalats', Katz: 'pctKatz', Malatz: 'pctMalatz', Matz: 'pctMatz'};
+    Object.entries(tracks).forEach(([t, pctId]) => {
+        const el = $('term' + t);
+        if (el) el.disabled = (parseFloat($(pctId).value) || 0) <= 0;
+    });
 }
 
 function syncMixInput(track) {
-    const slider = document.getElementById('slider' + track);
-    const hidden = document.getElementById('pct' + track);
-    const disp = document.getElementById('disp' + track);
-
-    // Calculate sum of other tracks
+    const slider = $('slider' + track);
     const tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
-    let othersSum = 0;
-    tracks.forEach(t => {
-        if (t !== track) othersSum += parseInt(document.getElementById('pct' + t).value) || 0;
-    });
-
-    // Cap this slider so total doesn't exceed 100
+    const othersSum = tracks.filter(t => t !== track).reduce((sum, t) => sum + $int('pct' + t), 0);
     const maxAllowed = 100 - othersSum;
-    const requested = parseInt(slider.value) || 0;
-    const newVal = Math.min(requested, maxAllowed);
+    const newVal = Math.min(parseInt(slider.value) || 0, maxAllowed);
 
-    // Show tooltip if capped
-    if (requested > maxAllowed) {
-        showMaxTooltip(slider, maxAllowed);
-    }
-
+    if (parseInt(slider.value) > maxAllowed) showMaxTooltip(slider, maxAllowed);
     slider.value = newVal;
-    hidden.value = newVal;
-    disp.innerText = newVal + '%';
+    $('pct' + track).value = newVal;
+    $('disp' + track).innerText = newVal + '%';
 
     checkMix();
-    window.Prepayments?.renderPrepayments(); // Update prepayment dropdowns when tracks change
+    window.Prepayments?.renderPrepayments();
 }
 
 function showMaxTooltip(el, maxVal) {
