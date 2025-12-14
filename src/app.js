@@ -448,20 +448,14 @@ function setOptimizeMode(m) {
 
 function updateOptimalRepayMethod(baseParams, currentCagr) {
     const altMethod = repayMethod === 'spitzer' ? 'equalPrincipal' : 'spitzer';
-    const altParams = { ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false };
-    const altRes = AppLogic.simulate(altParams);
+    const altRes = AppLogic.simulate({ ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false });
 
-    const starSpitzer = $('starSpitzer');
-    const starEqual = $('starEqual');
+    const starSpitzer = $('starSpitzer'), starEqual = $('starEqual');
     if (!starSpitzer || !starEqual) return;
 
-    const spitzerCagr = repayMethod === 'spitzer' ? currentCagr : altRes.cagrRE;
-    const equalCagr = repayMethod === 'equalPrincipal' ? currentCagr : altRes.cagrRE;
-
-    starSpitzer.classList.remove('show');
-    starEqual.classList.remove('show');
-    if (spitzerCagr > equalCagr) starSpitzer.classList.add('show');
-    else if (equalCagr > spitzerCagr) starEqual.classList.add('show');
+    const [spitzerCagr, equalCagr] = repayMethod === 'spitzer' ? [currentCagr, altRes.cagrRE] : [altRes.cagrRE, currentCagr];
+    starSpitzer.classList.toggle('show', spitzerCagr > equalCagr);
+    starEqual.classList.toggle('show', equalCagr > spitzerCagr);
 }
 
 function updateSweetSpots() {
@@ -513,13 +507,7 @@ function updateSweetSpotMarkers(best) {
     };
 
     setSpot('spotDown', posCalc(best.d, 25, 100));
-
-    const spotDur = $('spotDur');
-    if (advancedTermMode) {
-        spotDur.classList.remove('visible');
-    } else {
-        setSpot('spotDur', posCalc(best.t, 1, 30));
-    }
+    advancedTermMode ? $('spotDur').classList.remove('visible') : setSpot('spotDur', posCalc(best.t, 1, 30));
 
     if (horMode === 'custom' || lockHor) {
         setSpot('spotHor', posCalc(best.h, 1, 50));
