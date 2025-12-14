@@ -51,59 +51,19 @@ function applyTranslations() {
     runSim();
 }
 
-const SCENARIOS = {
-    // Based on CBS official data (2018-2024 district indices, 2023 rent tables)
-    // RE appreciation: ~5-6% nominal, Rent yield: ~2.5-3% gross, S&P: ~7-10% nominal
-    bear: { sp: 7.0, app: 3.0, int: 5.0, inf: 3.5, yld: 2.5, drift: 1.0 },
-    base: { sp: 9.5, app: 5.0, int: 4.25, inf: 2.5, yld: 2.8, drift: 0.5 },
-    bull: { sp: 10.0, app: 7.0, int: 3.0, inf: 2.0, yld: 3.0, drift: -0.5 }
-};
-
-// Common Israeli mortgage mixes (תמהיל משכנתא) - Dec 2025
-// All comply with BoI rules: ≥33% fixed, ≤66% variable
-const TAMHEEL_PROFILES = {
-    // Mix 1: "2025 Balanced Base" - most common modern recommendation
-    // 30% Prime + 40% KLATZ + 30% MALATZ - balanced exposure
-    defaultEven: { p: 30, k: 40, z: 0, m: 30, mt: 0, tP: 30, tK: 20, tZ: 20, tM: 30, tMt: 15 },
-    
-    // Mix 2: "High Stability" - risk-averse, payment predictability
-    // 25% Prime + 50% KLATZ + 25% MALATZ
-    shield: { p: 25, k: 50, z: 0, m: 25, mt: 0, tP: 30, tK: 25, tZ: 25, tM: 30, tMt: 20 },
-    
-    // Mix 3: "Classic Thirds with CPI" - lower initial payment, CPI risk
-    // 33% Prime + 34% KLATZ + 33% Variable CPI-linked
-    investor: { p: 33, k: 34, z: 0, m: 0, mt: 33, tP: 30, tK: 20, tZ: 20, tM: 30, tMt: 20 },
-    
-    // Mix 4: "Rate-Cuts Thesis" - max flexibility for refinancing
-    // 37% Prime + 33% KALATZ + 30% MALATZ
-    arbitrage: { p: 37, k: 33, z: 0, m: 30, mt: 0, tP: 30, tK: 12, tZ: 12, tM: 30, tMt: 10 }
-};
-
-// Base Spreads (Anchors) relative to BoI rate
-// Dec 2025 market data: BoI 4.25%, Prime 5.75% (BoI+1.5%), 5Y gov yield ~3.75%
-// Market ranges (LTV 60-75%): Prime 4.70-5.00%, MALATZ 4.45-4.75%, KLATZ 4.60-4.80%
-// CPI-Linked: Katz, Matz | Non-Linked: Prime, Kalatz, Malatz
-const ANCHORS = {
-    prime: 1.50,    // Prime = BoI + 1.5% (fixed by law), discount applied via risk
-    kalats: 0.60,   // Fixed, Non-Linked (KLATZ): target 4.60-4.70% for top tier
-    malatz: 0.51,   // Var 5yr, Non-Linked (MALATZ): ~5Y gov 3.75% + spread
-    katz: -1.30,    // Fixed, CPI-Linked: ~2.70% real rate for top tier
-    matz: -1.05     // Var 5yr, CPI-Linked: ~2.95% real rate for top tier
-};
-
-// Risk Premiums by credit tier (added to BoI + Anchor)
-// Prime discount ranges: P-0.95 (elite) to P-0.32 (good) to P+0.40 (poor)
-// Market avg ~P-0.39, so tier C/D is "market average"
-const CREDIT_MATRIX = {
-    A: { range: [950, 1000], riskP: -0.95, riskK: -0.25, riskM: -0.20, riskZ: -0.20, maxLTV: 0.75 }, // Elite: P-0.95 → 4.80%
-    B: { range: [900, 949], riskP: -0.80, riskK: -0.15, riskM: -0.10, riskZ: -0.10, maxLTV: 0.75 },  // Strong: P-0.80 → 4.95%
-    C: { range: [850, 899], riskP: -0.60, riskK: -0.05, riskM: 0.00, riskZ: 0.00, maxLTV: 0.75 },    // Good: P-0.60 → 5.15%
-    D: { range: [800, 849], riskP: -0.40, riskK: 0.05, riskM: 0.10, riskZ: 0.10, maxLTV: 0.75 },     // OK: P-0.40 → 5.35%
-    E: { range: [750, 799], riskP: -0.20, riskK: 0.20, riskM: 0.25, riskZ: 0.25, maxLTV: 0.70 },     // Weak: P-0.20 → 5.55%
-    F: { range: [700, 749], riskP: 0.00, riskK: 0.40, riskM: 0.40, riskZ: 0.40, maxLTV: 0.65 },      // Bad: P+0.00 → 5.75%
-    G: { range: [660, 699], riskP: 0.25, riskK: 0.65, riskM: 0.60, riskZ: 0.60, maxLTV: 0.60 },      // Poor
-    H: { range: [0, 659], riskP: null, riskK: null, riskM: null, riskZ: null, maxLTV: 0 }            // Reject
-};
+// --- CONSTANTS (loaded from config/index.js, with fallback for tests) ---
+if (!window.AppConfig) {
+    window.AppConfig = {
+        SCENARIOS: { bear: {}, base: {}, bull: {} },
+        TAMHEEL_PROFILES: {},
+        ANCHORS: { prime: 1.5, kalats: 0.6, malatz: 0.51, katz: -1.3, matz: -1.05 },
+        CREDIT_MATRIX: {},
+        TERM_MIN: 1,
+        TERM_MAX: 30,
+        LTV_MIN: { first: 25, replacement: 30, investor: 50 }
+    };
+}
+const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig;
 
 // --- STATE ---
 let mode = 'percent';
@@ -122,15 +82,6 @@ let creditScore = 900;
 let surplusMode = 'match';
 let repayMethod = 'spitzer';
 let optimizeMode = 'outperform';
-
-const TERM_MIN = 1;
-const TERM_MAX = 30;
-
-const LTV_MIN = {
-    first: 25,
-    replacement: 30,
-    investor: 50
-};
 
 const cfg = {
     SP: { is: false, b: 'bSP', s: 'sSP', v: 'vSP', p: 'pSP' },

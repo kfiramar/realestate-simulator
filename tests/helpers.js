@@ -10,23 +10,25 @@ function loadDom() {
 }
 
 function loadI18n() {
-    // Load i18n module which sets window.i18n
     const i18nPath = path.resolve(__dirname, '../src/i18n/index.js');
     const i18nCode = fs.readFileSync(i18nPath, 'utf-8');
     eval(i18nCode);
 }
 
+function loadConfig() {
+    const configPath = path.resolve(__dirname, '../src/config/index.js');
+    const configCode = fs.readFileSync(configPath, 'utf-8');
+    eval(configCode);
+}
+
 function bootstrapApp() {
     loadDom();
-    // Clear localStorage to prevent state leaking between tests
     localStorage.clear();
-    // Load i18n first (sets window.i18n)
     loadI18n();
-    // Load logic before app so globals exist
+    loadConfig();
     require('../src/logic.js');
-    // require after DOM is set
     require('../src/app.js');
     document.dispatchEvent(new Event('DOMContentLoaded'));
 }
 
-module.exports = { loadDom, loadI18n, bootstrapApp };
+module.exports = { loadDom, loadI18n, loadConfig, bootstrapApp };

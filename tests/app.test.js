@@ -11,9 +11,11 @@ global.window = window;
 global.document = window.document;
 global.Logic = Logic;
 
-// Load i18n before app.js
+// Load i18n and config before app.js
 const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
 eval(i18nContent);
+const configContent = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
+eval(configContent);
 
 // Mock Chart.js
 global.Chart = class {
