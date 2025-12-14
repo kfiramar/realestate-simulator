@@ -212,21 +212,15 @@ function setTaxMode(m) {
     runSim();
 }
 function updateLockUI() {
-    const setBtn = (id, locked) => {
-        const el = document.getElementById(id);
-        el.classList.toggle('locked', locked);
-        el.innerText = locked ? t('locked') : t('free');
-    };
-    setBtn('lockDownBtn', lockDown);
-    setBtn('lockTermBtn', lockTerm);
-    setBtn('lockHorBtn', lockHor);
+    const locks = {Down: lockDown, Term: lockTerm, Hor: lockHor};
+    Object.entries(locks).forEach(([k, v]) => {
+        const el = $('lock' + k + 'Btn');
+        if (el) { el.classList.toggle('locked', v); el.innerText = v ? t('locked') : t('free'); }
+    });
     const summaryEl = $('optModeLabel');
     if (summaryEl) {
-        const locks = [];
-        if (lockDown) locks.push('Down');
-        if (lockTerm) locks.push('Term');
-        if (lockHor) locks.push('Horizon');
-        summaryEl.innerText = locks.length ? locks.join(' & ') : t('free');
+        const active = Object.entries(locks).filter(([,v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k);
+        summaryEl.innerText = active.length ? active.join(' & ') : t('free');
     }
 }
 function toggleLock(target) {
@@ -235,8 +229,7 @@ function toggleLock(target) {
     if (target === 'hor') {
         if (horMode === 'auto' && lockHor) {
             setState('horMode', 'custom');
-            $('pHor').children[0].classList.remove('active');
-            $('pHor').children[1].classList.add('active');
+            $pill('pHor', false);
             $('bHor').classList.add('show');
         }
         setState('lockHor', !lockHor);
@@ -803,17 +796,10 @@ function bootstrap() {
     checkMix();
     window.Prepayments?.renderPrepayments();
     if (advancedTermMode) {
-        const panel = $('advancedTermBox');
-        const basic = $('basicTermBox');
-        const btn = $('btnAdvancedTerm');
-        if (panel) panel.style.display = 'block';
-        if (basic) basic.style.display = 'none';
-        if (btn) btn.classList.add('active');
-        // Update term display values
-        ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => {
-            const inp = document.getElementById('term' + t);
-            if (inp) showTermVal('term' + t + 'Val', inp.value);
-        });
+        $('advancedTermBox').style.display = 'block';
+        $('basicTermBox').style.display = 'none';
+        $('btnAdvancedTerm')?.classList.add('active');
+        ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value));
     }
     bootstrapping = false;
     runSim();
@@ -844,32 +830,11 @@ function printResults() {
 }
 
 // Expose functions for inline handlers and tests
-window.setMode = setMode;
-window.tgl = tgl;
-window.setGlobalMode = setGlobalMode;
-window.applyScenario = applyScenario;
-window.applyTamheel = applyTamheel;
-window.tglHor = tglHor;
-window.setTaxMode = setTaxMode;
-window.updMeter = updMeter;
-window.checkMix = checkMix;
-window.syncPrime = syncPrime;
-window.calcPmt = AppLogic.calcPmt;
-window.calcCAGR = AppLogic.calcCAGR;
-window.updateSweetSpots = updateSweetSpots;
-window.runSim = runSim;
-window.setCreditScore = setCreditScore;
-window.toggleLock = toggleLock;
-window.setBuyerType = setBuyerType;
-window.syncTrackTermsToMain = syncTrackTermsToMain;
-window.showTermVal = showTermVal;
-window.toggleAdvancedTerms = toggleAdvancedTerms;
-window.setSurplusMode = setSurplusMode;
-window.syncMixInput = syncMixInput;
-window.toggleRateEdit = toggleRateEdit;
-window.toggleLang = toggleLang;
-window.resetAll = resetAll;
-window.toggleDarkMode = toggleDarkMode;
-window.printResults = printResults;
+Object.assign(window, {
+    setMode, tgl, setGlobalMode, applyScenario, applyTamheel, tglHor, setTaxMode, updMeter, checkMix, syncPrime,
+    calcPmt: AppLogic.calcPmt, calcCAGR: AppLogic.calcCAGR, updateSweetSpots, runSim, setCreditScore, toggleLock,
+    setBuyerType, syncTrackTermsToMain, showTermVal, toggleAdvancedTerms, setSurplusMode, syncMixInput,
+    toggleRateEdit, toggleLang, resetAll, toggleDarkMode, printResults
+});
 
 document.addEventListener('DOMContentLoaded', bootstrap);
