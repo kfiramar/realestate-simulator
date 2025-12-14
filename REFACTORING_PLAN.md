@@ -1,46 +1,35 @@
 # Real Estate Investment Simulator - Refactoring Plan
 
-## Current Status (Updated: Dec 15, 2025)
+## Final Status (Dec 15, 2025)
 
 | Phase | Description | Status | Notes |
 |-------|-------------|--------|-------|
 | 1 | Extract Translations | ✅ Complete | ~300 lines → src/i18n/ |
 | 2 | Extract Constants | ✅ Complete | ~50 lines → src/config/ |
 | 3 | Dead Code Removal | ✅ Complete | Removed unused recommendMix() |
-| 4 | ES Modules Migration | ✅ Complete | Babel transpilation for Jest |
-| 5 | Extract Charts | ✅ Complete | ~250 lines → src/charts/ |
-| 6 | Extract Prepayments | ⏸️ Deferred | ~236 lines, needs state refactor |
-| 7 | Extract Persistence | ⏸️ Deferred | ~115 lines, needs state refactor |
-| 8 | Centralize State | ⏸️ Deferred | Major undertaking |
+| 4 | Extract Charts | ✅ Complete | ~250 lines → src/charts/ |
+| 5 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
 
-**app.js: 1928 → 1300 lines (33% reduction)**
+**app.js: 1928 → 1297 lines (33% reduction)**
 **All 276 tests passing**
 
 ### Module Structure
 ```
 src/
 ├── index.html          # Entry point
-├── app.js              # Main app logic (1300 lines)
-├── logic.js            # Simulation engine (774 lines)
+├── app.js              # Main app logic (1297 lines)
+├── logic.js            # Simulation engine (770 lines)
 ├── styles.css          # Styling
-├── i18n/
-│   └── index.js        # Translation system
-├── config/
-│   └── index.js        # Constants & scenarios
-└── charts/
-    └── index.js        # Chart rendering
+├── i18n/index.js       # Translation system (~300 lines)
+├── config/index.js     # Constants & scenarios (~50 lines)
+└── charts/index.js     # Chart rendering (~250 lines)
 ```
 
-### Remaining Work
-Phases 6-8 require centralizing state management:
-- `prepayments` array used by 8+ functions
-- `mode`, `surplusMode`, `horMode` etc. used throughout
-- DOM element references scattered across functions
-
-Options:
-1. Create a state object passed to all functions
-2. Use a simple pub/sub pattern
-3. Keep as-is (functional, just not ideal)
+### Architecture Notes
+- All modules use IIFE pattern with `window.X` globals
+- Works with `file://` protocol (no HTTP server needed)
+- Jest tests load modules via `eval()` and `require()`
+- Babel transpilation available but not required
 
 ---
 
