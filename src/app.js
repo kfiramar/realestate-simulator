@@ -233,9 +233,13 @@ function setCreditScore(v) {
 
 function tglHor(isAuto) {
     setState('horMode', isAuto ? 'auto' : 'custom');
-    document.getElementById('pHor').children[0].classList.toggle('active', isAuto);
-    document.getElementById('pHor').children[1].classList.toggle('active', !isAuto);
-    document.getElementById('bHor').classList.toggle('show', !isAuto);
+    // Keep for non-Alpine environments (tests)
+    const pHor = document.getElementById('pHor');
+    if (pHor) {
+        pHor.children[0]?.classList.toggle('active', isAuto);
+        pHor.children[1]?.classList.toggle('active', !isAuto);
+    }
+    document.getElementById('bHor')?.classList.toggle('show', !isAuto);
     if (isAuto) { setState('lockHor', true); }
     runSim();
 }
@@ -316,20 +320,14 @@ function syncTrackTermsToMain() {
 
 function toggleAdvancedTerms() {
     setState('advancedTermMode', !advancedTermMode);
+    // Alpine x-show handles visibility, keep for non-Alpine environments
     const advBox = document.getElementById('advancedTermBox');
     const basicBox = document.getElementById('basicTermBox');
     const btn = document.getElementById('btnAdvancedTerm');
-    if (advancedTermMode) {
-        advBox.style.display = 'block';
-        basicBox.style.display = 'none';
-        btn.classList.add('active');
-        syncTrackTermsToMain();
-    } else {
-        advBox.style.display = 'none';
-        basicBox.style.display = 'block';
-        btn.classList.remove('active');
-        syncTrackTermsToMain();
-    }
+    if (advBox) advBox.style.display = advancedTermMode ? 'block' : 'none';
+    if (basicBox) basicBox.style.display = advancedTermMode ? 'none' : 'block';
+    if (btn) btn.classList.toggle('active', advancedTermMode);
+    syncTrackTermsToMain();
     runSim();
 }
 function updMeter() {

@@ -206,13 +206,13 @@
                             :class="{ active: $store.app.advancedTermMode }"
                             style="margin-left:auto;" data-t="advanced">Advanced</div>
                     </div>
-                    <div id="basicTermBox">
+                    <div id="basicTermBox" x-show="!$store.app.advancedTermMode">
                         <div class="range-wrapper">
                             <input type="range" id="rDur" min="1" max="30" step="1" value="30" oninput="runSim()">
                             <div class="sweet-spot" id="spotDur"></div>
                         </div>
                     </div>
-                    <div id="advancedTermBox" style="display:none; margin-top:8px;">
+                    <div id="advancedTermBox" x-show="$store.app.advancedTermMode" style="margin-top:8px;">
                         <div class="mix-row">
                             <div class="mix-label" data-t="prime">Prime</div>
                             <input type="range" id="termPrime" min="1" max="30" step="1" value="30"
@@ -273,7 +273,7 @@
                         <div class="pill" onclick="tglHor(false)" @click="tglHor(false)"
                             :class="{ active: $store.app.horMode === 'custom' }" data-t="custom">Custom</div>
                     </div>
-                    <div class="input-box" id="bHor">
+                    <div class="input-box" id="bHor" x-show="$store.app.horMode === 'custom'">
                         <div class="range-wrapper">
                             <input type="range" id="rHor" min="1" max="50" step="1" value="25" oninput="runSim()">
                             <div class="sweet-spot" id="spotHor"></div>
