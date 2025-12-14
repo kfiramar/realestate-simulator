@@ -10,24 +10,24 @@
 | 4 | Extract Charts | ✅ Complete | 250 lines → src/charts/ |
 | 5 | Extract Prepayments | ✅ Complete | 207 lines → src/prepayments/ |
 | 6 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
-| 7 | State Management | ✅ Complete | 76 lines → src/state/ |
+| 7 | State Management | ✅ Complete | 83 lines → src/state/ |
 | 8 | Extract Persistence | ✅ Complete | 132 lines → src/persistence/ |
-| 9 | Alpine.js Adoption | ✅ Complete | Reactive UI bindings |
+| 9 | Alpine.js Adoption | ✅ Complete | Full reactive UI bindings |
 
-**app.js: 1928 → 1037 lines (46% reduction)**
-**Total source: 2826 lines across 8 files**
+**app.js: 1928 → 1046 lines (46% reduction)**
+**Total source: 2071 lines across 8 modules (excl. logic.js)**
 **All 276 tests passing**
 
 ## Module Structure
 ```
 src/
 ├── index.html              # Entry point with Alpine.js bindings
-├── app.js                  # Main app logic (1037 lines)
+├── app.js                  # Main app logic (1046 lines)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
 ├── config/index.js         # Constants (35 lines)
-├── state/index.js          # State management + Alpine store (76 lines)
+├── state/index.js          # State management + Alpine store (83 lines)
 ├── charts/index.js         # Chart rendering (250 lines)
 ├── prepayments/index.js    # Prepayment logic (207 lines)
 └── persistence/index.js    # localStorage save/load (132 lines)
@@ -35,56 +35,56 @@ src/
 
 ## Alpine.js Integration
 
-### Converted Elements
-- Mode toggles (currency/percent) - `:class` binding
-- Surplus mode pills - `:class` binding
-- Repay method pills - `:class` binding
-- Optimize mode pills - `:class` binding
-- Horizon mode pills - `:class` binding
-- Lock toggles (down/term/horizon) - `:class` and `x-text` bindings
-- Buyer type select - `x-model` binding
-- Advanced term toggle - `:class` binding
-- Tax mode toggles - `:class` binding
-- Rate edit mode - `x-show` for label/input toggle
-- basicTermBox/advancedTermBox - `x-show` visibility
-- bHor (horizon slider) - `x-show` visibility
-- equityBox - `x-show` visibility
-- prepayContainer - `x-show` visibility
+### Converted Elements (20+ bindings)
+**Toggle States (`:class`)**
+- Mode toggles (currency/percent)
+- Surplus mode pills (invest/consume/match)
+- Repay method pills (spitzer/equalPrincipal)
+- Optimize mode pills (outperform/roi)
+- Horizon mode pills (auto/custom)
+- Tax mode toggles (real/forex)
+- Global hist/fixed toggle
+- Market variable toggles (SP, App, Int, Yld, Inf)
 
-### Architecture
-- Alpine store (`$store.app`) syncs with AppState module
-- Both `onclick` and `@click` handlers for test compatibility
-- JS functions still manipulate DOM for non-Alpine environments (tests)
+**Lock Toggles (`:class` + `x-text`)**
+- Down payment lock
+- Term lock
+- Horizon lock
 
-### State Variables
+**Conditional Visibility (`x-show`)**
+- equityBox (currency mode)
+- basicTermBox / advancedTermBox
+- bHor (horizon slider)
+- prepayContainer
+- Rate label/input pairs
+- Market variable input boxes
+- Scenario box
+
+**Two-way Binding (`x-model`)**
+- Buyer type select
+
+### State Variables (22 total)
 ```javascript
 {
-    mode: 'percent',
-    exMode: 'hedged',
-    taxMode: 'real',
-    horMode: 'auto',
-    lockDown: false,
-    lockTerm: false,
-    lockHor: true,
-    buyerType: 'first',
-    advancedTermMode: false,
-    creditScore: 900,
-    surplusMode: 'match',
-    repayMethod: 'spitzer',
-    optimizeMode: 'outperform',
-    rateEditMode: false,
-    prepayExpanded: false
+    mode, exMode, taxMode, horMode,
+    lockDown, lockTerm, lockHor,
+    buyerType, advancedTermMode, creditScore,
+    surplusMode, repayMethod, optimizeMode,
+    rateEditMode, prepayExpanded, bootstrapping,
+    globalHistMode, histSP, histApp, histInt, histYld, histInf
 }
 ```
 
-## What Remains in app.js (1037 lines)
-- **~45 DOM handler functions**: Mix validation, rate management
+## What Remains in app.js (1046 lines)
+- **~40 DOM handler functions**: Mix validation, rate management
 - **runSim**: Core simulation orchestration (~240 lines)
 - **updateSweetSpots**: Optimization logic (~90 lines)
 - **bootstrap**: Initialization sequence (~50 lines)
-- **cfg object**: Historical mode state for market variables
+- **cfg object**: Legacy structure (kept for backward compatibility)
 
-## Future Improvements
-1. Convert `cfg` (historical mode) to Alpine store
-2. Use Alpine `x-for` for repetitive elements (mix rows)
-3. Consider Alpine plugins for more complex interactions
+## Architecture Benefits
+1. **Declarative UI** - State drives UI via Alpine bindings
+2. **Single source of truth** - AppState syncs with Alpine store
+3. **Test compatibility** - JS fallbacks for non-Alpine environments
+4. **Minimal overhead** - Alpine.js is ~7kB gzipped
+5. **No build step** - Works with file:// protocol
