@@ -137,29 +137,18 @@ function applyLtvCaps() {
     const downSlider = $('rDown');
     if (!downSlider) return;
     const tier = getCreditTier(creditScore);
-    const buyerMinDown = LTV_MIN[buyerType] || 25;
     if (tier.maxLTV === 0) return;
 
-    const regCap = 1 - (buyerMinDown / 100);
-    const tierCap = tier.maxLTV;
-    const finalCap = Math.min(regCap, tierCap);
-    const finalMinDown = 100 - (finalCap * 100);
-
+    const finalMinDown = 100 - Math.min(1 - (LTV_MIN[buyerType] || 25) / 100, tier.maxLTV) * 100;
     downSlider.min = finalMinDown;
-    if (parseInt(downSlider.value, 10) < finalMinDown) {
-        downSlider.value = finalMinDown;
-    }
+    if (parseInt(downSlider.value, 10) < finalMinDown) downSlider.value = finalMinDown;
 }
 
 function updateCreditUI() {
-    const scoreEl = $('creditScoreVal');
-    const tierEl = $('creditTierLabel');
-    const warnEl = $('creditWarn');
     const tier = getCreditTier(creditScore);
-    const displayScore = tier.range[0] + '-' + tier.range[1];
-
-    if (scoreEl) scoreEl.innerText = displayScore;
-    if (tierEl) tierEl.innerText = `Risk Tier: ${tier.tier}`;
+    $('creditScoreVal')?.innerText && ($('creditScoreVal').innerText = tier.range[0] + '-' + tier.range[1]);
+    $('creditTierLabel')?.innerText && ($('creditTierLabel').innerText = `Risk Tier: ${tier.tier}`);
+    const warnEl = $('creditWarn');
     if (warnEl) {
         warnEl.style.display = tier.maxLTV === 0 ? 'block' : 'none';
         if (tier.maxLTV === 0) warnEl.innerText = 'Application rejected: score below 660';
@@ -261,11 +250,8 @@ function toggleAdvancedTerms() {
     runSim();
 }
 function updMeter() {
-    let v = parseFloat($('sInf').value);
-    let s = $('infMeter').children;
-    s[0].style.opacity = v < 2 ? 1 : 0.2;
-    s[1].style.opacity = (v >= 2 && v < 4) ? 1 : 0.2;
-    s[2].style.opacity = v >= 4 ? 1 : 0.2;
+    const v = parseFloat($('sInf').value), s = $('infMeter').children;
+    [v < 2, v >= 2 && v < 4, v >= 4].forEach((active, i) => s[i].style.opacity = active ? 1 : 0.2);
 }
 
 function fmt(v) {
