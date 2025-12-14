@@ -479,18 +479,15 @@ function checkMix() {
 }
 
 function toggleRateEdit() {
-    rateEditMode = !rateEditMode;
+    setState('rateEditMode', !rateEditMode);
+    // Keep for non-Alpine environments
     const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
     tracks.forEach(track => {
         const lbl = document.getElementById('lblRate' + track);
         const inp = document.getElementById('rate' + track);
-        if (rateEditMode) {
-            lbl.style.display = 'none';
-            inp.classList.add('show');
-        } else {
-            lbl.style.display = 'block';
-            inp.classList.remove('show');
-            // Sync label with input value
+        if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block';
+        if (inp) inp.classList.toggle('show', rateEditMode);
+        if (!rateEditMode && lbl && inp) {
             let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
             lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
         }

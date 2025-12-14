@@ -102,10 +102,10 @@
                                 oninput="syncMixInput('Prime')">
                         </div>
                         <div class="mix-pct-val" id="dispPrime">30%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRatePrime" onclick="toggleRateEdit()">4.95%</span>
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRatePrime" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">4.95%</span>
                             <input type="number" class="mix-rate-input" id="ratePrime" value="4.95" step="0.05"
-                                oninput="runSim()">
+                                oninput="runSim()" x-show="$store.app.rateEditMode">
                         </div>
                         <input type="hidden" id="pctPrime" value="30">
                     </div>
@@ -118,9 +118,9 @@
                                 oninput="syncMixInput('Kalats')">
                         </div>
                         <div class="mix-pct-val" id="dispKalats">40%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateKalats" onclick="toggleRateEdit()">4.70%</span>
-                            <input type="number" class="mix-rate-input" id="rateKalats" value="4.70" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateKalats" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">4.70%</span>
+                            <input type="number" class="mix-rate-input" id="rateKalats" x-show="$store.app.rateEditMode" value="4.70" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctKalats" value="40">
@@ -134,9 +134,9 @@
                                 oninput="syncMixInput('Malatz')">
                         </div>
                         <div class="mix-pct-val" id="dispMalatz">30%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateMalatz" onclick="toggleRateEdit()">4.61%</span>
-                            <input type="number" class="mix-rate-input" id="rateMalatz" value="4.61" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateMalatz" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">4.61%</span>
+                            <input type="number" class="mix-rate-input" id="rateMalatz" x-show="$store.app.rateEditMode" value="4.61" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctMalatz" value="30">
@@ -150,9 +150,9 @@
                                 oninput="syncMixInput('Katz')">
                         </div>
                         <div class="mix-pct-val" id="dispKatz">0%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateKatz" onclick="toggleRateEdit()">2.85% + CPI</span>
-                            <input type="number" class="mix-rate-input" id="rateKatz" value="2.85" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateKatz" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">2.85% + CPI</span>
+                            <input type="number" class="mix-rate-input" id="rateKatz" x-show="$store.app.rateEditMode" value="2.85" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctKatz" value="0">
@@ -166,9 +166,9 @@
                                 oninput="syncMixInput('Matz')">
                         </div>
                         <div class="mix-pct-val" id="dispMatz">0%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateMatz" onclick="toggleRateEdit()">3.10% + CPI</span>
-                            <input type="number" class="mix-rate-input" id="rateMatz" value="3.10" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateMatz" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">3.10% + CPI</span>
+                            <input type="number" class="mix-rate-input" id="rateMatz" x-show="$store.app.rateEditMode" value="3.10" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctMatz" value="0">
