@@ -4,6 +4,8 @@ const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX,
 
 // --- DOM HELPERS ---
 const $ = id => document.getElementById(id);
+const $pct = id => parseFloat($(id)?.value || 0) / 100;
+const $int = id => parseInt($(id)?.value || 0);
 
 // --- TRANSLATIONS ---
 let lang = window.i18n?.getLang() || 'en';
@@ -437,11 +439,7 @@ function updateVisualBar(p, k, m, z, mt) {
 }
 
 function checkMix() {
-    let p = parseInt($('pctPrime').value) || 0;
-    let k = parseInt($('pctKalats').value) || 0;
-    let z = parseInt($('pctKatz').value) || 0;
-    let m = parseInt($('pctMalatz').value) || 0;
-    let mt = parseInt($('pctMatz').value) || 0;
+    let p = $int('pctPrime'), k = $int('pctKalats'), z = $int('pctKatz'), m = $int('pctMalatz'), mt = $int('pctMatz');
 
     // Sync sliders if called externally (e.g. presets)
     $('sliderPrime').value = p;
@@ -590,22 +588,15 @@ function updateSweetSpots() {
         useMasShevach: $('cMasShevach')?.checked ?? false,
         masShevachType: buyerType === 'investor' ? 'none' : 'single',
         purchaseTax,
-        tradeFee: parseFloat($('rTrade').value) / 100,
-        merFee: parseFloat($('rMer').value) / 100,
-        buyCostPct: parseFloat($('rBuyCost').value) / 100,
-        maintPct: parseFloat($('rMaint').value) / 100,
-        sellCostPct: parseFloat($('rSellCost').value) / 100,
+        tradeFee: $pct('rTrade'),
+        merFee: $pct('rMer'),
+        buyCostPct: $pct('rBuyCost'),
+        maintPct: $pct('rMaint'),
+        sellCostPct: $pct('rSellCost'),
         overrides: {
-            SP: parseFloat($('sSP').value) / 100,
-            App: parseFloat($('sApp').value) / 100,
-            Int: parseFloat($('sInt').value) / 100,
-            Inf: parseFloat($('sInf').value) / 100,
-            Yld: parseFloat($('sYld').value) / 100,
-            RateP: parseFloat($('ratePrime').value) / 100,
-            RateK: parseFloat($('rateKalats').value) / 100,
-            RateZ: parseFloat($('rateKatz').value) / 100,
-            RateM: parseFloat($('rateMalatz').value) / 100,
-            RateMT: parseFloat($('rateMatz').value) / 100,
+            SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
+            RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'),
+            RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz'),
         },
         mix: {
             prime: parseFloat($('pctPrime').value),
@@ -615,17 +606,17 @@ function updateSweetSpots() {
             matz: parseFloat($('pctMatz').value)
         },
         termMix: {
-            p: parseInt($('termPrime').value) || curDur,
-            k: parseInt($('termKalats').value) || curDur,
-            z: parseInt($('termKatz').value) || curDur,
-            m: parseInt($('termMalatz').value) || curDur,
-            mt: parseInt($('termMatz').value) || curDur
+            p: $int('termPrime') || curDur,
+            k: $int('termKalats') || curDur,
+            z: $int('termKatz') || curDur,
+            m: $int('termMalatz') || curDur,
+            mt: $int('termMatz') || curDur
         },
         drift: -0.5,
         lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride || undefined,
         surplusMode,
-        purchaseDiscount: parseFloat($('rDiscount').value) / 100,
+        purchaseDiscount: $pct('rDiscount'),
         optimizeMode
     };
 
