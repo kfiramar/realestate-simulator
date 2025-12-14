@@ -59,8 +59,10 @@
                             <option value="investor" data-t="investor">Investment (50% LTV)</option>
                         </select>
                     </div>
-                    <div class="card-row"><span class="card-lbl" data-t="downPayment">Down Payment<span class="lock-toggle" id="lockDownBtn"
-                                onclick="toggleLock('down')" data-t="free">Free</span></span> <span class="card-val"
+                    <div class="card-row" x-data><span class="card-lbl" data-t="downPayment">Down Payment<span class="lock-toggle" id="lockDownBtn"
+                                onclick="toggleLock('down')" @click="toggleLock('down')"
+                                :class="{ locked: $store.app.lockDown }"
+                                x-text="$store.app.lockDown ? 'Locked' : 'Free'">Free</span></span> <span class="card-val"
                             id="dDown">30%</span></div>
                     <div class="range-wrapper">
                         <input type="range" id="rDown" min="25" max="100" step="5" value="30" oninput="runSim()">
@@ -193,9 +195,11 @@
                                 :class="{ active: $store.app.repayMethod === 'equalPrincipal' }"><span data-t="equalPrincipal">Equal Principal</span> <span class="opt-star" id="starEqual">★</span></div>
                         </div>
                     </div>
-                    <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
+                    <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;" x-data>
                         <span class="card-lbl" data-t="mortgageTerm">Mortgage Term <span class="lock-toggle" id="lockTermBtn"
-                                onclick="toggleLock('term')" data-t="free">Free</span></span>
+                                onclick="toggleLock('term')" @click="toggleLock('term')"
+                                :class="{ locked: $store.app.lockTerm }"
+                                x-text="$store.app.lockTerm ? 'Locked' : 'Free'">Free</span></span>
                         <span class="card-val" id="dDur">25 Yr</span>
                         <div class="pill toggle" id="btnAdvancedTerm" onclick="toggleAdvancedTerms()"
                             style="margin-left:auto;" data-t="advanced">Advanced</div>
@@ -255,13 +259,17 @@
                         660</div>
                 </div>
 
-                <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;">
-                    <div class="card-row"><span class="card-lbl" data-t="simTimeframe">Simulation Timeframe <span class="lock-toggle locked"
-                                id="lockHorBtn" onclick="toggleLock('hor')" data-t="locked">Locked</span></span> <span class="card-val"
+                <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;" x-data>
+                    <div class="card-row"><span class="card-lbl" data-t="simTimeframe">Simulation Timeframe <span class="lock-toggle"
+                                id="lockHorBtn" onclick="toggleLock('hor')" @click="toggleLock('hor')"
+                                :class="{ locked: $store.app.lockHor }"
+                                x-text="$store.app.lockHor ? 'Locked' : 'Free'">Locked</span></span> <span class="card-val"
                             id="dHor">Auto</span></div>
                     <div class="pills" id="pHor">
-                        <div class="pill active" onclick="tglHor(true)" data-t="auto">Auto</div>
-                        <div class="pill" onclick="tglHor(false)" data-t="custom">Custom</div>
+                        <div class="pill" onclick="tglHor(true)" @click="tglHor(true)"
+                            :class="{ active: $store.app.horMode === 'auto' }" data-t="auto">Auto</div>
+                        <div class="pill" onclick="tglHor(false)" @click="tglHor(false)"
+                            :class="{ active: $store.app.horMode === 'custom' }" data-t="custom">Custom</div>
                     </div>
                     <div class="input-box" id="bHor">
                         <div class="range-wrapper">
@@ -288,11 +296,13 @@
                         <div class="scen-btn base active" id="scenBase" onclick="applyScenario('base')" data-t="base">😐 Base</div>
                         <div class="scen-btn bull" id="scenBull" onclick="applyScenario('bull')" data-t="optimistic">🚀 Bull</div>
                     </div>
-                    <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+                    <div style="margin-top:8px; display:flex; align-items:center; gap:8px;" x-data>
                         <span style="font-size:0.7rem; font-weight:600; color:#64748b;" data-t="sweetSpotOptimize">Sweet Spot:</span>
                         <div class="pills">
-                            <div class="pill active" id="optOutperf" onclick="setOptimizeMode('outperform')" data-t="optOutperform">Outperform</div>
-                            <div class="pill" id="optRoi" onclick="setOptimizeMode('roi')" data-t="optRoi">ROI</div>
+                            <div class="pill" id="optOutperf" @click="setOptimizeMode('outperform')"
+                                :class="{ active: $store.app.optimizeMode === 'outperform' }" data-t="optOutperform">Outperform</div>
+                            <div class="pill" id="optRoi" @click="setOptimizeMode('roi')"
+                                :class="{ active: $store.app.optimizeMode === 'roi' }" data-t="optRoi">ROI</div>
                         </div>
                     </div>
                 </div>
