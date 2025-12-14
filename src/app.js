@@ -441,40 +441,25 @@ function updateOptimalRepayMethod(baseParams, currentCagr) {
 }
 
 function updateSweetSpots() {
-    let eq = parseFloat($('inpEquity').value) || 400000;
-    let curDown = $int('rDown') / 100;
-    let curDur = $int('rDur');
-    let simDur = horMode === 'auto' ? curDur : $int('rHor');
-    
+    const eq = parseFloat($('inpEquity').value) || 400000, curDown = $int('rDown') / 100, curDur = $int('rDur');
+    const simDur = horMode === 'auto' ? curDur : $int('rHor');
     const assetPrice = eq / curDown;
-    const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
-    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPrice, isFirstHome) : 0;
+    const purchaseTax = ($('cPurchaseTax')?.checked ?? true) ? AppLogic.calcPurchaseTax(assetPrice, buyerType === 'first') : 0;
 
     const params = {
-        eq, curDown, curDur, simDur,
-        useTaxSP: $('cTaxSP')?.checked ?? true,
-        useTaxRE: $('cTaxSP')?.checked ?? true,
-        useRentTax: $('cRentTax')?.checked ?? false,
-        useMasShevach: $('cMasShevach')?.checked ?? false,
+        eq, curDown, curDur, simDur, purchaseTax,
+        useTaxSP: $('cTaxSP')?.checked ?? true, useTaxRE: $('cTaxSP')?.checked ?? true,
+        useRentTax: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
         masShevachType: buyerType === 'investor' ? 'none' : 'single',
-        purchaseTax,
-        tradeFee: $pct('rTrade'), merFee: $pct('rMer'), buyCostPct: $pct('rBuyCost'),
-        maintPct: $pct('rMaint'), sellCostPct: $pct('rSellCost'),
-        overrides: {
-            SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
-            RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'),
-            RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz'),
-        },
+        tradeFee: $pct('rTrade'), merFee: $pct('rMer'), buyCostPct: $pct('rBuyCost'), maintPct: $pct('rMaint'), sellCostPct: $pct('rSellCost'),
+        overrides: { SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
+            RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'), RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz') },
         mix: { prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') },
         termMix: { p: $int('termPrime') || curDur, k: $int('termKalats') || curDur, z: $int('termKatz') || curDur, m: $int('termMalatz') || curDur, mt: $int('termMatz') || curDur },
         drift: -0.5, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
-        calcOverride: window.__calcCagrOverride || undefined,
-        surplusMode, purchaseDiscount: $pct('rDiscount'), optimizeMode
+        calcOverride: window.__calcCagrOverride, surplusMode, purchaseDiscount: $pct('rDiscount'), optimizeMode
     };
-
-    const best = AppLogic.searchSweetSpots(params);
-    updateSweetSpotMarkers(best);
+    updateSweetSpotMarkers(AppLogic.searchSweetSpots(params));
 }
 
 function updateSweetSpotMarkers(best) {
