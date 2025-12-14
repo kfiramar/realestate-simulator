@@ -10,42 +10,34 @@
 | 4 | Extract Charts | ✅ Complete | 250 lines → src/charts/ |
 | 5 | Extract Prepayments | ✅ Complete | 207 lines → src/prepayments/ |
 | 6 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
+| 7 | State Management | ✅ Complete | 54 lines → src/state/ |
+| 8 | Extract Persistence | 🔄 Next | saveState/loadState (~115 lines) |
+| 9 | Extract UI Formatters | Planned | fmt, fmtNum, fmtVal (~50 lines) |
 
-**app.js: 1928 → 1107 lines (43% reduction)**
-**Total source: 2688 lines across 6 files**
+**app.js: 1928 → 1128 lines (42% reduction)**
+**Total source: 2763 lines across 7 files**
 **All 276 tests passing**
 
 ### Module Structure
 ```
 src/
 ├── index.html              # Entry point
-├── app.js                  # Main app logic (1107 lines)
+├── app.js                  # Main app logic (1128 lines)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
 ├── config/index.js         # Constants (35 lines)
+├── state/index.js          # State management (54 lines)
 ├── charts/index.js         # Chart rendering (250 lines)
 └── prepayments/index.js    # Prepayment logic (207 lines)
 ```
 
-### What Remains in app.js
-The remaining 1107 lines are tightly coupled and include:
-- **UI State** (~15 global variables): mode, surplusMode, horMode, etc.
-- **DOM Handlers** (~50 functions): All use getElementById extensively
-- **Persistence** (~115 lines): saveState/loadState modify globals
-- **Bootstrap** (~50 lines): Initialization sequence
-
-### Why Further Extraction is Complex
-1. Functions modify global state directly
-2. Heavy DOM coupling (276 getElementById calls)
-3. Circular dependencies (runSim ↔ updateSweetSpots)
-4. No dependency injection pattern
-
-### Future Improvements (if needed)
-1. Create a State object with getters/setters
-2. Pass state to functions instead of using globals
-3. Use event emitter pattern for updates
-4. Consider a lightweight framework (Alpine.js, etc.)
+### Phase 8: Extract Persistence
+Target: Move saveState/loadState to src/persistence/index.js
+- STORAGE_KEY constant
+- saveState() function
+- loadState() function  
+- Estimated: ~115 lines
 
 ---
 

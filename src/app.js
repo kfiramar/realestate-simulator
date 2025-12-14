@@ -899,121 +899,39 @@ function runSim(opts = {}) {
 // --- PERSISTENCE ---
 
 // --- PERSISTENCE ---
-const STORAGE_KEY = 'mortgageCalcState';
+const STORAGE_KEY = window.Persistence?.STORAGE_KEY || 'mortgageCalcState';
+const P = window.Persistence || { save: () => {}, load: () => null, restore: () => null, clear: () => {} };
 
 function saveState() {
-    const state = {
-        // Sliders
-        equity: document.getElementById('inpEquity')?.value,
-        down: document.getElementById('rDown')?.value,
-        dur: document.getElementById('rDur')?.value,
-        hor: document.getElementById('rHor')?.value,
-        // Mix
-        pctPrime: document.getElementById('pctPrime')?.value,
-        pctKalats: document.getElementById('pctKalats')?.value,
-        pctMalatz: document.getElementById('pctMalatz')?.value,
-        pctKatz: document.getElementById('pctKatz')?.value,
-        pctMatz: document.getElementById('pctMatz')?.value,
-        // Rates
-        ratePrime: document.getElementById('ratePrime')?.value,
-        rateKalats: document.getElementById('rateKalats')?.value,
-        rateMalatz: document.getElementById('rateMalatz')?.value,
-        rateKatz: document.getElementById('rateKatz')?.value,
-        rateMatz: document.getElementById('rateMatz')?.value,
-        // Advanced terms
-        termPrime: document.getElementById('termPrime')?.value,
-        termKalats: document.getElementById('termKalats')?.value,
-        termMalatz: document.getElementById('termMalatz')?.value,
-        termKatz: document.getElementById('termKatz')?.value,
-        termMatz: document.getElementById('termMatz')?.value,
-        advancedTermMode,
-        // Market assumptions
-        sSP: document.getElementById('sSP')?.value,
-        sApp: document.getElementById('sApp')?.value,
-        sInf: document.getElementById('sInf')?.value,
-        sInt: document.getElementById('sInt')?.value,
-        sYld: document.getElementById('sYld')?.value,
-        // Fees
-        rBuyCost: document.getElementById('rBuyCost')?.value,
-        rSellCost: document.getElementById('rSellCost')?.value,
-        rTrade: document.getElementById('rTrade')?.value,
-        rMer: document.getElementById('rMer')?.value,
-        rMaint: document.getElementById('rMaint')?.value,
-        rDiscount: document.getElementById('rDiscount')?.value,
-        // State
+    const stateVars = {
         horMode, surplusMode, repayMethod, creditScore, taxMode, exMode,
-        lockDown, lockTerm, lockHor, buyerType, mode,
-        prepayments: getPrepayments(),
-        usePurchaseTax: document.getElementById('cPurchaseTax')?.checked ?? true,
-        useMasShevach: document.getElementById('cMasShevach')?.checked ?? false
+        lockDown, lockTerm, lockHor, buyerType, mode, advancedTermMode
     };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    P.save(stateVars, getPrepayments);
 }
 
 function loadState() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return false;
-        const s = JSON.parse(saved);
+    const saved = P.load();
+    if (!saved) return false;
+    const s = P.restore(saved);
+    if (!s) return false;
 
-        // Restore inputs
-        const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
-        setVal('inpEquity', s.equity);
-        setVal('rDown', s.down);
-        setVal('rDur', s.dur);
-        setVal('rHor', s.hor);
-        setVal('pctPrime', s.pctPrime); setVal('sliderPrime', s.pctPrime);
-        setVal('pctKalats', s.pctKalats); setVal('sliderKalats', s.pctKalats);
-        setVal('pctMalatz', s.pctMalatz); setVal('sliderMalatz', s.pctMalatz);
-        setVal('pctKatz', s.pctKatz); setVal('sliderKatz', s.pctKatz);
-        setVal('pctMatz', s.pctMatz); setVal('sliderMatz', s.pctMatz);
-        setVal('ratePrime', s.ratePrime);
-        setVal('rateKalats', s.rateKalats);
-        setVal('rateMalatz', s.rateMalatz);
-        setVal('rateKatz', s.rateKatz);
-        setVal('rateMatz', s.rateMatz);
-        setVal('termPrime', s.termPrime);
-        setVal('termKalats', s.termKalats);
-        setVal('termMalatz', s.termMalatz);
-        setVal('termKatz', s.termKatz);
-        setVal('termMatz', s.termMatz);
-        setVal('sSP', s.sSP);
-        setVal('sApp', s.sApp);
-        setVal('sInf', s.sInf);
-        setVal('sInt', s.sInt);
-        setVal('sYld', s.sYld);
-        setVal('rBuyCost', s.rBuyCost);
-        setVal('rSellCost', s.rSellCost);
-        setVal('rTrade', s.rTrade);
-        setVal('rMer', s.rMer);
-        setVal('rMaint', s.rMaint);
-        setVal('rDiscount', s.rDiscount);
+    // Restore state vars
+    if (s.horMode) setState('horMode', s.horMode);
+    if (s.surplusMode) setState('surplusMode', s.surplusMode);
+    if (s.repayMethod) setState('repayMethod', s.repayMethod);
+    if (s.creditScore) setState('creditScore', s.creditScore);
+    if (s.taxMode) setState('taxMode', s.taxMode);
+    if (s.exMode) setState('exMode', s.exMode);
+    if (s.lockDown != null) setState('lockDown', s.lockDown);
+    if (s.lockTerm != null) setState('lockTerm', s.lockTerm);
+    if (s.lockHor != null) setState('lockHor', s.lockHor);
+    if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
+    if (s.advancedTermMode != null) setState('advancedTermMode', s.advancedTermMode);
+    if (s.buyerType) setState('buyerType', s.buyerType);
+    if (s.mode) setState('mode', s.mode);
 
-        // Restore state vars
-        if (s.horMode) horMode = s.horMode;
-        if (s.surplusMode) surplusMode = s.surplusMode;
-        if (s.repayMethod) repayMethod = s.repayMethod;
-        if (s.creditScore) creditScore = s.creditScore;
-        if (s.taxMode) taxMode = s.taxMode;
-        if (s.exMode) exMode = s.exMode;
-        if (s.lockDown != null) lockDown = s.lockDown;
-        if (s.lockTerm != null) lockTerm = s.lockTerm;
-        if (s.lockHor != null) lockHor = s.lockHor;
-        if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
-        if (s.advancedTermMode != null) advancedTermMode = s.advancedTermMode;
-        if (s.buyerType) buyerType = s.buyerType;
-        if (s.mode) mode = s.mode;
-        if (s.usePurchaseTax != null) {
-            const el = document.getElementById('cPurchaseTax');
-            if (el) el.checked = s.usePurchaseTax;
-        }
-        if (s.useMasShevach != null) {
-            const el = document.getElementById('cMasShevach');
-            if (el) el.checked = s.useMasShevach;
-        }
-
-        return true;
-    } catch(e) { return false; }
+    return true;
 }
 
 function bootstrap() {
@@ -1082,7 +1000,7 @@ function updateRateLabels() {
 // --- UTILITY FUNCTIONS ---
 function resetAll() {
     if (!confirm('Reset all settings to defaults?')) return;
-    localStorage.removeItem(STORAGE_KEY);
+    P.clear();
     location.reload();
 }
 
