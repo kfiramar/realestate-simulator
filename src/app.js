@@ -239,13 +239,9 @@ function syncTrackTermsToMain() {
 
 function toggleAdvancedTerms() {
     setState('advancedTermMode', !advancedTermMode);
-    // Alpine x-show handles visibility, keep for non-Alpine environments
-    const advBox = $('advancedTermBox');
-    const basicBox = $('basicTermBox');
-    const btn = $('btnAdvancedTerm');
-    if (advBox) advBox.style.display = advancedTermMode ? 'block' : 'none';
-    if (basicBox) basicBox.style.display = advancedTermMode ? 'none' : 'block';
-    if (btn) btn.classList.toggle('active', advancedTermMode);
+    $('advancedTermBox').style.display = advancedTermMode ? 'block' : 'none';
+    $('basicTermBox').style.display = advancedTermMode ? 'none' : 'block';
+    $('btnAdvancedTerm')?.classList.toggle('active', advancedTermMode);
     syncTrackTermsToMain();
     runSim();
 }
@@ -659,18 +655,9 @@ function loadState() {
 
 function bootstrap() {
     bootstrapping = true;
-    // Initialize prepayments module
     window.Prepayments?.init(runSim);
-    // Restore dark mode first (before any rendering)
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
-    }
-    // Restore language
-    if (lang === 'he') {
-        document.documentElement.lang = 'he';
-        document.documentElement.dir = 'rtl';
-        document.body.classList.add('rtl');
-    }
+    if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+    if (lang === 'he') { document.documentElement.lang = 'he'; document.documentElement.dir = 'rtl'; document.body.classList.add('rtl'); }
     applyTranslations();
     const hadSaved = loadState();
     updMeter();
@@ -683,11 +670,7 @@ function bootstrap() {
     setGlobalMode(false, { skipSim: true });
     if (!hadSaved) applyScenario('base', { skipSim: true });
     setMode(hadSaved && mode ? mode : 'currency', { skipSim: true });
-    // Restore horMode UI
-    if (horMode === 'custom') {
-        $pill('pHor', false);
-        $('bHor').classList.add('show');
-    }
+    if (horMode === 'custom') { $pill('pHor', false); $('bHor').classList.add('show'); }
     checkMix();
     window.Prepayments?.renderPrepayments();
     if (advancedTermMode) {
