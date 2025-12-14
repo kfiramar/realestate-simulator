@@ -14,16 +14,18 @@
 | 8 | Extract Persistence | ✅ Complete | 132 lines → src/persistence/ |
 | 9 | Alpine.js Adoption | ✅ Complete | 20+ reactive UI bindings |
 | 10 | DOM Helpers | ✅ Complete | $(), $pct(), $int() helpers |
+| 11 | Function Extraction | ✅ Complete | runSim: 242 → 98 lines |
 
-**app.js: 1928 → 1038 lines (46% reduction)**
-**Total source: 2834 lines across 8 modules**
+**app.js: 1928 → 1035 lines (46% reduction)**
+**Total source: 2060 lines across 7 modules (excl. logic.js)**
+**54 functions in app.js**
 **All 276 tests passing**
 
 ## Module Structure
 ```
 src/
 ├── index.html              # Entry point with Alpine.js bindings
-├── app.js                  # Main app logic (1038 lines)
+├── app.js                  # Main app logic (1035 lines, 54 functions)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
@@ -44,7 +46,6 @@ src/
 - `x-show` for conditional visibility
 - `x-text` for dynamic text
 - `x-model` for two-way binding
-- Alpine store syncs with AppState
 
 ### 3. DOM Helpers
 ```javascript
@@ -53,7 +54,13 @@ const $pct = id => parseFloat($(id)?.value || 0) / 100;
 const $int = id => parseInt($(id)?.value || 0);
 ```
 
-### 4. State Variables (22 total)
+### 4. runSim Decomposition (242 → 98 lines)
+- `updateSliderLabels()` - Slider value display updates
+- `updateDealDisplay()` - Asset, leverage, mortgage, tax display
+- `buildSimParams()` - Simulation parameters construction
+- `updateKPIs()` - KPI panel updates after simulation
+
+### 5. State Variables (22 total)
 ```javascript
 {
     mode, exMode, taxMode, horMode,
@@ -71,4 +78,5 @@ const $int = id => parseInt($(id)?.value || 0);
 3. **Test compatibility** - JS fallbacks for non-Alpine environments
 4. **Minimal overhead** - Alpine.js is ~7kB gzipped
 5. **No build step** - Works with file:// protocol
-6. **Cleaner code** - DOM helpers reduce verbosity
+6. **Cleaner code** - DOM helpers and extracted functions
+7. **Maintainable** - Small, focused functions
