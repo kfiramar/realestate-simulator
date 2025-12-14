@@ -2,7 +2,6 @@ const AppLogic = window.Logic || {};
 
 // --- TRANSLATIONS (loaded from i18n/index.js, with fallback for tests) ---
 if (!window.i18n) {
-    // Minimal fallback for test environment
     window.i18n = {
         T: { en: {}, he: {} },
         getLang: () => 'en',

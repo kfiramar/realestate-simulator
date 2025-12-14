@@ -16,16 +16,28 @@
 
 To continue refactoring beyond phases 1-3, the project needs ES modules migration:
 
-1. Add `type="module"` to script tags in index.html
-2. Convert IIFE patterns to `export`/`import` statements
-3. Update Jest config for ESM support (`transform`, `moduleNameMapper`)
-4. Update all 22 test files to use dynamic imports
+**Why ESM migration is complex:**
+- 22+ test files use CommonJS `require()` syntax
+- Test helpers use `eval()` to load IIFE modules
+- Jest's ESM support is experimental and requires `NODE_OPTIONS='--experimental-vm-modules'`
+- All test files would need conversion to `import` syntax
 
-This is a significant undertaking (~2-4 hours) but would enable:
-- Splitting logic.js into focused modules
-- Extracting chart rendering
-- Centralizing state management
+**Migration steps (estimated 2-4 hours):**
+1. Set `"type": "module"` in package.json
+2. Update jest.config.js to use `export default`
+3. Convert all test files from `require()` to `import`
+4. Update test helpers to use dynamic `import()`
+5. Add `type="module"` to script tags in index.html
+6. Convert source files to use `export` statements
+7. Test thoroughly in both browser and Jest
+
+**Benefits after migration:**
 - Tree-shaking for smaller bundle size
+- Better IDE support and type inference
+- Cleaner import/export syntax
+- Enables splitting logic.js into focused modules
+- Enables extracting chart rendering
+- Enables centralizing state management
 
 ---
 
