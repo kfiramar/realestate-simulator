@@ -367,12 +367,7 @@ function showMaxTooltip(el, maxVal) {
 function updateVisualBar(p, k, m, z, mt) {
     const bar = $('mixVisualBar');
     if (!bar) return;
-    const segs = bar.children;
-    segs[0].style.width = p + '%';   // Prime
-    segs[1].style.width = k + '%';   // Kalats
-    segs[2].style.width = m + '%';   // Malatz
-    segs[3].style.width = z + '%';   // Katz
-    segs[4].style.width = mt + '%';  // Matz
+    [p, k, m, z, mt].forEach((v, i) => bar.children[i].style.width = v + '%');
 }
 
 function checkMix() {
@@ -685,15 +680,12 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
     $('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
     $('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
     
-    const kMasShevach = $('kMasShevach');
-    if (kMasShevach) kMasShevach.innerText = fmt(res.masShevach || 0) + ' ₪';
-    const kCapGains = $('kCapGains');
-    if (kCapGains) kCapGains.innerText = fmt(res.spTax || 0) + ' ₪';
+    const setKPI = (id, val) => { const el = $(id); if (el) el.innerText = fmt(val || 0) + ' ₪'; };
+    setKPI('kMasShevach', res.masShevach);
+    setKPI('kCapGains', res.spTax);
 
     const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
-    const posTxt = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y';
-    const valPosCF = $('valPosCF');
-    if (valPosCF) valPosCF.innerText = posTxt;
+    $('valPosCF')?.innerText && ($('valPosCF').innerText = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y');
 
     if (!skipCharts && res.series) {
         if (typeof window !== 'undefined') {
@@ -713,8 +705,6 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
             { mode, surplusMode, t, fmt, fmtNum });
     }
 }
-
-// --- PERSISTENCE ---
 
 // --- PERSISTENCE ---
 const STORAGE_KEY = window.Persistence?.STORAGE_KEY || 'mortgageCalcState';
