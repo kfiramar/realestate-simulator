@@ -11,48 +11,47 @@
 | 5 | Extract Prepayments | ✅ Complete | 207 lines → src/prepayments/ |
 | 6 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
 | 7 | State Management | ✅ Complete | 54 lines → src/state/ |
-| 8 | Extract Persistence | 🔄 Next | saveState/loadState (~115 lines) |
-| 9 | Extract UI Formatters | Planned | fmt, fmtNum, fmtVal (~50 lines) |
+| 8 | Extract Persistence | ✅ Complete | 132 lines → src/persistence/ |
+| 9 | Extract UI Formatters | ⏭️ Skipped | Too small (7 lines), state-coupled |
 
-**app.js: 1928 → 1128 lines (42% reduction)**
-**Total source: 2763 lines across 7 files**
+**app.js: 1928 → 1046 lines (46% reduction)**
+**Total source: 2813 lines across 8 files**
 **All 276 tests passing**
 
 ### Module Structure
 ```
 src/
 ├── index.html              # Entry point
-├── app.js                  # Main app logic (1128 lines)
+├── app.js                  # Main app logic (1046 lines)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
 ├── config/index.js         # Constants (35 lines)
 ├── state/index.js          # State management (54 lines)
 ├── charts/index.js         # Chart rendering (250 lines)
-└── prepayments/index.js    # Prepayment logic (207 lines)
+├── prepayments/index.js    # Prepayment logic (207 lines)
+└── persistence/index.js    # localStorage save/load (132 lines)
 ```
 
-### Phase 8: Extract Persistence
-Target: Move saveState/loadState to src/persistence/index.js
-- STORAGE_KEY constant
-- saveState() function
-- loadState() function  
-- Estimated: ~115 lines
+### What Remains in app.js (1046 lines)
+The remaining code is tightly coupled and includes:
+- **50 DOM handler functions**: All use getElementById extensively
+- **Mix validation**: checkMix, syncMixInput, updateVisualBar
+- **Rate management**: toggleRateEdit, updateRateLabels
+- **runSim**: Core simulation orchestration (~240 lines)
+- **updateSweetSpots**: Optimization logic (~90 lines)
+- **bootstrap**: Initialization sequence (~50 lines)
 
----
+### Why Further Extraction Has Diminishing Returns
+1. Remaining functions are heavily DOM-coupled (276 getElementById calls)
+2. Circular dependencies (runSim ↔ updateSweetSpots ↔ checkMix)
+3. State variables accessed directly by most functions
+4. Extraction would add complexity without significant benefit
 
-## Overview
-
-This document outlines a comprehensive refactoring plan for the Brickfolio real estate investment simulator. The goal is to improve code maintainability, testability, and developer experience while preserving all existing functionality.
-
-### Current State
-
-| File | Lines | Functions | Issues |
-|------|-------|-----------|--------|
-| app.js | 1928 | 59 | God object, mixed concerns |
-| logic.js | 775 | 12 | Large simulate(), could be split |
-| index.html | 523 | - | Inline handlers |
-| styles.css | 1132 | - | Single file, manageable |
+### Future Improvements (if needed)
+1. Consider a lightweight framework (Alpine.js, Preact) for DOM binding
+2. Use event delegation instead of direct getElementById
+3. Implement proper dependency injection for testability
 
 ### Target State
 
