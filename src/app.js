@@ -368,6 +368,34 @@ function updateSliderLabels() {
     $('vSellCost').innerText = parseFloat($('rSellCost').value).toFixed(1) + '%';
 }
 
+// Update deal structure display (asset, leverage, mortgage, tax)
+function updateDealDisplay(eq, downPct, initialLoan) {
+    const assetPriceStart = eq / downPct;
+    const lev = 1 / downPct;
+    $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
+    $('valLev').innerText = 'x' + lev.toFixed(1);
+    $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
+    $('valMortgage').innerText = fmt(initialLoan) + ' ₪';
+
+    const isFirstHome = buyerType === 'first';
+    const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
+    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPriceStart, isFirstHome) : 0;
+    const taxEl = $('valPurchaseTax');
+    if (taxEl) taxEl.innerText = fmt(purchaseTax) + ' ₪';
+
+    // Update track percentage displays with amounts
+    ['Prime','Kalats','Malatz','Katz','Matz'].forEach(track => {
+        const pct = parseFloat($('pct'+track)?.value) || 0;
+        const el = $('disp'+track);
+        if (el) {
+            const amt = initialLoan * pct / 100;
+            el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(amt/1000)}K</span>`;
+        }
+    });
+
+    return { assetPriceStart, purchaseTax };
+}
+
 function updateTrackTermEnabled() {
     const pP = parseFloat($('pctPrime').value) || 0;
     const pK = parseFloat($('pctKalats').value) || 0;
@@ -686,35 +714,13 @@ function runSim(opts = {}) {
     updateSliderLabels();
 
     let assetPriceStart = eq / downPct;
-    let lev = 1 / downPct;
-    $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
-    $('valLev').innerText = 'x' + lev.toFixed(1);
-    $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
     let initialLoan = assetPriceStart - eq;
-    $('valMortgage').innerText = fmt(initialLoan) + ' ₪';
-
-    // Purchase tax calculation
-    const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
-    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPriceStart, isFirstHome) : 0;
-    const taxEl = $('valPurchaseTax');
-    if (taxEl) taxEl.innerText = fmt(purchaseTax) + ' ₪';
-
-    // Update track percentage displays with amounts
-    const tracks = ['Prime','Kalats','Malatz','Katz','Matz'];
-    tracks.forEach(t => {
-        const pct = parseFloat(document.getElementById('pct'+t).value) || 0;
-        const el = document.getElementById('disp'+t);
-        if (el) {
-            const amt = initialLoan * pct / 100;
-            el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(amt/1000)}K</span>`;
-        }
-    });
+    const { purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
 
     for (let k in cfg) {
-        let el = document.getElementById(cfg[k].v);
+        let el = $(cfg[k].v);
         if (el) {
-            if (cfg[k].is) el.innerText = 'Hist'; else el.innerText = document.getElementById(cfg[k].s).value + '%';
+            if (cfg[k].is) el.innerText = 'Hist'; else el.innerText = $(cfg[k].s).value + '%';
         }
     }
 
