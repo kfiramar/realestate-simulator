@@ -2,6 +2,9 @@ const AppLogic = window.Logic || {};
 const T = window.i18n?.T || { en: {}, he: {} };
 const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig || {};
 
+// --- DOM HELPERS ---
+const $ = id => document.getElementById(id);
+
 // --- TRANSLATIONS ---
 let lang = window.i18n?.getLang() || 'en';
 
@@ -94,7 +97,7 @@ const cfg = {
 function setMode(m, opts = {}) {
     setState('mode', m);
     // Alpine handles visibility and class toggling
-    document.getElementById('equityBox')?.classList.toggle('show', m === 'currency');
+    $('equityBox')?.classList.toggle('show', m === 'currency');
     if (!opts.skipSim) runSim();
 }
 function tgl(k, h, opts = {}) {
@@ -113,25 +116,25 @@ function tgl(k, h, opts = {}) {
 function setGlobalMode(isHist, opts = {}) {
     setState('globalHistMode', isHist);
     // Keep for non-Alpine environments
-    const pGlobal = document.getElementById('pGlobal');
+    const pGlobal = $('pGlobal');
     if (pGlobal) {
         pGlobal.children[0]?.classList.toggle('active', isHist);
         pGlobal.children[1]?.classList.toggle('active', !isHist);
     }
-    document.getElementById('scenBox')?.classList.toggle('show', !isHist);
+    $('scenBox')?.classList.toggle('show', !isHist);
     for (let k in cfg) { tgl(k, isHist, opts); }
 }
 function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
-    document.getElementById('sSP').value = s.sp;
-    document.getElementById('sApp').value = s.app;
-    document.getElementById('sInt').value = s.int;
-    document.getElementById('sInf').value = s.inf;
-    document.getElementById('sYld').value = s.yld;
+    $('sSP').value = s.sp;
+    $('sApp').value = s.app;
+    $('sInt').value = s.int;
+    $('sInf').value = s.inf;
+    $('sYld').value = s.yld;
 
-    document.getElementById('scenBear').classList.toggle('active', type === 'bear');
-    document.getElementById('scenBase').classList.toggle('active', type === 'base');
-    document.getElementById('scenBull').classList.toggle('active', type === 'bull');
+    $('scenBear')?.classList.toggle('active', type === 'bear');
+    $('scenBase')?.classList.toggle('active', type === 'base');
+    $('scenBull')?.classList.toggle('active', type === 'bull');
 
     refreshRatesForProfile();
     updateRateLabels();
@@ -142,22 +145,20 @@ function applyScenario(type, opts = {}) {
 }
 
 function applyTamheel(type) {
-    const t = TAMHEEL_PROFILES[type];
-    document.getElementById('pctPrime').value = t.p;
-    document.getElementById('pctKalats').value = t.k;
-    document.getElementById('pctKatz').value = t.z;
-    document.getElementById('pctMalatz').value = t.m || 0;
-    document.getElementById('pctMatz').value = t.mt || 0;
-    // Set term years per track
-    document.getElementById('termPrime').value = t.tP;
-    document.getElementById('termKalats').value = t.tK;
-    document.getElementById('termKatz').value = t.tZ;
-    document.getElementById('termMalatz').value = t.tM;
-    document.getElementById('termMatz').value = t.tMt;
+    const p = TAMHEEL_PROFILES[type];
+    $('pctPrime').value = p.p;
+    $('pctKalats').value = p.k;
+    $('pctKatz').value = p.z;
+    $('pctMalatz').value = p.m || 0;
+    $('pctMatz').value = p.mt || 0;
+    $('termPrime').value = p.tP;
+    $('termKalats').value = p.tK;
+    $('termKatz').value = p.tZ;
+    $('termMalatz').value = p.tM;
+    $('termMatz').value = p.tMt;
     ['termPrimeVal','termKalatsVal','termKatzVal','termMalatzVal','termMatzVal'].forEach((id, i) => {
-        document.getElementById(id).textContent = [t.tP, t.tK, t.tZ, t.tM, t.tMt][i] + 'y';
+        $(id).textContent = [p.tP, p.tK, p.tZ, p.tM, p.tMt][i] + 'y';
     });
-    // Open advanced terms tab
     if (!advancedTermMode) toggleAdvancedTerms();
     checkMix();
 }
@@ -181,7 +182,7 @@ function getCreditTier(score) {
 }
 
 function applyLtvCaps() {
-    const downSlider = document.getElementById('rDown');
+    const downSlider = $('rDown');
     if (!downSlider) return;
     const tier = getCreditTier(creditScore);
     const buyerMinDown = LTV_MIN[buyerType] || 25;
@@ -199,9 +200,9 @@ function applyLtvCaps() {
 }
 
 function updateCreditUI() {
-    const scoreEl = document.getElementById('creditScoreVal');
-    const tierEl = document.getElementById('creditTierLabel');
-    const warnEl = document.getElementById('creditWarn');
+    const scoreEl = $('creditScoreVal');
+    const tierEl = $('creditTierLabel');
+    const warnEl = $('creditWarn');
     const tier = getCreditTier(creditScore);
     const displayScore = tier.range[0] + '-' + tier.range[1];
 
@@ -215,7 +216,7 @@ function updateCreditUI() {
 
 function refreshRatesForProfile() {
     const tier = getCreditTier(parseInt(creditScore, 10));
-    const base = parseFloat(document.getElementById('sInt').value) || 4.25;
+    const base = parseFloat($('sInt').value) || 4.25;
 
     const setVal = (id, anchor, risk) => {
         const el = document.getElementById(id);
@@ -243,22 +244,22 @@ function setCreditScore(v) {
 function tglHor(isAuto) {
     setState('horMode', isAuto ? 'auto' : 'custom');
     // Keep for non-Alpine environments (tests)
-    const pHor = document.getElementById('pHor');
+    const pHor = $('pHor');
     if (pHor) {
         pHor.children[0]?.classList.toggle('active', isAuto);
         pHor.children[1]?.classList.toggle('active', !isAuto);
     }
-    document.getElementById('bHor')?.classList.toggle('show', !isAuto);
+    $('bHor')?.classList.toggle('show', !isAuto);
     if (isAuto) { setState('lockHor', true); }
     runSim();
 }
 
 function setTaxMode(m) {
     setState('taxMode', m);
-    document.getElementById('txReal').classList.toggle('active', m === 'real');
-    document.getElementById('txForex').classList.toggle('active', m === 'forex');
+    $('txReal').classList.toggle('active', m === 'real');
+    $('txForex').classList.toggle('active', m === 'forex');
     const label = m === 'real' ? 'Real' : 'Nominal';
-    const vTaxMode = document.getElementById('vTaxMode');
+    const vTaxMode = $('vTaxMode');
     if (vTaxMode) vTaxMode.innerText = label;
     runSim();
 }
@@ -271,7 +272,7 @@ function updateLockUI() {
     setBtn('lockDownBtn', lockDown);
     setBtn('lockTermBtn', lockTerm);
     setBtn('lockHorBtn', lockHor);
-    const summaryEl = document.getElementById('optModeLabel');
+    const summaryEl = $('optModeLabel');
     if (summaryEl) {
         const locks = [];
         if (lockDown) locks.push('Down');
@@ -286,9 +287,9 @@ function toggleLock(target) {
     if (target === 'hor') {
         if (horMode === 'auto' && lockHor) {
             setState('horMode', 'custom');
-            document.getElementById('pHor').children[0].classList.remove('active');
-            document.getElementById('pHor').children[1].classList.add('active');
-            document.getElementById('bHor').classList.add('show');
+            $('pHor').children[0].classList.remove('active');
+            $('pHor').children[1].classList.add('active');
+            $('bHor').classList.add('show');
         }
         setState('lockHor', !lockHor);
     }
@@ -314,12 +315,12 @@ function showTermVal(elId, v) {
 }
 
 function syncTrackTermsToMain() {
-    const dur = document.getElementById('rDur').value;
-    document.getElementById('termPrime').value = dur;
-    document.getElementById('termKalats').value = dur;
-    document.getElementById('termKatz').value = dur;
-    document.getElementById('termMalatz').value = dur;
-    document.getElementById('termMatz').value = dur;
+    const dur = $('rDur').value;
+    $('termPrime').value = dur;
+    $('termKalats').value = dur;
+    $('termKatz').value = dur;
+    $('termMalatz').value = dur;
+    $('termMatz').value = dur;
     showTermVal('termPrimeVal', dur);
     showTermVal('termKalatsVal', dur);
     showTermVal('termKatzVal', dur);
@@ -330,9 +331,9 @@ function syncTrackTermsToMain() {
 function toggleAdvancedTerms() {
     setState('advancedTermMode', !advancedTermMode);
     // Alpine x-show handles visibility, keep for non-Alpine environments
-    const advBox = document.getElementById('advancedTermBox');
-    const basicBox = document.getElementById('basicTermBox');
-    const btn = document.getElementById('btnAdvancedTerm');
+    const advBox = $('advancedTermBox');
+    const basicBox = $('basicTermBox');
+    const btn = $('btnAdvancedTerm');
     if (advBox) advBox.style.display = advancedTermMode ? 'block' : 'none';
     if (basicBox) basicBox.style.display = advancedTermMode ? 'none' : 'block';
     if (btn) btn.classList.toggle('active', advancedTermMode);
@@ -340,8 +341,8 @@ function toggleAdvancedTerms() {
     runSim();
 }
 function updMeter() {
-    let v = parseFloat(document.getElementById('sInf').value);
-    let s = document.getElementById('infMeter').children;
+    let v = parseFloat($('sInf').value);
+    let s = $('infMeter').children;
     s[0].style.opacity = v < 2 ? 1 : 0.2;
     s[1].style.opacity = (v >= 2 && v < 4) ? 1 : 0.2;
     s[2].style.opacity = v >= 4 ? 1 : 0.2;
@@ -356,11 +357,11 @@ function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
 function updateTrackTermEnabled() {
-    const pP = parseFloat(document.getElementById('pctPrime').value) || 0;
-    const pK = parseFloat(document.getElementById('pctKalats').value) || 0;
-    const pZ = parseFloat(document.getElementById('pctKatz').value) || 0;
-    const pM = parseFloat(document.getElementById('pctMalatz').value) || 0;
-    const pMT = parseFloat(document.getElementById('pctMatz').value) || 0;
+    const pP = parseFloat($('pctPrime').value) || 0;
+    const pK = parseFloat($('pctKalats').value) || 0;
+    const pZ = parseFloat($('pctKatz').value) || 0;
+    const pM = parseFloat($('pctMalatz').value) || 0;
+    const pMT = parseFloat($('pctMatz').value) || 0;
 
     const setDisabled = (id, val) => {
         const el = document.getElementById(id);
@@ -405,7 +406,7 @@ function syncMixInput(track) {
 }
 
 function showMaxTooltip(el, maxVal) {
-    let tip = document.getElementById('maxTip');
+    let tip = $('maxTip');
     if (!tip) {
         tip = document.createElement('div');
         tip.id = 'maxTip';
@@ -425,7 +426,7 @@ function showMaxTooltip(el, maxVal) {
 }
 
 function updateVisualBar(p, k, m, z, mt) {
-    const bar = document.getElementById('mixVisualBar');
+    const bar = $('mixVisualBar');
     if (!bar) return;
     const segs = bar.children;
     segs[0].style.width = p + '%';   // Prime
@@ -436,23 +437,23 @@ function updateVisualBar(p, k, m, z, mt) {
 }
 
 function checkMix() {
-    let p = parseInt(document.getElementById('pctPrime').value) || 0;
-    let k = parseInt(document.getElementById('pctKalats').value) || 0;
-    let z = parseInt(document.getElementById('pctKatz').value) || 0;
-    let m = parseInt(document.getElementById('pctMalatz').value) || 0;
-    let mt = parseInt(document.getElementById('pctMatz').value) || 0;
+    let p = parseInt($('pctPrime').value) || 0;
+    let k = parseInt($('pctKalats').value) || 0;
+    let z = parseInt($('pctKatz').value) || 0;
+    let m = parseInt($('pctMalatz').value) || 0;
+    let mt = parseInt($('pctMatz').value) || 0;
 
     // Sync sliders if called externally (e.g. presets)
-    document.getElementById('sliderPrime').value = p;
-    document.getElementById('dispPrime').innerText = p + '%';
-    document.getElementById('sliderKalats').value = k;
-    document.getElementById('dispKalats').innerText = k + '%';
-    document.getElementById('sliderKatz').value = z;
-    document.getElementById('dispKatz').innerText = z + '%';
-    document.getElementById('sliderMalatz').value = m;
-    document.getElementById('dispMalatz').innerText = m + '%';
-    document.getElementById('sliderMatz').value = mt;
-    document.getElementById('dispMatz').innerText = mt + '%';
+    $('sliderPrime').value = p;
+    $('dispPrime').innerText = p + '%';
+    $('sliderKalats').value = k;
+    $('dispKalats').innerText = k + '%';
+    $('sliderKatz').value = z;
+    $('dispKatz').innerText = z + '%';
+    $('sliderMalatz').value = m;
+    $('dispMalatz').innerText = m + '%';
+    $('sliderMatz').value = mt;
+    $('dispMatz').innerText = mt + '%';
 
     updateVisualBar(p, k, m, z, mt);
 
@@ -460,16 +461,16 @@ function checkMix() {
     const fixedPct = k + z; // Kalatz + Katz = fixed rate tracks
     const fixedOk = fixedPct >= 33;
 
-    let el = document.getElementById('valMixSum');
+    let el = $('valMixSum');
     el.innerText = sum + "%";
     el.style.display = sum === 100 ? 'none' : 'block';
     el.style.color = sum === 100 ? '#16a34a' : '#ef4444';
-    const warnEl = document.getElementById('mixWarn');
+    const warnEl = $('mixWarn');
     if (warnEl) {
         warnEl.style.display = sum === 100 ? 'none' : 'block';
     }
-    const charts = document.getElementById('chartsContainer');
-    const chartsWarn = document.getElementById('chartsWarn');
+    const charts = $('chartsContainer');
+    const chartsWarn = $('chartsWarn');
     const dimCharts = sum !== 100 || !fixedOk;
     if (charts) charts.classList.toggle('charts-dim', dimCharts);
     if (chartsWarn) {
@@ -505,8 +506,8 @@ function toggleRateEdit() {
 
 function togglePrepaySection() {
     // Alpine handles visibility via x-show, keep for non-Alpine environments
-    const container = document.getElementById('prepayContainer');
-    const arrow = document.getElementById('prepayArrow');
+    const container = $('prepayContainer');
+    const arrow = $('prepayArrow');
     const isOpen = container?.style.display !== 'none';
     if (container) container.style.display = isOpen ? 'none' : 'block';
     if (arrow) arrow.textContent = isOpen ? '+' : '−';
@@ -524,10 +525,10 @@ function syncPrime() {
 function setSurplusMode(m, opts = {}) {
     setState('surplusMode', m);
     // Class toggling for non-Alpine environments (tests)
-    document.getElementById('surplusConsume')?.classList.toggle('active', m === 'consume');
-    document.getElementById('surplusMatch')?.classList.toggle('active', m === 'match');
-    document.getElementById('surplusInvest')?.classList.toggle('active', m === 'invest');
-    const descEl = document.getElementById('surplusDescText') || document.getElementById('surplusDesc');
+    $('surplusConsume')?.classList.toggle('active', m === 'consume');
+    $('surplusMatch')?.classList.toggle('active', m === 'match');
+    $('surplusInvest')?.classList.toggle('active', m === 'invest');
+    const descEl = $('surplusDescText') || $('surplusDesc');
     if (descEl) {
         if (m === 'invest') descEl.innerText = t('surplusDescInvest');
         else if (m === 'consume') descEl.innerText = t('surplusDescConsume');
@@ -544,8 +545,8 @@ function setRepayMethod(m) {
 
 function setOptimizeMode(m) {
     setState('optimizeMode', m);
-    document.getElementById('optRoi').classList.toggle('active', m === 'roi');
-    document.getElementById('optOutperf').classList.toggle('active', m === 'outperform');
+    $('optRoi').classList.toggle('active', m === 'roi');
+    $('optOutperf').classList.toggle('active', m === 'outperform');
     updateSweetSpots();
 }
 
@@ -554,8 +555,8 @@ function updateOptimalRepayMethod(baseParams, currentCagr) {
     const altParams = { ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false };
     const altRes = AppLogic.simulate(altParams);
 
-    const starSpitzer = document.getElementById('starSpitzer');
-    const starEqual = document.getElementById('starEqual');
+    const starSpitzer = $('starSpitzer');
+    const starEqual = $('starEqual');
     if (!starSpitzer || !starEqual) return;
 
     const spitzerCagr = repayMethod === 'spitzer' ? currentCagr : altRes.cagrRE;
@@ -570,61 +571,61 @@ function updateOptimalRepayMethod(baseParams, currentCagr) {
 function updateSweetSpots() {
     // Optimizer currently only optimizes Down/Term assuming existing mix
     // We pass existing inputs to the optimizer
-    let eq = parseFloat(document.getElementById('inpEquity').value) || 400000;
-    let curDown = parseInt(document.getElementById('rDown').value) / 100;
-    let curDur = parseInt(document.getElementById('rDur').value);
-    let simDur = horMode === 'auto' ? curDur : parseInt(document.getElementById('rHor').value);
+    let eq = parseFloat($('inpEquity').value) || 400000;
+    let curDown = parseInt($('rDown').value) / 100;
+    let curDur = parseInt($('rDur').value);
+    let simDur = horMode === 'auto' ? curDur : parseInt($('rHor').value);
     
     // Calculate purchase tax for optimizer
     const assetPrice = eq / curDown;
     const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = document.getElementById('cPurchaseTax')?.checked ?? true;
+    const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
     const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPrice, isFirstHome) : 0;
 
     const params = {
         eq, curDown, curDur, simDur,
-        useTaxSP: document.getElementById('cTaxSP')?.checked ?? true,
-        useTaxRE: document.getElementById('cTaxSP')?.checked ?? true,
-        useRentTax: document.getElementById('cRentTax')?.checked ?? false,
-        useMasShevach: document.getElementById('cMasShevach')?.checked ?? false,
+        useTaxSP: $('cTaxSP')?.checked ?? true,
+        useTaxRE: $('cTaxSP')?.checked ?? true,
+        useRentTax: $('cRentTax')?.checked ?? false,
+        useMasShevach: $('cMasShevach')?.checked ?? false,
         masShevachType: buyerType === 'investor' ? 'none' : 'single',
         purchaseTax,
-        tradeFee: parseFloat(document.getElementById('rTrade').value) / 100,
-        merFee: parseFloat(document.getElementById('rMer').value) / 100,
-        buyCostPct: parseFloat(document.getElementById('rBuyCost').value) / 100,
-        maintPct: parseFloat(document.getElementById('rMaint').value) / 100,
-        sellCostPct: parseFloat(document.getElementById('rSellCost').value) / 100,
+        tradeFee: parseFloat($('rTrade').value) / 100,
+        merFee: parseFloat($('rMer').value) / 100,
+        buyCostPct: parseFloat($('rBuyCost').value) / 100,
+        maintPct: parseFloat($('rMaint').value) / 100,
+        sellCostPct: parseFloat($('rSellCost').value) / 100,
         overrides: {
-            SP: parseFloat(document.getElementById('sSP').value) / 100,
-            App: parseFloat(document.getElementById('sApp').value) / 100,
-            Int: parseFloat(document.getElementById('sInt').value) / 100,
-            Inf: parseFloat(document.getElementById('sInf').value) / 100,
-            Yld: parseFloat(document.getElementById('sYld').value) / 100,
-            RateP: parseFloat(document.getElementById('ratePrime').value) / 100,
-            RateK: parseFloat(document.getElementById('rateKalats').value) / 100,
-            RateZ: parseFloat(document.getElementById('rateKatz').value) / 100,
-            RateM: parseFloat(document.getElementById('rateMalatz').value) / 100,
-            RateMT: parseFloat(document.getElementById('rateMatz').value) / 100,
+            SP: parseFloat($('sSP').value) / 100,
+            App: parseFloat($('sApp').value) / 100,
+            Int: parseFloat($('sInt').value) / 100,
+            Inf: parseFloat($('sInf').value) / 100,
+            Yld: parseFloat($('sYld').value) / 100,
+            RateP: parseFloat($('ratePrime').value) / 100,
+            RateK: parseFloat($('rateKalats').value) / 100,
+            RateZ: parseFloat($('rateKatz').value) / 100,
+            RateM: parseFloat($('rateMalatz').value) / 100,
+            RateMT: parseFloat($('rateMatz').value) / 100,
         },
         mix: {
-            prime: parseFloat(document.getElementById('pctPrime').value),
-            kalats: parseFloat(document.getElementById('pctKalats').value),
-            katz: parseFloat(document.getElementById('pctKatz').value),
-            malatz: parseFloat(document.getElementById('pctMalatz').value),
-            matz: parseFloat(document.getElementById('pctMatz').value)
+            prime: parseFloat($('pctPrime').value),
+            kalats: parseFloat($('pctKalats').value),
+            katz: parseFloat($('pctKatz').value),
+            malatz: parseFloat($('pctMalatz').value),
+            matz: parseFloat($('pctMatz').value)
         },
         termMix: {
-            p: parseInt(document.getElementById('termPrime').value) || curDur,
-            k: parseInt(document.getElementById('termKalats').value) || curDur,
-            z: parseInt(document.getElementById('termKatz').value) || curDur,
-            m: parseInt(document.getElementById('termMalatz').value) || curDur,
-            mt: parseInt(document.getElementById('termMatz').value) || curDur
+            p: parseInt($('termPrime').value) || curDur,
+            k: parseInt($('termKalats').value) || curDur,
+            z: parseInt($('termKatz').value) || curDur,
+            m: parseInt($('termMalatz').value) || curDur,
+            mt: parseInt($('termMatz').value) || curDur
         },
         drift: -0.5,
         lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride || undefined,
         surplusMode,
-        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100,
+        purchaseDiscount: parseFloat($('rDiscount').value) / 100,
         optimizeMode
     };
 
@@ -634,12 +635,12 @@ function updateSweetSpots() {
     const downMax = 100;
     let posDown = ((best.d - downMin) / (downMax - downMin)) * 100;
     if (lang === 'he') posDown = 100 - posDown;
-    document.getElementById('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
-    document.getElementById('spotDown').classList.add('visible');
+    $('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
+    $('spotDown').classList.add('visible');
 
     let posDur = ((best.t - 1) / (30 - 1)) * 100;
     if (lang === 'he') posDur = 100 - posDur;
-    const spotDur = document.getElementById('spotDur');
+    const spotDur = $('spotDur');
     if (advancedTermMode) {
         // In advanced mode, each track has its own term - hide the single term sweet spot
         spotDur.classList.remove('visible');
@@ -651,12 +652,12 @@ function updateSweetSpots() {
     if (horMode === 'custom' || lockHor) {
         let posHor = ((best.h - 1) / (50 - 1)) * 100;
         if (lang === 'he') posHor = 100 - posHor;
-        let spotH = document.getElementById('spotHor');
+        let spotH = $('spotHor');
         spotH.style.left = `calc(${posHor}% + (8px - (0.16px * ${posHor})))`;
         spotH.classList.add('visible');
         spotH.title = `Best CAGR at ${best.h} Years`;
     } else {
-        document.getElementById('spotHor').classList.remove('visible');
+        $('spotHor').classList.remove('visible');
     }
 }
 
@@ -664,15 +665,15 @@ function runSim(opts = {}) {
     if (bootstrapping) return;
     const skipCharts = !!opts.skipCharts;
 
-    let eq = parseFloat(document.getElementById('inpEquity').value) || 400000;
-    let downPct = parseInt(document.getElementById('rDown').value) / 100;
-    const mainTermSlider = document.getElementById('rDur');
+    let eq = parseFloat($('inpEquity').value) || 400000;
+    let downPct = parseInt($('rDown').value) / 100;
+    const mainTermSlider = $('rDur');
     let mortDur = parseInt(mainTermSlider.value);
-    let simDur = horMode === 'auto' ? mortDur : parseInt(document.getElementById('rHor').value);
+    let simDur = horMode === 'auto' ? mortDur : parseInt($('rHor').value);
 
-    document.getElementById('dDown').innerText = (downPct * 100).toFixed(0) + '%';
-    const dDurEl = document.getElementById('dDur');
-    const dHorEl = document.getElementById('dHor');
+    $('dDown').innerText = (downPct * 100).toFixed(0) + '%';
+    const dDurEl = $('dDur');
+    const dHorEl = $('dHor');
     if (lang === 'he') {
         dDurEl.innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
         dHorEl.innerHTML = horMode === 'auto' ? t('auto') + ' <span style="direction:ltr;display:inline-block">(' + mortDur + t('ySuffix') + ')</span>' : '<span style="direction:ltr;display:inline-block">' + simDur + ' ' + t('yrSuffix') + '</span>';
@@ -682,26 +683,26 @@ function runSim(opts = {}) {
     }
 
     // ... Update other UI labels ...
-    document.getElementById('vTrade').innerText = parseFloat(document.getElementById('rTrade').value).toFixed(1) + '%';
-    document.getElementById('vMer').innerText = parseFloat(document.getElementById('rMer').value).toFixed(2) + '%';
-    document.getElementById('vDiscount').innerText = document.getElementById('rDiscount').value + '%';
-    document.getElementById('vBuyCost').innerText = parseFloat(document.getElementById('rBuyCost').value).toFixed(1) + '%';
-    document.getElementById('vMaint').innerText = parseFloat(document.getElementById('rMaint').value).toFixed(0) + '%';
-    document.getElementById('vSellCost').innerText = parseFloat(document.getElementById('rSellCost').value).toFixed(1) + '%';
+    $('vTrade').innerText = parseFloat($('rTrade').value).toFixed(1) + '%';
+    $('vMer').innerText = parseFloat($('rMer').value).toFixed(2) + '%';
+    $('vDiscount').innerText = $('rDiscount').value + '%';
+    $('vBuyCost').innerText = parseFloat($('rBuyCost').value).toFixed(1) + '%';
+    $('vMaint').innerText = parseFloat($('rMaint').value).toFixed(0) + '%';
+    $('vSellCost').innerText = parseFloat($('rSellCost').value).toFixed(1) + '%';
 
     let assetPriceStart = eq / downPct;
     let lev = 1 / downPct;
-    document.getElementById('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
-    document.getElementById('valLev').innerText = 'x' + lev.toFixed(1);
-    document.getElementById('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
+    $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
+    $('valLev').innerText = 'x' + lev.toFixed(1);
+    $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
     let initialLoan = assetPriceStart - eq;
-    document.getElementById('valMortgage').innerText = fmt(initialLoan) + ' ₪';
+    $('valMortgage').innerText = fmt(initialLoan) + ' ₪';
 
     // Purchase tax calculation
     const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = document.getElementById('cPurchaseTax')?.checked ?? true;
+    const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
     const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPriceStart, isFirstHome) : 0;
-    const taxEl = document.getElementById('valPurchaseTax');
+    const taxEl = $('valPurchaseTax');
     if (taxEl) taxEl.innerText = fmt(purchaseTax) + ' ₪';
 
     // Update track percentage displays with amounts
@@ -724,20 +725,20 @@ function runSim(opts = {}) {
 
     // Terms
     const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
-    let termP = clampTerm(parseInt(document.getElementById('termPrime').value) || mortDur);
-    let termK = clampTerm(parseInt(document.getElementById('termKalats').value) || mortDur);
-    let termZ = clampTerm(parseInt(document.getElementById('termKatz').value) || mortDur);
-    let termM = clampTerm(parseInt(document.getElementById('termMalatz').value) || mortDur);
-    let termMT = clampTerm(parseInt(document.getElementById('termMatz').value) || mortDur);
+    let termP = clampTerm(parseInt($('termPrime').value) || mortDur);
+    let termK = clampTerm(parseInt($('termKalats').value) || mortDur);
+    let termZ = clampTerm(parseInt($('termKatz').value) || mortDur);
+    let termM = clampTerm(parseInt($('termMalatz').value) || mortDur);
+    let termMT = clampTerm(parseInt($('termMatz').value) || mortDur);
 
     if (!advancedTermMode) {
         termP = termK = termZ = termM = termMT = clampTerm(mortDur);
         // UI Sync
-        document.getElementById('termPrime').value = termP;
-        document.getElementById('termKalats').value = termK;
-        document.getElementById('termKatz').value = termZ;
-        document.getElementById('termMalatz').value = termM;
-        document.getElementById('termMatz').value = termMT;
+        $('termPrime').value = termP;
+        $('termKalats').value = termK;
+        $('termKatz').value = termZ;
+        $('termMalatz').value = termM;
+        $('termMatz').value = termMT;
         showTermVal('termPrimeVal', termP);
         showTermVal('termKalatsVal', termK);
         showTermVal('termKatzVal', termZ);
@@ -761,19 +762,19 @@ function runSim(opts = {}) {
         mortDur = maxTrackYears;
         mainTermSlider.value = mortDur;
         if (lang === 'he') {
-            document.getElementById('dDur').innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
+            $('dDur').innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
         } else {
-            document.getElementById('dDur').innerText = mortDur + ' ' + t('yrSuffix');
+            $('dDur').innerText = mortDur + ' ' + t('yrSuffix');
         }
     }
 
     const effectiveMax = Math.max(maxTrackYears, mortDur);
     if (horMode === 'auto') {
-        document.getElementById('rHor').value = effectiveMax;
+        $('rHor').value = effectiveMax;
         if (lang === 'he') {
-            document.getElementById('dHor').innerHTML = t('auto') + ' <span style="direction:ltr;display:inline-block">(' + effectiveMax + t('ySuffix') + ')</span>';
+            $('dHor').innerHTML = t('auto') + ' <span style="direction:ltr;display:inline-block">(' + effectiveMax + t('ySuffix') + ')</span>';
         } else {
-            document.getElementById('dHor').innerText = t('auto') + ' (' + effectiveMax + t('ySuffix') + ')';
+            $('dHor').innerText = t('auto') + ' (' + effectiveMax + t('ySuffix') + ')';
         }
         simDur = effectiveMax;
     }
@@ -781,8 +782,8 @@ function runSim(opts = {}) {
     if (!opts.skipSweetSpots) updateSweetSpots();
 
     let activeDrift = -0.5;
-    if (document.getElementById('scenBear').classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
-    if (document.getElementById('scenBull').classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
+    if ($('scenBear').classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
+    if ($('scenBull').classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
 
     const params = {
         equity: eq,
@@ -791,40 +792,40 @@ function runSim(opts = {}) {
         simHorizon: simDur,
         termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
         mix: {
-            prime: parseFloat(document.getElementById('pctPrime').value) || 0,
-            kalats: parseFloat(document.getElementById('pctKalats').value) || 0,
-            katz: parseFloat(document.getElementById('pctKatz').value) || 0,
-            malatz: parseFloat(document.getElementById('pctMalatz').value) || 0,
-            matz: parseFloat(document.getElementById('pctMatz').value) || 0
+            prime: parseFloat($('pctPrime').value) || 0,
+            kalats: parseFloat($('pctKalats').value) || 0,
+            katz: parseFloat($('pctKatz').value) || 0,
+            malatz: parseFloat($('pctMalatz').value) || 0,
+            matz: parseFloat($('pctMatz').value) || 0
         },
         rates: {
-            prime: parseFloat(document.getElementById('ratePrime').value) / 100,
-            kalats: parseFloat(document.getElementById('rateKalats').value) / 100,
-            katz: parseFloat(document.getElementById('rateKatz').value) / 100,
-            malatz: parseFloat(document.getElementById('rateMalatz').value) / 100,
-            matz: parseFloat(document.getElementById('rateMatz').value) / 100
+            prime: parseFloat($('ratePrime').value) / 100,
+            kalats: parseFloat($('rateKalats').value) / 100,
+            katz: parseFloat($('rateKatz').value) / 100,
+            malatz: parseFloat($('rateMalatz').value) / 100,
+            matz: parseFloat($('rateMatz').value) / 100
         },
         market: {
-            sp: parseFloat(document.getElementById('sSP').value) / 100,
-            reApp: parseFloat(document.getElementById('sApp').value) / 100,
-            cpi: parseFloat(document.getElementById('sInf').value) / 100,
-            boi: parseFloat(document.getElementById('sInt').value) / 100,
-            rentYield: parseFloat(document.getElementById('sYld').value) / 100
+            sp: parseFloat($('sSP').value) / 100,
+            reApp: parseFloat($('sApp').value) / 100,
+            cpi: parseFloat($('sInf').value) / 100,
+            boi: parseFloat($('sInt').value) / 100,
+            rentYield: parseFloat($('sYld').value) / 100
         },
         fees: {
-            buy: parseFloat(document.getElementById('rBuyCost').value) / 100,
-            sell: parseFloat(document.getElementById('rSellCost').value) / 100,
-            trade: parseFloat(document.getElementById('rTrade').value) / 100,
-            mgmt: parseFloat(document.getElementById('rMer').value) / 100,
+            buy: parseFloat($('rBuyCost').value) / 100,
+            sell: parseFloat($('rSellCost').value) / 100,
+            trade: parseFloat($('rTrade').value) / 100,
+            mgmt: parseFloat($('rMer').value) / 100,
             purchaseTax: purchaseTax
         },
-        maintPct: parseFloat(document.getElementById('rMaint').value) / 100,
-        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100,
+        maintPct: parseFloat($('rMaint').value) / 100,
+        purchaseDiscount: parseFloat($('rDiscount').value) / 100,
         tax: {
-            useSP: document.getElementById('cTaxSP')?.checked ?? true,
-            useRE: document.getElementById('cTaxSP')?.checked ?? true,
-            useRent: document.getElementById('cRentTax')?.checked ?? false,
-            useMasShevach: document.getElementById('cMasShevach')?.checked ?? false,
+            useSP: $('cTaxSP')?.checked ?? true,
+            useRE: $('cTaxSP')?.checked ?? true,
+            useRent: $('cRentTax')?.checked ?? false,
+            useMasShevach: $('cMasShevach')?.checked ?? false,
             masShevachType: buyerType === 'investor' ? 'none' : 'single',
             mode: taxMode
         },
@@ -844,35 +845,35 @@ function runSim(opts = {}) {
     // ... UPDATE UI KPIs ...
     const lRE = res.netRE;
     const lSP = res.netSP;
-    document.getElementById('kRE').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.reDataPct[res.series.reDataPct.length - 1] : 0) : lRE);
-    document.getElementById('kSP').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.spDataPct[res.series.spDataPct.length - 1] : 0) : lSP);
+    $('kRE').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.reDataPct[res.series.reDataPct.length - 1] : 0) : lRE);
+    $('kSP').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.spDataPct[res.series.spDataPct.length - 1] : 0) : lSP);
 
     const diff = lRE - lSP;
     const winnerIsRE = diff >= 0;
     const base = winnerIsRE ? lSP : lRE;
     const diffPct = base !== 0 ? (Math.abs(diff) / base) * 100 : 0;
-    document.getElementById('kDiff').innerText = diffPct.toFixed(1) + '%';
-    document.getElementById('kDiff').style.color = winnerIsRE ? "var(--success)" : "var(--primary)";
+    $('kDiff').innerText = diffPct.toFixed(1) + '%';
+    $('kDiff').style.color = winnerIsRE ? "var(--success)" : "var(--primary)";
 
-    document.getElementById('kRECagr').innerText = res.cagrRE.toFixed(2) + '%';
-    document.getElementById('kSPCagr').innerText = res.cagrSP.toFixed(2) + '%';
+    $('kRECagr').innerText = res.cagrRE.toFixed(2) + '%';
+    $('kSPCagr').innerText = res.cagrSP.toFixed(2) + '%';
 
     // Highlight optimal repay method
     updateOptimalRepayMethod(params, res.cagrRE);
 
     let intPctOfAsset = (res.totalInterestWasted / assetPriceStart) * 100;
-    document.getElementById('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${intPctOfAsset.toFixed(0) + '%)'}`;
-    document.getElementById('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
-    document.getElementById('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
+    $('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${intPctOfAsset.toFixed(0) + '%)'}`;
+    $('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
+    $('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
     
-    const kMasShevach = document.getElementById('kMasShevach');
+    const kMasShevach = $('kMasShevach');
     if (kMasShevach) kMasShevach.innerText = fmt(res.masShevach || 0) + ' ₪';
-    const kCapGains = document.getElementById('kCapGains');
+    const kCapGains = $('kCapGains');
     if (kCapGains) kCapGains.innerText = fmt(res.spTax || 0) + ' ₪';
 
     const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
     const posTxt = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y';
-    const valPosCF = document.getElementById('valPosCF');
+    const valPosCF = $('valPosCF');
     if (valPosCF) valPosCF.innerText = posTxt;
 
     if (!skipCharts && res.series) {
@@ -962,16 +963,16 @@ function bootstrap() {
     setMode(hadSaved && mode ? mode : 'currency', { skipSim: true });
     // Restore horMode UI
     if (horMode === 'custom') {
-        document.getElementById('pHor').children[0].classList.remove('active');
-        document.getElementById('pHor').children[1].classList.add('active');
-        document.getElementById('bHor').classList.add('show');
+        $('pHor').children[0].classList.remove('active');
+        $('pHor').children[1].classList.add('active');
+        $('bHor').classList.add('show');
     }
     checkMix();
     window.Prepayments?.renderPrepayments();
     if (advancedTermMode) {
-        const panel = document.getElementById('advancedTermBox');
-        const basic = document.getElementById('basicTermBox');
-        const btn = document.getElementById('btnAdvancedTerm');
+        const panel = $('advancedTermBox');
+        const basic = $('basicTermBox');
+        const btn = $('btnAdvancedTerm');
         if (panel) panel.style.display = 'block';
         if (basic) basic.style.display = 'none';
         if (btn) btn.classList.add('active');
