@@ -488,11 +488,9 @@ function runSim(opts = {}) {
     if (bootstrapping) return;
     const skipCharts = !!opts.skipCharts;
 
-    let eq = parseFloat($('inpEquity').value) || 400000;
-    let downPct = parseInt($('rDown').value) / 100;
+    const eq = parseFloat($('inpEquity').value) || 400000, downPct = parseInt($('rDown').value) / 100;
     const mainTermSlider = $('rDur');
-    let mortDur = parseInt(mainTermSlider.value);
-    let simDur = horMode === 'auto' ? mortDur : parseInt($('rHor').value);
+    let mortDur = parseInt(mainTermSlider.value), simDur = horMode === 'auto' ? mortDur : parseInt($('rHor').value);
 
     $('dDown').innerText = (downPct * 100).toFixed(0) + '%';
     $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix'));
@@ -500,8 +498,7 @@ function runSim(opts = {}) {
 
     updateSliderLabels();
 
-    let assetPriceStart = eq / downPct;
-    let initialLoan = assetPriceStart - eq;
+    const assetPriceStart = eq / downPct, initialLoan = assetPriceStart - eq;
     const { purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
 
     for (let k in cfg) {
@@ -509,20 +506,14 @@ function runSim(opts = {}) {
         if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%';
     }
 
-    // Terms
     const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
-    const trackTerms = ['Prime','Kalats','Katz','Malatz','Matz'].map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
-    let [termP, termK, termZ, termM, termMT] = trackTerms;
+    let [termP, termK, termZ, termM, termMT] = ['Prime','Kalats','Katz','Malatz','Matz'].map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
 
     if (!advancedTermMode) {
         termP = termK = termZ = termM = termMT = clampTerm(mortDur);
-        ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => {
-            $('term' + t).value = termP;
-            showTermVal('term' + t + 'Val', termP);
-        });
+        ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => { $('term' + t).value = termP; showTermVal('term' + t + 'Val', termP); });
     }
 
-    // Logic restored to sync horizon/terms
     const termMap = {Prime: termP, Kalats: termK, Katz: termZ, Malatz: termM, Matz: termMT};
     const activeTerms = Object.entries(termMap).filter(([t]) => $pct('pct' + t) > 0).map(([,v]) => v);
     if (activeTerms.length === 0) activeTerms.push(mortDur);
