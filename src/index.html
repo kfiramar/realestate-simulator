@@ -50,11 +50,12 @@
 
                 <div class="section-title" data-t="dealStructure">Deal Structure</div>
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl" data-t="buyerType">Buyer Type</span>
+                    <div class="card-row" x-data><span class="card-lbl" data-t="buyerType">Buyer Type</span>
                         <select id="buyerType"
                             style="padding:6px; border-radius:6px; border:1px solid var(--border); font-weight:600; color:#475569;"
-                            onchange="setBuyerType(this.value)">
-                            <option value="first" selected data-t="firstHome">First Home (75% LTV)</option>
+                            onchange="setBuyerType(this.value)"
+                            x-model="$store.app.buyerType">
+                            <option value="first" data-t="firstHome">First Home (75% LTV)</option>
                             <option value="replacement" data-t="replacement">Replacement (70% LTV)</option>
                             <option value="investor" data-t="investor">Investment (50% LTV)</option>
                         </select>
@@ -202,6 +203,7 @@
                                 x-text="$store.app.lockTerm ? 'Locked' : 'Free'">Free</span></span>
                         <span class="card-val" id="dDur">25 Yr</span>
                         <div class="pill toggle" id="btnAdvancedTerm" onclick="toggleAdvancedTerms()"
+                            :class="{ active: $store.app.advancedTermMode }"
                             style="margin-left:auto;" data-t="advanced">Advanced</div>
                     </div>
                     <div id="basicTermBox">
