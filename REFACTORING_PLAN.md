@@ -8,28 +8,35 @@
 | 2 | Extract Constants | ✅ Complete | ~50 lines → src/config/ |
 | 3 | Dead Code Removal | ✅ Complete | Removed unused recommendMix() |
 | 4 | Extract Charts | ✅ Complete | ~250 lines → src/charts/ |
-| 5 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
+| 5 | Extract Prepayments | ✅ Complete | ~200 lines → src/prepayments/ |
+| 6 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
 
-**app.js: 1928 → 1297 lines (33% reduction)**
+**app.js: 1928 → 1107 lines (43% reduction)**
 **All 276 tests passing**
 
 ### Module Structure
 ```
 src/
 ├── index.html          # Entry point
-├── app.js              # Main app logic (1297 lines)
+├── app.js              # Main app logic (1107 lines)
 ├── logic.js            # Simulation engine (770 lines)
 ├── styles.css          # Styling
 ├── i18n/index.js       # Translation system (~300 lines)
 ├── config/index.js     # Constants & scenarios (~50 lines)
-└── charts/index.js     # Chart rendering (~250 lines)
+├── charts/index.js     # Chart rendering (~250 lines)
+└── prepayments/index.js # Prepayment logic (~200 lines)
 ```
 
 ### Architecture Notes
 - All modules use IIFE pattern with `window.X` globals
 - Works with `file://` protocol (no HTTP server needed)
 - Jest tests load modules via `eval()` and `require()`
-- Babel transpilation available but not required
+
+### Remaining in app.js (~1107 lines)
+- UI event handlers & state management
+- Persistence (saveState/loadState) - tightly coupled to state
+- Bootstrap/initialization
+- Mix validation & rate calculations
 
 ---
 
