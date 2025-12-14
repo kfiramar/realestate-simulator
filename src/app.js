@@ -605,14 +605,11 @@ function updateOptimalRepayMethod(baseParams, currentCagr) {
 }
 
 function updateSweetSpots() {
-    // Optimizer currently only optimizes Down/Term assuming existing mix
-    // We pass existing inputs to the optimizer
     let eq = parseFloat($('inpEquity').value) || 400000;
-    let curDown = parseInt($('rDown').value) / 100;
-    let curDur = parseInt($('rDur').value);
-    let simDur = horMode === 'auto' ? curDur : parseInt($('rHor').value);
+    let curDown = $int('rDown') / 100;
+    let curDur = $int('rDur');
+    let simDur = horMode === 'auto' ? curDur : $int('rHor');
     
-    // Calculate purchase tax for optimizer
     const assetPrice = eq / curDown;
     const isFirstHome = buyerType === 'first';
     const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
@@ -626,65 +623,47 @@ function updateSweetSpots() {
         useMasShevach: $('cMasShevach')?.checked ?? false,
         masShevachType: buyerType === 'investor' ? 'none' : 'single',
         purchaseTax,
-        tradeFee: $pct('rTrade'),
-        merFee: $pct('rMer'),
-        buyCostPct: $pct('rBuyCost'),
-        maintPct: $pct('rMaint'),
-        sellCostPct: $pct('rSellCost'),
+        tradeFee: $pct('rTrade'), merFee: $pct('rMer'), buyCostPct: $pct('rBuyCost'),
+        maintPct: $pct('rMaint'), sellCostPct: $pct('rSellCost'),
         overrides: {
             SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
             RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'),
             RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz'),
         },
-        mix: {
-            prime: parseFloat($('pctPrime').value),
-            kalats: parseFloat($('pctKalats').value),
-            katz: parseFloat($('pctKatz').value),
-            malatz: parseFloat($('pctMalatz').value),
-            matz: parseFloat($('pctMatz').value)
-        },
-        termMix: {
-            p: $int('termPrime') || curDur,
-            k: $int('termKalats') || curDur,
-            z: $int('termKatz') || curDur,
-            m: $int('termMalatz') || curDur,
-            mt: $int('termMatz') || curDur
-        },
-        drift: -0.5,
-        lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
+        mix: { prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') },
+        termMix: { p: $int('termPrime') || curDur, k: $int('termKalats') || curDur, z: $int('termKatz') || curDur, m: $int('termMalatz') || curDur, mt: $int('termMatz') || curDur },
+        drift: -0.5, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride || undefined,
-        surplusMode,
-        purchaseDiscount: $pct('rDiscount'),
-        optimizeMode
+        surplusMode, purchaseDiscount: $pct('rDiscount'), optimizeMode
     };
 
     const best = AppLogic.searchSweetSpots(params);
+    updateSweetSpotMarkers(best);
+}
 
-    const downMin = 25;
-    const downMax = 100;
-    let posDown = ((best.d - downMin) / (downMax - downMin)) * 100;
-    if (lang === 'he') posDown = 100 - posDown;
-    $('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
-    $('spotDown').classList.add('visible');
+function updateSweetSpotMarkers(best) {
+    const posCalc = (val, min, max) => {
+        let pos = ((val - min) / (max - min)) * 100;
+        return lang === 'he' ? 100 - pos : pos;
+    };
+    const setSpot = (id, pos) => {
+        const el = $(id);
+        el.style.left = `calc(${pos}% + (8px - (0.16px * ${pos})))`;
+        el.classList.add('visible');
+    };
 
-    let posDur = ((best.t - 1) / (30 - 1)) * 100;
-    if (lang === 'he') posDur = 100 - posDur;
+    setSpot('spotDown', posCalc(best.d, 25, 100));
+
     const spotDur = $('spotDur');
     if (advancedTermMode) {
-        // In advanced mode, each track has its own term - hide the single term sweet spot
         spotDur.classList.remove('visible');
     } else {
-        spotDur.style.left = `calc(${posDur}% + (8px - (0.16px * ${posDur})))`;
-        spotDur.classList.add('visible');
+        setSpot('spotDur', posCalc(best.t, 1, 30));
     }
 
     if (horMode === 'custom' || lockHor) {
-        let posHor = ((best.h - 1) / (50 - 1)) * 100;
-        if (lang === 'he') posHor = 100 - posHor;
-        let spotH = $('spotHor');
-        spotH.style.left = `calc(${posHor}% + (8px - (0.16px * ${posHor})))`;
-        spotH.classList.add('visible');
-        spotH.title = `Best CAGR at ${best.h} Years`;
+        setSpot('spotHor', posCalc(best.h, 1, 50));
+        $('spotHor').title = `Best CAGR at ${best.h} Years`;
     } else {
         $('spotHor').classList.remove('visible');
     }
