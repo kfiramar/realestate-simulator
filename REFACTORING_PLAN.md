@@ -1,43 +1,23 @@
 # Real Estate Investment Simulator - Refactoring Plan
 
-## Current Status (Updated: Dec 14, 2025)
+## Current Status (Updated: Dec 15, 2025)
 
 | Phase | Description | Status | Notes |
 |-------|-------------|--------|-------|
 | 1 | Extract Translations | ✅ Complete | ~300 lines moved to src/i18n/ |
 | 2 | Extract Constants | ✅ Complete | ~50 lines moved to src/config/ |
 | 3 | Dead Code Removal | ✅ Complete | Removed unused recommendMix() |
-| 4-10 | Further Extraction | ⏸️ Deferred | Requires ES modules migration |
+| 4 | ES Modules Migration | ✅ Complete | Babel transpilation for Jest |
+| 5-10 | Further Extraction | 🔓 Unblocked | Can now proceed |
 
-**app.js: 1928 → 1561 lines (19% reduction)**
+**app.js: 1928 → 1535 lines (20% reduction)**
 **All 276 tests passing**
 
-### Next Steps (Future Work)
-
-To continue refactoring beyond phases 1-3, the project needs ES modules migration:
-
-**Why ESM migration is complex:**
-- 22+ test files use CommonJS `require()` syntax
-- Test helpers use `eval()` to load IIFE modules
-- Jest's ESM support is experimental and requires `NODE_OPTIONS='--experimental-vm-modules'`
-- All test files would need conversion to `import` syntax
-
-**Migration steps (estimated 2-4 hours):**
-1. Set `"type": "module"` in package.json
-2. Update jest.config.js to use `export default`
-3. Convert all test files from `require()` to `import`
-4. Update test helpers to use dynamic `import()`
-5. Add `type="module"` to script tags in index.html
-6. Convert source files to use `export` statements
-7. Test thoroughly in both browser and Jest
-
-**Benefits after migration:**
-- Tree-shaking for smaller bundle size
-- Better IDE support and type inference
-- Cleaner import/export syntax
-- Enables splitting logic.js into focused modules
-- Enables extracting chart rendering
-- Enables centralizing state management
+### ES Modules Setup
+- Source files use `import`/`export` syntax
+- Browser loads via `<script type="module">`
+- Jest uses Babel to transpile ESM → CommonJS
+- Window globals maintained for inline HTML handlers
 
 ---
 
