@@ -1,4 +1,5 @@
 // i18n module - Translation system
+(function() {
 const en = {
     title: 'Brickfolio',
     startingCash: 'Starting Cash',
@@ -303,22 +304,15 @@ const he = {
     applyMasShevach: 'החל מס שבח (צמוד מדד)'
 };
 
-export const T = { en, he };
-let lang = typeof localStorage !== 'undefined' ? (localStorage.getItem('lang') || 'en') : 'en';
+    const T = { en, he };
+    let lang = typeof localStorage !== 'undefined' ? (localStorage.getItem('lang') || 'en') : 'en';
 
-export function t(key) {
-    return T[lang][key] || T['en'][key] || key;
-}
+    function t(key) {
+        return T[lang][key] || T['en'][key] || key;
+    }
 
-export function getLang() {
-    return lang;
-}
+    function getLang() { return lang; }
+    function setLang(l) { lang = l; }
 
-export function setLang(l) {
-    lang = l;
-}
-
-// Browser global for inline handlers
-if (typeof window !== 'undefined') {
     window.i18n = { T, t, getLang, setLang };
-}
+})();

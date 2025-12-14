@@ -12,9 +12,13 @@ function loadDom() {
 function bootstrapApp() {
     loadDom();
     localStorage.clear();
-    // Babel transpiles ESM to CommonJS, so require works
-    require('../src/i18n/index.js');
-    require('../src/config/index.js');
+    // Load modules in order
+    const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf-8');
+    eval(i18nCode);
+    const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf-8');
+    eval(configCode);
+    const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf-8');
+    eval(chartsCode);
     require('../src/logic.js');
     require('../src/app.js');
     document.dispatchEvent(new Event('DOMContentLoaded'));

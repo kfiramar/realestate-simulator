@@ -1,8 +1,9 @@
-// Charts module - extracted from app.js
+// Charts module
+(function() {
 let wealthChart = null;
 let flowChart = null;
 
-export function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries, taxInfo = {}, ctx) {
+function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries, taxInfo = {}, ctx) {
     const { mode, surplusMode, t, fmt, fmtNum } = ctx;
     const isDark = document.body.classList.contains('dark');
     const textColor = isDark ? '#e2e8f0' : '#666';
@@ -240,7 +241,10 @@ export function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet,
     });
 }
 
-export function destroyCharts() {
+function destroyCharts() {
     if (wealthChart) { wealthChart.destroy(); wealthChart = null; }
     if (flowChart) { flowChart.destroy(); flowChart = null; }
 }
+
+window.Charts = { drawCharts, destroyCharts };
+})();

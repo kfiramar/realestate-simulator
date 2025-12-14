@@ -1,18 +1,15 @@
-import { calcPmt, calcCAGR, searchSweetSpots, simulate, calcPurchaseTax, calcMasShevach } from './logic.js';
-import { T, t as i18nT, getLang, setLang } from './i18n/index.js';
-import { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } from './config/index.js';
-import { drawCharts as drawChartsModule } from './charts/index.js';
-
-const AppLogic = { calcPmt, calcCAGR, searchSweetSpots, simulate, calcPurchaseTax, calcMasShevach };
+const AppLogic = window.Logic || {};
+const T = window.i18n?.T || { en: {}, he: {} };
+const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig || {};
 
 // --- TRANSLATIONS ---
-let lang = getLang();
+let lang = window.i18n?.getLang() || 'en';
 
 function t(key) { return (T[lang] && T[lang][key]) || (T['en'] && T['en'][key]) || key; }
 
 function toggleLang() {
     lang = lang === 'en' ? 'he' : 'en';
-    setLang(lang);
+    window.i18n?.setLang(lang);
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
@@ -1059,7 +1056,7 @@ function runSim(opts = {}) {
                 posCFYears: posYears
             };
         }
-        drawChartsModule(res.series.labels, res.series.reDataVal, res.series.reDataPct, res.series.spDataVal, res.series.spDataPct,
+        window.Charts.drawCharts(res.series.labels, res.series.reDataVal, res.series.reDataPct, res.series.spDataVal, res.series.spDataPct,
             res.series.flowRent, res.series.flowInt, res.series.flowPrinc, res.series.flowNet,
             res.series.surplusVal, res.series.surplusPct,
             { reTax: res.totalRETax, spTax: res.spTax, netRE: res.netRE, netSP: res.netSP, invested: res.totalCashInvested,

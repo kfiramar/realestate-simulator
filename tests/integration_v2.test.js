@@ -2,8 +2,11 @@
  * @jest-environment jsdom
  */
 
+const fs = require('fs');
+const path = require('path');
+
 // Load Logic
-const Logic = require('../src/logic.js').default;
+const Logic = require('../src/logic.js');
 
 // Mock global Logic for app.js
 global.window = window;
@@ -21,6 +24,14 @@ global.Chart = class {
     resize() {}
     update() {}
 };
+
+// Load i18n, config, charts
+const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
+eval(i18nCode);
+const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
+eval(configCode);
+const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf8');
+eval(chartsCode);
 
 describe('Integration V2: Tamheel & Friction', () => {
     
