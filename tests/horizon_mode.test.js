@@ -10,6 +10,10 @@ global.window = window;
 global.document = window.document;
 global.Logic = Logic;
 
+// Load i18n before app.js
+const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
+eval(i18nContent);
+
 global.Chart = class {
     constructor() {}
     destroy() {}

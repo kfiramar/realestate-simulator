@@ -12,6 +12,10 @@ global.document = window.document;
 global.Logic = Logic;
 global.Chart = class { constructor() {} destroy() {} resize() {} update() {} };
 
+// Load i18n before app.js
+const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
+eval(i18nContent);
+
 const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
 
 describe('Surplus Logic: Integration & Math', () => {
