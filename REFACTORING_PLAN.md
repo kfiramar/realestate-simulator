@@ -6,23 +6,26 @@
 |-------|-------------|--------|-------|
 | 1 | Extract Translations | ✅ Complete | ~300 lines moved to src/i18n/ |
 | 2 | Extract Constants | ✅ Complete | ~50 lines moved to src/config/ |
-| 3 | Split logic.js | ⏸️ Deferred | 22 test files would need updates |
-| 4 | Extract Formatters | ⏸️ Deferred | Only 7 lines, fmtVal depends on global mode |
-| 5 | Extract Charts | ⏸️ Deferred | Tightly coupled to globals |
-| 6 | Extract Prepayments | ⏸️ Deferred | Requires state refactor first |
-| 7 | Extract Persistence | ⏸️ Deferred | Requires state refactor first |
-| 8 | Centralize State | ⏸️ Deferred | Major undertaking |
-| 9 | Extract UI Modules | ⏸️ Deferred | Requires state refactor first |
-| 10 | Final Cleanup | ⏸️ Deferred | After other phases |
+| 3 | Dead Code Removal | ✅ Complete | Removed unused recommendMix() |
+| 4-10 | Further Extraction | ⏸️ Deferred | Requires ES modules migration |
 
-**app.js: 1928 → 1579 lines (18% reduction)**
+**app.js: 1928 → 1561 lines (19% reduction)**
 **All 276 tests passing**
 
-### Blocker: Global Dependencies
+### Next Steps (Future Work)
 
-Phases 3-10 are blocked by tight coupling to global variables. The IIFE pattern used requires either:
-1. Converting to ES modules (recommended)
-2. Exposing more globals (increases complexity)
+To continue refactoring beyond phases 1-3, the project needs ES modules migration:
+
+1. Add `type="module"` to script tags in index.html
+2. Convert IIFE patterns to `export`/`import` statements
+3. Update Jest config for ESM support (`transform`, `moduleNameMapper`)
+4. Update all 22 test files to use dynamic imports
+
+This is a significant undertaking (~2-4 hours) but would enable:
+- Splitting logic.js into focused modules
+- Extracting chart rendering
+- Centralizing state management
+- Tree-shaking for smaller bundle size
 
 ---
 
