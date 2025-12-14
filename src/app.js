@@ -93,8 +93,8 @@ const cfg = {
 // --- UI FUNCTIONS ---
 function setMode(m, opts = {}) {
     setState('mode', m);
-    // Alpine handles btnCurr/btnPct class toggling via :class binding
-    document.getElementById('equityBox').classList.toggle('show', m === 'currency');
+    // Alpine handles visibility and class toggling
+    document.getElementById('equityBox')?.classList.toggle('show', m === 'currency');
     if (!opts.skipSim) runSim();
 }
 function tgl(k, h, opts = {}) {

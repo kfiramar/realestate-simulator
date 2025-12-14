@@ -41,9 +41,9 @@
 
     <div class="layout">
         <div class="sidebar">
-            <div class="sidebar-content">
+            <div class="sidebar-content" x-data>
 
-                <div class="equity-box" id="equityBox">
+                <div class="equity-box" id="equityBox" x-show="$store.app.mode === 'currency'">
                     <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;" data-t="startingCash">Starting Cash</div>
                     <input type="number" id="inpEquity" value="400000" step="10000" oninput="runSim()">
                 </div>
