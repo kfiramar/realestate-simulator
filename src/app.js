@@ -358,6 +358,16 @@ function fmt(v) {
 function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
+// Update slider value display labels
+function updateSliderLabels() {
+    $('vTrade').innerText = parseFloat($('rTrade').value).toFixed(1) + '%';
+    $('vMer').innerText = parseFloat($('rMer').value).toFixed(2) + '%';
+    $('vDiscount').innerText = $('rDiscount').value + '%';
+    $('vBuyCost').innerText = parseFloat($('rBuyCost').value).toFixed(1) + '%';
+    $('vMaint').innerText = parseFloat($('rMaint').value).toFixed(0) + '%';
+    $('vSellCost').innerText = parseFloat($('rSellCost').value).toFixed(1) + '%';
+}
+
 function updateTrackTermEnabled() {
     const pP = parseFloat($('pctPrime').value) || 0;
     const pK = parseFloat($('pctKalats').value) || 0;
@@ -673,13 +683,7 @@ function runSim(opts = {}) {
         dHorEl.innerText = horMode === 'auto' ? t('auto') + ' (' + mortDur + t('ySuffix') + ')' : simDur + ' ' + t('yrSuffix');
     }
 
-    // ... Update other UI labels ...
-    $('vTrade').innerText = parseFloat($('rTrade').value).toFixed(1) + '%';
-    $('vMer').innerText = parseFloat($('rMer').value).toFixed(2) + '%';
-    $('vDiscount').innerText = $('rDiscount').value + '%';
-    $('vBuyCost').innerText = parseFloat($('rBuyCost').value).toFixed(1) + '%';
-    $('vMaint').innerText = parseFloat($('rMaint').value).toFixed(0) + '%';
-    $('vSellCost').innerText = parseFloat($('rSellCost').value).toFixed(1) + '%';
+    updateSliderLabels();
 
     let assetPriceStart = eq / downPct;
     let lev = 1 / downPct;
@@ -832,8 +836,12 @@ function runSim(opts = {}) {
     };
 
     const res = AppLogic.simulate(params);
+    updateKPIs(res, assetPriceStart, skipCharts, params);
+    saveState();
+    document.body.classList.remove('loading');
+}
 
-    // ... UPDATE UI KPIs ...
+function updateKPIs(res, assetPriceStart, skipCharts, params) {
     const lRE = res.netRE;
     const lSP = res.netSP;
     $('kRE').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.reDataPct[res.series.reDataPct.length - 1] : 0) : lRE);
@@ -849,7 +857,6 @@ function runSim(opts = {}) {
     $('kRECagr').innerText = res.cagrRE.toFixed(2) + '%';
     $('kSPCagr').innerText = res.cagrSP.toFixed(2) + '%';
 
-    // Highlight optimal repay method
     updateOptimalRepayMethod(params, res.cagrRE);
 
     let intPctOfAsset = (res.totalInterestWasted / assetPriceStart) * 100;
@@ -884,8 +891,6 @@ function runSim(opts = {}) {
               surplusTax: res.reSideTax, surplusGross: res.reSideStockValue },
             { mode, surplusMode, t, fmt, fmtNum });
     }
-    saveState();
-    document.body.classList.remove('loading');
 }
 
 // --- PERSISTENCE ---
