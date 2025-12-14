@@ -1,6 +1,5 @@
 // i18n module - Translation system
-(function() {
-    const en = {
+const en = {
     title: 'Brickfolio',
     startingCash: 'Starting Cash',
     dealStructure: 'Deal Structure',
@@ -304,21 +303,22 @@ const he = {
     applyMasShevach: 'החל מס שבח (צמוד מדד)'
 };
 
-    const T = { en, he };
-    let lang = typeof localStorage !== 'undefined' ? (localStorage.getItem('lang') || 'en') : 'en';
+export const T = { en, he };
+let lang = typeof localStorage !== 'undefined' ? (localStorage.getItem('lang') || 'en') : 'en';
 
-    function t(key) {
-        return T[lang][key] || T['en'][key] || key;
-    }
+export function t(key) {
+    return T[lang][key] || T['en'][key] || key;
+}
 
-    function getLang() {
-        return lang;
-    }
+export function getLang() {
+    return lang;
+}
 
-    function setLang(l) {
-        lang = l;
-    }
+export function setLang(l) {
+    lang = l;
+}
 
-    // Expose globally
+// Browser global for inline handlers
+if (typeof window !== 'undefined') {
     window.i18n = { T, t, getLang, setLang };
-})();
+}

@@ -2,20 +2,12 @@
  * @jest-environment jsdom
  */
 
-const fs = require('fs');
-const path = require('path');
-const Logic = require('../src/logic.js');
+const Logic = require('../src/logic.js').default;
 
 // Mock Global Environment
 global.window = window;
 global.document = window.document;
 global.Logic = Logic;
-
-// Load i18n and config before app.js
-const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
-eval(i18nContent);
-const configContent = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
-eval(configContent);
 
 // Mock Chart.js
 global.Chart = class {
@@ -24,9 +16,6 @@ global.Chart = class {
     resize() {}
     update() {}
 };
-
-// Load App Code
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
 
 describe('App Logic: UI Interaction', () => {
     
@@ -182,12 +171,11 @@ describe('App Logic: UI Interaction', () => {
             <div id="pYld"><div></div><div></div></div>
         `;
         
-        // Initialize App
-        try {
-            eval(appJsContent);
-        } catch (e) {
-            console.error("EVAL FAILED:", e);
-        }
+        // Initialize App - use require (Babel transpiles ESM to CommonJS)
+        jest.resetModules();
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
         // Manually trigger bootstrap if not auto-run
         // Note: The file adds event listener to DOMContentLoaded. In JSDOM this might have already fired.
         // We'll verify by checking if window.runSim exists.

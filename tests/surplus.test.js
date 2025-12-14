@@ -2,21 +2,13 @@
  * @jest-environment jsdom
  */
 
-const fs = require('fs');
-const path = require('path');
-const Logic = require('../src/logic.js');
+const Logic = require('../src/logic.js').default;
 
 // Mock Global Environment
 global.window = window;
 global.document = window.document;
 global.Logic = Logic;
 global.Chart = class { constructor() {} destroy() {} resize() {} update() {} };
-
-// Load i18n before app.js
-const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
-eval(i18nContent);
-
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
 
 describe('Surplus Logic: Deep Dive', () => {
     
@@ -82,7 +74,10 @@ describe('Surplus Logic: Deep Dive', () => {
             <div id="pInf"><div></div><div></div></div>
             <div id="pYld"><div></div><div></div></div>
         `;
-        eval(appJsContent);
+        jest.resetModules();
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
     });
 
     test('Baseline: Huge Surplus exists', () => {

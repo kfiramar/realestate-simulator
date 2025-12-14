@@ -2,20 +2,13 @@
  * @jest-environment jsdom
  */
 
-const fs = require('fs');
-const path = require('path');
-
 // Load Logic
-const Logic = require('../src/logic.js');
+const Logic = require('../src/logic.js').default;
 
 // Mock global Logic for app.js
 global.window = window;
 global.document = window.document;
-global.Logic = Logic; // app.js expects window.Logic or just AppLogic = window.Logic
-
-// Load i18n before app.js
-const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
-eval(i18nContent);
+global.Logic = Logic;
 
 // Mock Chart.js
 global.Chart = class {
@@ -28,10 +21,6 @@ global.Chart = class {
     resize() {}
     update() {}
 };
-
-// Load App Code (by reading file and eval-ing, or require if commonjs)
-// Since app.js is likely browser-centric, we'll read it and execute it in the JSDOM context.
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
 
 describe('Integration V2: Tamheel & Friction', () => {
     
@@ -145,8 +134,11 @@ describe('Integration V2: Tamheel & Friction', () => {
             <div id="pYld"><div></div><div></div></div>
         `;
         
-        // Execute app.js logic in this context
-        eval(appJsContent);
+        // Execute app.js logic via require (Babel transpiles ESM to CommonJS)
+        jest.resetModules();
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
     });
 
     test('Initialization: runSim runs without crashing', () => {

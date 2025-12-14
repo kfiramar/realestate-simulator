@@ -768,9 +768,10 @@ function generateSchedule(params) {
 
 const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach };
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Logic;
-}
+export { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach };
+export default Logic;
+
+// Browser global
 if (typeof window !== 'undefined') {
     window.Logic = Logic;
 }

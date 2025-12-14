@@ -9,26 +9,15 @@ function loadDom() {
     document.documentElement.innerHTML = `<body>${body}</body>`;
 }
 
-function loadI18n() {
-    const i18nPath = path.resolve(__dirname, '../src/i18n/index.js');
-    const i18nCode = fs.readFileSync(i18nPath, 'utf-8');
-    eval(i18nCode);
-}
-
-function loadConfig() {
-    const configPath = path.resolve(__dirname, '../src/config/index.js');
-    const configCode = fs.readFileSync(configPath, 'utf-8');
-    eval(configCode);
-}
-
 function bootstrapApp() {
     loadDom();
     localStorage.clear();
-    loadI18n();
-    loadConfig();
+    // Babel transpiles ESM to CommonJS, so require works
+    require('../src/i18n/index.js');
+    require('../src/config/index.js');
     require('../src/logic.js');
     require('../src/app.js');
     document.dispatchEvent(new Event('DOMContentLoaded'));
 }
 
-module.exports = { loadDom, loadI18n, loadConfig, bootstrapApp };
+module.exports = { loadDom, bootstrapApp };

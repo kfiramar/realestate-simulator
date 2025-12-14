@@ -2,17 +2,11 @@
  * @jest-environment jsdom
  */
 
-const fs = require('fs');
-const path = require('path');
-const Logic = require('../src/logic.js');
+const Logic = require('../src/logic.js').default;
 
 global.window = window;
 global.document = window.document;
 global.Logic = Logic;
-
-// Load i18n before app.js
-const i18nContent = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
-eval(i18nContent);
 
 global.Chart = class {
     constructor() {}
@@ -21,11 +15,12 @@ global.Chart = class {
     update() {}
 };
 
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
-
 describe('Horizon Mode: Auto vs Custom Consistency', () => {
     
     beforeEach(() => {
+        // Clear module cache to get fresh state
+        jest.resetModules();
+        
         document.body.innerHTML = `
             <input id="inpEquity" value="400000">
             <input id="rDown" value="30">
@@ -153,7 +148,10 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
             <canvas id="flowChart"></canvas>
         `;
         
-        eval(appJsContent);
+        // Load modules via require (Babel transpiles ESM to CommonJS)
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
     });
 
     test('auto mode sets rHor to effectiveMax', () => {

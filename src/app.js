@@ -1,21 +1,17 @@
-const AppLogic = window.Logic || {};
+import { calcPmt, calcCAGR, searchSweetSpots, simulate, calcPurchaseTax, calcMasShevach } from './logic.js';
+import { T, t as i18nT, getLang, setLang } from './i18n/index.js';
+import { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } from './config/index.js';
 
-// --- TRANSLATIONS (loaded from i18n/index.js, with fallback for tests) ---
-if (!window.i18n) {
-    window.i18n = {
-        T: { en: {}, he: {} },
-        getLang: () => 'en',
-        setLang: () => {}
-    };
-}
-const T = window.i18n.T;
-let lang = window.i18n.getLang();
+const AppLogic = { calcPmt, calcCAGR, searchSweetSpots, simulate, calcPurchaseTax, calcMasShevach };
+
+// --- TRANSLATIONS ---
+let lang = getLang();
 
 function t(key) { return (T[lang] && T[lang][key]) || (T['en'] && T['en'][key]) || key; }
 
 function toggleLang() {
     lang = lang === 'en' ? 'he' : 'en';
-    window.i18n.setLang(lang);
+    setLang(lang);
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
@@ -49,20 +45,6 @@ function applyTranslations() {
     updateRateLabels();
     runSim();
 }
-
-// --- CONSTANTS (loaded from config/index.js, with fallback for tests) ---
-if (!window.AppConfig) {
-    window.AppConfig = {
-        SCENARIOS: { bear: {}, base: {}, bull: {} },
-        TAMHEEL_PROFILES: {},
-        ANCHORS: { prime: 1.5, kalats: 0.6, malatz: 0.51, katz: -1.3, matz: -1.05 },
-        CREDIT_MATRIX: {},
-        TERM_MIN: 1,
-        TERM_MAX: 30,
-        LTV_MIN: { first: 25, replacement: 30, investor: 50 }
-    };
-}
-const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig;
 
 // --- STATE ---
 let mode = 'percent';
