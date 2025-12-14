@@ -538,10 +538,8 @@ function runSim(opts = {}) {
     const { purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
 
     for (let k in cfg) {
-        let el = $(cfg[k].v);
-        if (el) {
-            if (cfg[k].is) el.innerText = 'Hist'; else el.innerText = $(cfg[k].s).value + '%';
-        }
+        const el = $(cfg[k].v);
+        if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%';
     }
 
     // Terms
@@ -614,16 +612,12 @@ function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM
 }
 
 function updateKPIs(res, assetPriceStart, skipCharts, params) {
-    const lRE = res.netRE;
-    const lSP = res.netSP;
-    $('kRE').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.reDataPct[res.series.reDataPct.length - 1] : 0) : lRE);
-    $('kSP').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.spDataPct[res.series.spDataPct.length - 1] : 0) : lSP);
+    const { netRE: lRE, netSP: lSP, series } = res;
+    $('kRE').innerText = fmtVal(mode === 'percent' ? (series?.reDataPct[series.reDataPct.length - 1] || 0) : lRE);
+    $('kSP').innerText = fmtVal(mode === 'percent' ? (series?.spDataPct[series.spDataPct.length - 1] || 0) : lSP);
 
-    const diff = lRE - lSP;
-    const winnerIsRE = diff >= 0;
-    const base = winnerIsRE ? lSP : lRE;
-    const diffPct = base !== 0 ? (Math.abs(diff) / base) * 100 : 0;
-    $('kDiff').innerText = diffPct.toFixed(1) + '%';
+    const diff = lRE - lSP, winnerIsRE = diff >= 0, base = winnerIsRE ? lSP : lRE;
+    $('kDiff').innerText = (base !== 0 ? (Math.abs(diff) / base) * 100 : 0).toFixed(1) + '%';
     $('kDiff').style.color = winnerIsRE ? "var(--success)" : "var(--primary)";
 
     $('kRECagr').innerText = res.cagrRE.toFixed(2) + '%';
@@ -631,8 +625,7 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
 
     updateOptimalRepayMethod(params, res.cagrRE);
 
-    let intPctOfAsset = (res.totalInterestWasted / assetPriceStart) * 100;
-    $('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${intPctOfAsset.toFixed(0) + '%)'}`;
+    $('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${((res.totalInterestWasted / assetPriceStart) * 100).toFixed(0)}%)`;
     $('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
     $('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
     
@@ -643,21 +636,11 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
     const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
     $('valPosCF')?.innerText && ($('valPosCF').innerText = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y');
 
-    if (!skipCharts && res.series) {
-        if (typeof window !== 'undefined') {
-            window.__lastSim = {
-                ...res,
-                finalNetRE: res.netRE,
-                finalNetSP: res.netSP,
-                flowNet: res.series.flowNet[res.series.flowNet.length - 1],
-                posCFYears: posYears
-            };
-        }
-        window.Charts.drawCharts(res.series.labels, res.series.reDataVal, res.series.reDataPct, res.series.spDataVal, res.series.spDataPct,
-            res.series.flowRent, res.series.flowInt, res.series.flowPrinc, res.series.flowNet,
-            res.series.surplusVal, res.series.surplusPct,
-            { reTax: res.totalRETax, spTax: res.spTax, netRE: res.netRE, netSP: res.netSP, invested: res.totalCashInvested,
-              surplusTax: res.reSideTax, surplusGross: res.reSideStockValue },
+    if (!skipCharts && series) {
+        window.__lastSim = { ...res, finalNetRE: lRE, finalNetSP: lSP, flowNet: series.flowNet[series.flowNet.length - 1], posCFYears: posYears };
+        window.Charts.drawCharts(series.labels, series.reDataVal, series.reDataPct, series.spDataVal, series.spDataPct,
+            series.flowRent, series.flowInt, series.flowPrinc, series.flowNet, series.surplusVal, series.surplusPct,
+            { reTax: res.totalRETax, spTax: res.spTax, netRE: lRE, netSP: lSP, invested: res.totalCashInvested, surplusTax: res.reSideTax, surplusGross: res.reSideStockValue },
             { mode, surplusMode, t, fmt, fmtNum });
     }
 }
