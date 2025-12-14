@@ -64,26 +64,15 @@ function syncStateFromModule() {
     surplusMode = s.surplusMode; repayMethod = s.repayMethod;
     optimizeMode = s.optimizeMode; rateEditMode = s.rateEditMode;
 }
+
+const stateVars = { mode: v => mode = v, exMode: v => exMode = v, taxMode: v => taxMode = v, horMode: v => horMode = v,
+    lockDown: v => lockDown = v, lockTerm: v => lockTerm = v, lockHor: v => lockHor = v, buyerType: v => buyerType = v,
+    advancedTermMode: v => advancedTermMode = v, bootstrapping: v => bootstrapping = v, creditScore: v => creditScore = v,
+    surplusMode: v => surplusMode = v, repayMethod: v => repayMethod = v, optimizeMode: v => optimizeMode = v, rateEditMode: v => rateEditMode = v };
+
 function setState(key, value) {
     S.set(key, value);
-    // Update local variable
-    switch(key) {
-        case 'mode': mode = value; break;
-        case 'exMode': exMode = value; break;
-        case 'taxMode': taxMode = value; break;
-        case 'horMode': horMode = value; break;
-        case 'lockDown': lockDown = value; break;
-        case 'lockTerm': lockTerm = value; break;
-        case 'lockHor': lockHor = value; break;
-        case 'buyerType': buyerType = value; break;
-        case 'advancedTermMode': advancedTermMode = value; break;
-        case 'bootstrapping': bootstrapping = value; break;
-        case 'creditScore': creditScore = value; break;
-        case 'surplusMode': surplusMode = value; break;
-        case 'repayMethod': repayMethod = value; break;
-        case 'optimizeMode': optimizeMode = value; break;
-        case 'rateEditMode': rateEditMode = value; break;
-    }
+    stateVars[key]?.(value);
 }
 syncStateFromModule();
 
