@@ -175,12 +175,12 @@
                     </div>
 
                     <!-- Early Repayments Section -->
-                    <div class="prepay-section">
-                        <div class="prepay-header" onclick="togglePrepaySection()">
+                    <div class="prepay-section" x-data>
+                        <div class="prepay-header" onclick="togglePrepaySection()" @click="$store.app.set('prepayExpanded', !$store.app.prepayExpanded)">
                             <span data-t="earlyRepayments">Early Repayments</span>
-                            <span class="prepay-arrow" id="prepayArrow">+</span>
+                            <span class="prepay-arrow" id="prepayArrow" x-text="$store.app.prepayExpanded ? '−' : '+'">+</span>
                         </div>
-                        <div class="prepay-container" id="prepayContainer" style="display:none;">
+                        <div class="prepay-container" id="prepayContainer" x-show="$store.app.prepayExpanded">
                             <div id="prepayList"></div>
                             <button class="prepay-add-btn" onclick="window.Prepayments.addPrepayment()" data-t="addPrepayment">+ Add Prepayment</button>
                         </div>
@@ -436,11 +436,13 @@
                 <div class="control-card" style="border-left:3px solid #8b5cf6">
                     <div class="card-row"><span class="card-lbl" data-t="taxBasis">Taxation Basis</span> <span class="card-val"
                             id="vTaxMode">Real</span></div>
-                    <div class="select-list">
-                        <div class="select-item active" id="txReal" onclick="setTaxMode('real')">
+                    <div class="select-list" x-data>
+                        <div class="select-item" id="txReal" onclick="setTaxMode('real')"
+                            :class="{ active: $store.app.taxMode === 'real' }">
                             <div class="radio"></div><span class="item-text" data-t="realVsInflation">Real (vs Inflation)</span>
                         </div>
-                        <div class="select-item" id="txForex" onclick="setTaxMode('forex')">
+                        <div class="select-item" id="txForex" onclick="setTaxMode('forex')"
+                            :class="{ active: $store.app.taxMode === 'forex' }">
                             <div class="radio"></div><span class="item-text" data-t="nominalVsUsd">Nominal (vs USD)</span>
                         </div>
                     </div>

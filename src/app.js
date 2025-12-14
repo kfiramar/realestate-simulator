@@ -498,15 +498,12 @@ function toggleRateEdit() {
 }
 
 function togglePrepaySection() {
+    // Alpine handles visibility via x-show, keep for non-Alpine environments
     const container = document.getElementById('prepayContainer');
     const arrow = document.getElementById('prepayArrow');
-    if (container.style.display === 'none') {
-        container.style.display = 'block';
-        arrow.classList.add('open');
-    } else {
-        container.style.display = 'none';
-        arrow.classList.remove('open');
-    }
+    const isOpen = container?.style.display !== 'none';
+    if (container) container.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '+' : '−';
 }
 
 // Prepayments - delegated to module

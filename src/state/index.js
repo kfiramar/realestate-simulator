@@ -15,7 +15,8 @@
         surplusMode: 'match',
         repayMethod: 'spitzer',
         optimizeMode: 'outperform',
-        rateEditMode: false
+        rateEditMode: false,
+        prepayExpanded: false
     };
 
     const listeners = [];
