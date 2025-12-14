@@ -18,33 +18,23 @@ function toggleLang() {
     lang = lang === 'en' ? 'he' : 'en';
     window.i18n?.setLang(lang);
     localStorage.setItem('lang', lang);
+    const isHe = lang === 'he';
     document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
-    document.body.classList.toggle('rtl', lang === 'he');
+    document.documentElement.dir = isHe ? 'rtl' : 'ltr';
+    document.body.classList.toggle('rtl', isHe);
     applyTranslations();
 }
 
 function applyTranslations() {
     document.querySelectorAll('[data-t]').forEach(el => {
-        if (el.tagName === 'OPTION') {
-            el.textContent = t(el.dataset.t);
-        } else if (el.children.length === 0 || el.classList.contains('card-lbl')) {
-            const lockChild = el.querySelector('.lock-toggle');
-            if (lockChild) {
-                const textNode = el.firstChild;
-                if (textNode && textNode.nodeType === 3) {
-                    textNode.textContent = t(el.dataset.t);
-                }
-            } else {
-                el.textContent = t(el.dataset.t);
-            }
+        const lockChild = el.querySelector('.lock-toggle');
+        if (lockChild) {
+            if (el.firstChild?.nodeType === 3) el.firstChild.textContent = t(el.dataset.t);
         } else {
             el.textContent = t(el.dataset.t);
         }
     });
-    document.querySelectorAll('[data-t-placeholder]').forEach(el => {
-        el.placeholder = t(el.dataset.tPlaceholder);
-    });
+    document.querySelectorAll('[data-t-placeholder]').forEach(el => el.placeholder = t(el.dataset.tPlaceholder));
     updateLockUI();
     setSurplusMode(surplusMode, { skipSim: true });
     updateRateLabels();
@@ -399,15 +389,9 @@ function checkMix() {
     
     const chartsWarn = $('chartsWarn');
     if (chartsWarn) {
-        if (sum !== 100) {
-            chartsWarn.textContent = 'Mix must total 100% of mortgage to view charts';
-            chartsWarn.style.display = 'block';
-        } else if (!fixedOk) {
-            chartsWarn.textContent = 'Min 33% fixed rate required (Kalatz/ Katz)';
-            chartsWarn.style.display = 'block';
-        } else {
-            chartsWarn.style.display = 'none';
-        }
+        const msg = sum !== 100 ? 'Mix must total 100% of mortgage to view charts' : !fixedOk ? 'Min 33% fixed rate required (Kalatz/ Katz)' : '';
+        chartsWarn.textContent = msg;
+        chartsWarn.style.display = msg ? 'block' : 'none';
     }
     updateTrackTermEnabled();
     runSim();
