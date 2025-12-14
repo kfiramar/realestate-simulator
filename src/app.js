@@ -624,32 +624,16 @@ function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM
         loanTerm: mortDur,
         simHorizon: simDur,
         termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
-        mix: {
-            prime: parseFloat($('pctPrime').value) || 0,
-            kalats: parseFloat($('pctKalats').value) || 0,
-            katz: parseFloat($('pctKatz').value) || 0,
-            malatz: parseFloat($('pctMalatz').value) || 0,
-            matz: parseFloat($('pctMatz').value) || 0
-        },
-        rates: {
-            prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'),
-            malatz: $pct('rateMalatz'), matz: $pct('rateMatz')
-        },
-        market: {
-            sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld')
-        },
-        fees: {
-            buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax
-        },
+        mix: { prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') },
+        rates: { prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'), malatz: $pct('rateMalatz'), matz: $pct('rateMatz') },
+        market: { sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld') },
+        fees: { buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax },
         maintPct: $pct('rMaint'),
         purchaseDiscount: $pct('rDiscount'),
         tax: {
-            useSP: $('cTaxSP')?.checked ?? true,
-            useRE: $('cTaxSP')?.checked ?? true,
-            useRent: $('cRentTax')?.checked ?? false,
-            useMasShevach: $('cMasShevach')?.checked ?? false,
-            masShevachType: buyerType === 'investor' ? 'none' : 'single',
-            mode: taxMode
+            useSP: $('cTaxSP')?.checked ?? true, useRE: $('cTaxSP')?.checked ?? true,
+            useRent: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
+            masShevachType: buyerType === 'investor' ? 'none' : 'single', mode: taxMode
         },
         config: { drift: activeDrift, surplusMode, exMode, history: cfg, repayMethod },
         prepay: getPrepayments(),
