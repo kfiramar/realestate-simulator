@@ -7,6 +7,7 @@ const $ = id => document.getElementById(id);
 const $pct = id => parseFloat($(id)?.value || 0) / 100;
 const $int = id => parseInt($(id)?.value || 0);
 const $pill = (id, isFirst) => { const p = $(id); if (p) { p.children[0]?.classList.toggle('active', isFirst); p.children[1]?.classList.toggle('active', !isFirst); } };
+const $ltr = txt => lang === 'he' ? `<span style="direction:ltr;display:inline-block">${txt}</span>` : txt;
 
 // --- TRANSLATIONS ---
 let lang = window.i18n?.getLang() || 'en';
@@ -245,14 +246,8 @@ function setBuyerType(type) {
 }
 
 function showTermVal(elId, v) {
-    const el = document.getElementById(elId);
-    if (el) {
-        if (lang === 'he') {
-            el.innerHTML = '<span style="direction:ltr;display:inline-block">' + v + ' ' + t('ySuffix') + '</span>';
-        } else {
-            el.innerHTML = v + t('ySuffix');
-        }
-    }
+    const el = $(elId);
+    if (el) el.innerHTML = $ltr(v + ' ' + t('ySuffix'));
 }
 
 function syncTrackTermsToMain() {
@@ -566,15 +561,8 @@ function runSim(opts = {}) {
     let simDur = horMode === 'auto' ? mortDur : parseInt($('rHor').value);
 
     $('dDown').innerText = (downPct * 100).toFixed(0) + '%';
-    const dDurEl = $('dDur');
-    const dHorEl = $('dHor');
-    if (lang === 'he') {
-        dDurEl.innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
-        dHorEl.innerHTML = horMode === 'auto' ? t('auto') + ' <span style="direction:ltr;display:inline-block">(' + mortDur + t('ySuffix') + ')</span>' : '<span style="direction:ltr;display:inline-block">' + simDur + ' ' + t('yrSuffix') + '</span>';
-    } else {
-        dDurEl.innerText = mortDur + ' ' + t('yrSuffix');
-        dHorEl.innerText = horMode === 'auto' ? t('auto') + ' (' + mortDur + t('ySuffix') + ')' : simDur + ' ' + t('yrSuffix');
-    }
+    $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix'));
+    $('dHor').innerHTML = horMode === 'auto' ? t('auto') + ' ' + $ltr('(' + mortDur + t('ySuffix') + ')') : $ltr(simDur + ' ' + t('yrSuffix'));
 
     updateSliderLabels();
 
@@ -611,21 +599,13 @@ function runSim(opts = {}) {
     if (advancedTermMode) {
         mortDur = maxTrackYears;
         mainTermSlider.value = mortDur;
-        if (lang === 'he') {
-            $('dDur').innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
-        } else {
-            $('dDur').innerText = mortDur + ' ' + t('yrSuffix');
-        }
+        $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix'));
     }
 
     const effectiveMax = Math.max(maxTrackYears, mortDur);
     if (horMode === 'auto') {
         $('rHor').value = effectiveMax;
-        if (lang === 'he') {
-            $('dHor').innerHTML = t('auto') + ' <span style="direction:ltr;display:inline-block">(' + effectiveMax + t('ySuffix') + ')</span>';
-        } else {
-            $('dHor').innerText = t('auto') + ' (' + effectiveMax + t('ySuffix') + ')';
-        }
+        $('dHor').innerHTML = t('auto') + ' ' + $ltr('(' + effectiveMax + t('ySuffix') + ')');
         simDur = effectiveMax;
     }
 
