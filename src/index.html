@@ -281,15 +281,15 @@
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:end; margin-top:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:end; margin-top:15px;" x-data>
                     <div class="section-title" style="margin:0" data-t="assumptions">Market Variables</div>
                     <div class="pills" id="pGlobal">
-                        <div class="pill" onclick="setGlobalMode(true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="setGlobalMode(false)" data-t="fixed">Fixed</div>
+                        <div class="pill" onclick="setGlobalMode(true)" :class="{ active: $store.app.globalHistMode }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="setGlobalMode(false)" :class="{ active: !$store.app.globalHistMode }" data-t="fixed">Fixed</div>
                     </div>
                 </div>
 
-                <div class="scenario-box" id="scenBox">
+                <div class="scenario-box" id="scenBox" x-show="!$store.app.globalHistMode">
                     <div data-t="quickScenarios"
                         style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:4px;">
                         QUICK SCENARIOS</div>
@@ -313,21 +313,21 @@
                     <!-- RE APPRECIATION -->
                     <div class="card-row"><span class="card-lbl" data-t="appreciation">Home Appreciation</span> <span class="card-val"
                             id="vApp">Fixed</span></div>
-                    <div class="pills" id="pApp">
-                        <div class="pill" onclick="tgl('App',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('App',false)" data-t="fixed">Fixed</div>
+                    <div class="pills" id="pApp" x-data>
+                        <div class="pill" onclick="tgl('App',true)" :class="{ active: $store.app.histApp }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('App',false)" :class="{ active: !$store.app.histApp }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bApp"><input type="range" id="sApp" min="0" max="10" step="0.5"
+                    <div class="input-box show" id="bApp" x-data x-show="!$store.app.histApp"><input type="range" id="sApp" min="0" max="10" step="0.5"
                             value="4" oninput="runSim()"></div>
 
-                    <div style="margin-top:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
+                    <div style="margin-top:12px; padding-top:8px; border-top:1px solid #f1f5f9;" x-data>
                         <div class="card-row"><span class="card-lbl" data-t="rentYield">Rental Yield</span> <span class="card-val"
                                 id="vYld">Fixed</span></div>
                         <div class="pills" id="pYld">
-                            <div class="pill" onclick="tgl('Yld',true)" data-t="hist">Hist</div>
-                            <div class="pill active" onclick="tgl('Yld',false)" data-t="fixed">Fixed</div>
+                            <div class="pill" onclick="tgl('Yld',true)" :class="{ active: $store.app.histYld }" data-t="hist">Hist</div>
+                            <div class="pill" onclick="tgl('Yld',false)" :class="{ active: !$store.app.histYld }" data-t="fixed">Fixed</div>
                         </div>
-                        <div class="input-box show" id="bYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1"
+                        <div class="input-box show" id="bYld" x-show="!$store.app.histYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1"
                                 value="3.0" oninput="runSim()"></div>
                         <label class="chk-row" style="margin-top:10px;">
                             <input type="checkbox" id="cRentTax" checked onchange="runSim()">
@@ -339,11 +339,11 @@
                 <div class="control-card">
                     <div class="card-row"><span class="card-lbl" data-t="spReturn">S&P 500 Return</span> <span class="card-val"
                             id="vSP">Fixed</span></div>
-                    <div class="pills" id="pSP">
-                        <div class="pill" onclick="tgl('SP',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('SP',false)" data-t="fixed">Fixed</div>
+                    <div class="pills" id="pSP" x-data>
+                        <div class="pill" onclick="tgl('SP',true)" :class="{ active: $store.app.histSP }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('SP',false)" :class="{ active: !$store.app.histSP }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bSP"><input type="range" id="sSP" min="4" max="15" step="0.5"
+                    <div class="input-box show" id="bSP" x-show="!$store.app.histSP"><input type="range" id="sSP" min="4" max="15" step="0.5"
                             value="9" oninput="runSim()"></div>
 
                     <div class="fees-box">
@@ -380,25 +380,25 @@
                 <div class="control-card">
                     <div class="card-row"><span class="card-lbl" data-t="interest">Interest (Base)</span> <span class="card-val"
                             id="vInt">Fixed</span></div>
-                    <div class="pills" id="pInt">
-                        <div class="pill" onclick="tgl('Int',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('Int',false)" data-t="fixed">Fixed</div>
+                    <div class="pills" id="pInt" x-data>
+                        <div class="pill" onclick="tgl('Int',true)" :class="{ active: $store.app.histInt }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('Int',false)" :class="{ active: !$store.app.histInt }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bInt">
+                    <div class="input-box show" id="bInt" x-data x-show="!$store.app.histInt">
                         <input type="range" id="sInt" min="1" max="8" step="0.25" value="4.25" oninput="syncPrime()">
                         <div style="font-size:0.65rem; color:#64748b; margin-top:4px;" data-t="affectsPrime">*Affects Prime Rate (BoI + 1.5%)
                         </div>
                     </div>
                 </div>
 
-                <div class="control-card">
+                <div class="control-card" x-data>
                     <div class="card-row"><span class="card-lbl" data-t="inflation">Inflation (CPI)</span> <span class="card-val"
                             id="vInf">Fixed</span></div>
                     <div class="pills" id="pInf">
-                        <div class="pill" onclick="tgl('Inf',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('Inf',false)" data-t="fixed">Fixed</div>
+                        <div class="pill" onclick="tgl('Inf',true)" :class="{ active: $store.app.histInf }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('Inf',false)" :class="{ active: !$store.app.histInf }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bInf">
+                    <div class="input-box show" id="bInf" x-show="!$store.app.histInf">
                         <input type="range" id="sInf" min="0" max="6" step="0.5" value="2.5"
                             oninput="updMeter(); runSim()">
                         <div class="meter" id="infMeter">

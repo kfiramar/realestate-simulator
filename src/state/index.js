@@ -16,7 +16,14 @@
         repayMethod: 'spitzer',
         optimizeMode: 'outperform',
         rateEditMode: false,
-        prepayExpanded: false
+        prepayExpanded: false,
+        // Historical mode for market variables
+        globalHistMode: false,
+        histSP: false,
+        histApp: false,
+        histInt: false,
+        histYld: false,
+        histInf: false
     };
 
     const listeners = [];

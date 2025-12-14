@@ -99,17 +99,26 @@ function setMode(m, opts = {}) {
 }
 function tgl(k, h, opts = {}) {
     cfg[k].is = h;
-    const pills = document.getElementById(cfg[k].p).children;
-    pills[0].classList.toggle('active', h); pills[1].classList.toggle('active', !h);
-    document.getElementById(cfg[k].b).classList.toggle('show', !h);
+    setState('hist' + k, h); // Sync to Alpine store
+    // Keep for non-Alpine environments
+    const pEl = document.getElementById(cfg[k].p);
+    if (pEl) {
+        pEl.children[0]?.classList.toggle('active', h);
+        pEl.children[1]?.classList.toggle('active', !h);
+    }
+    document.getElementById(cfg[k].b)?.classList.toggle('show', !h);
     if (k === 'Inf') updMeter();
     if (!opts.skipSim) runSim();
 }
 function setGlobalMode(isHist, opts = {}) {
-    const globalPills = document.getElementById('pGlobal').children;
-    globalPills[0].classList.toggle('active', isHist);
-    globalPills[1].classList.toggle('active', !isHist);
-    document.getElementById('scenBox').classList.toggle('show', !isHist);
+    setState('globalHistMode', isHist);
+    // Keep for non-Alpine environments
+    const pGlobal = document.getElementById('pGlobal');
+    if (pGlobal) {
+        pGlobal.children[0]?.classList.toggle('active', isHist);
+        pGlobal.children[1]?.classList.toggle('active', !isHist);
+    }
+    document.getElementById('scenBox')?.classList.toggle('show', !isHist);
     for (let k in cfg) { tgl(k, isHist, opts); }
 }
 function applyScenario(type, opts = {}) {
