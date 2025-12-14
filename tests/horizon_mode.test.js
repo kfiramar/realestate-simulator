@@ -22,6 +22,8 @@ const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js')
 eval(i18nCode);
 const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
 eval(configCode);
+const stateCode = fs.readFileSync(path.resolve(__dirname, "../src/state/index.js"), "utf8");
+eval(stateCode);
 const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf8');
 eval(chartsCode);
 const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf8');

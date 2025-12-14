@@ -17,6 +17,8 @@ function bootstrapApp() {
     eval(i18nCode);
     const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf-8');
     eval(configCode);
+    const stateCode = fs.readFileSync(path.resolve(__dirname, '../src/state/index.js'), 'utf-8');
+    eval(stateCode);
     const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf-8');
     eval(chartsCode);
     const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf-8');

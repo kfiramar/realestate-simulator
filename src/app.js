@@ -44,21 +44,43 @@ function applyTranslations() {
     runSim();
 }
 
-// --- STATE ---
-let mode = 'percent';
-let exMode = 'hedged';
-let taxMode = 'real';
-let horMode = 'auto';
-let lockDown = false;
-let lockTerm = false;
-let lockHor = true;
-let buyerType = 'first';
-let advancedTermMode = false;
-let bootstrapping = false;
-let creditScore = 900;
-let surplusMode = 'match';
-let repayMethod = 'spitzer';
-let optimizeMode = 'outperform';
+// --- STATE (using AppState module) ---
+const S = window.AppState || { get: () => null, set: () => {}, getAll: () => ({}), setAll: () => {} };
+
+// Convenience getters/setters for backward compatibility
+let mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode;
+
+function syncStateFromModule() {
+    const s = S.getAll();
+    mode = s.mode; exMode = s.exMode; taxMode = s.taxMode; horMode = s.horMode;
+    lockDown = s.lockDown; lockTerm = s.lockTerm; lockHor = s.lockHor;
+    buyerType = s.buyerType; advancedTermMode = s.advancedTermMode;
+    bootstrapping = s.bootstrapping; creditScore = s.creditScore;
+    surplusMode = s.surplusMode; repayMethod = s.repayMethod;
+    optimizeMode = s.optimizeMode; rateEditMode = s.rateEditMode;
+}
+function setState(key, value) {
+    S.set(key, value);
+    // Update local variable
+    switch(key) {
+        case 'mode': mode = value; break;
+        case 'exMode': exMode = value; break;
+        case 'taxMode': taxMode = value; break;
+        case 'horMode': horMode = value; break;
+        case 'lockDown': lockDown = value; break;
+        case 'lockTerm': lockTerm = value; break;
+        case 'lockHor': lockHor = value; break;
+        case 'buyerType': buyerType = value; break;
+        case 'advancedTermMode': advancedTermMode = value; break;
+        case 'bootstrapping': bootstrapping = value; break;
+        case 'creditScore': creditScore = value; break;
+        case 'surplusMode': surplusMode = value; break;
+        case 'repayMethod': repayMethod = value; break;
+        case 'optimizeMode': optimizeMode = value; break;
+        case 'rateEditMode': rateEditMode = value; break;
+    }
+}
+syncStateFromModule();
 
 const cfg = {
     SP: { is: false, b: 'bSP', s: 'sSP', v: 'vSP', p: 'pSP' },
@@ -70,7 +92,7 @@ const cfg = {
 
 // --- UI FUNCTIONS ---
 function setMode(m, opts = {}) {
-    mode = m;
+    setState('mode', m);
     document.getElementById('btnCurr').classList.toggle('active', m === 'currency');
     document.getElementById('btnPct').classList.toggle('active', m === 'percent');
     document.getElementById('equityBox').classList.toggle('show', m === 'currency');
@@ -202,7 +224,7 @@ function refreshRatesForProfile() {
 }
 
 function setCreditScore(v) {
-    creditScore = parseInt(v, 10) || creditScore;
+    setState('creditScore', parseInt(v, 10) || creditScore);
     updateCreditUI();
     applyLtvCaps();
     refreshRatesForProfile();
@@ -211,16 +233,16 @@ function setCreditScore(v) {
 }
 
 function tglHor(isAuto) {
-    horMode = isAuto ? 'auto' : 'custom';
+    setState('horMode', isAuto ? 'auto' : 'custom');
     document.getElementById('pHor').children[0].classList.toggle('active', isAuto);
     document.getElementById('pHor').children[1].classList.toggle('active', !isAuto);
     document.getElementById('bHor').classList.toggle('show', !isAuto);
-    if (isAuto) { lockHor = true; }
+    if (isAuto) { setState('lockHor', true); }
     runSim();
 }
 
 function setTaxMode(m) {
-    taxMode = m;
+    setState('taxMode', m);
     document.getElementById('txReal').classList.toggle('active', m === 'real');
     document.getElementById('txForex').classList.toggle('active', m === 'forex');
     const label = m === 'real' ? 'Real' : 'Nominal';
@@ -247,23 +269,23 @@ function updateLockUI() {
     }
 }
 function toggleLock(target) {
-    if (target === 'down') lockDown = !lockDown;
-    if (target === 'term') lockTerm = !lockTerm;
+    if (target === 'down') setState('lockDown', !lockDown);
+    if (target === 'term') setState('lockTerm', !lockTerm);
     if (target === 'hor') {
         if (horMode === 'auto' && lockHor) {
-            horMode = 'custom';
+            setState('horMode', 'custom');
             document.getElementById('pHor').children[0].classList.remove('active');
             document.getElementById('pHor').children[1].classList.add('active');
             document.getElementById('bHor').classList.add('show');
         }
-        lockHor = !lockHor;
+        setState('lockHor', !lockHor);
     }
     updateLockUI();
     runSim({ skipCharts: true });
 }
 
 function setBuyerType(type) {
-    buyerType = type;
+    setState('buyerType', type);
     applyLtvCaps();
     runSim();
 }
@@ -294,7 +316,7 @@ function syncTrackTermsToMain() {
 }
 
 function toggleAdvancedTerms() {
-    advancedTermMode = !advancedTermMode;
+    setState('advancedTermMode', !advancedTermMode);
     const advBox = document.getElementById('advancedTermBox');
     const basicBox = document.getElementById('basicTermBox');
     const btn = document.getElementById('btnAdvancedTerm');
@@ -459,7 +481,6 @@ function checkMix() {
     runSim();
 }
 
-let rateEditMode = false;
 function toggleRateEdit() {
     rateEditMode = !rateEditMode;
     const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
@@ -501,7 +522,7 @@ function syncPrime() {
 }
 
 function setSurplusMode(m, opts = {}) {
-    surplusMode = m;
+    setState('surplusMode', m);
     document.getElementById('surplusConsume').classList.toggle('active', m === 'consume');
     document.getElementById('surplusMatch').classList.toggle('active', m === 'match');
     document.getElementById('surplusInvest').classList.toggle('active', m === 'invest');
@@ -515,14 +536,14 @@ function setSurplusMode(m, opts = {}) {
 }
 
 function setRepayMethod(m) {
-    repayMethod = m;
+    setState('repayMethod', m);
     document.getElementById('repaySpitzer').classList.toggle('active', m === 'spitzer');
     document.getElementById('repayEqualPrincipal').classList.toggle('active', m === 'equalPrincipal');
     runSim();
 }
 
 function setOptimizeMode(m) {
-    optimizeMode = m;
+    setState('optimizeMode', m);
     document.getElementById('optRoi').classList.toggle('active', m === 'roi');
     document.getElementById('optOutperf').classList.toggle('active', m === 'outperform');
     updateSweetSpots();
