@@ -108,15 +108,8 @@ function setGlobalMode(isHist, opts = {}) {
 }
 function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
-    $('sSP').value = s.sp;
-    $('sApp').value = s.app;
-    $('sInt').value = s.int;
-    $('sInf').value = s.inf;
-    $('sYld').value = s.yld;
-
-    $('scenBear')?.classList.toggle('active', type === 'bear');
-    $('scenBase')?.classList.toggle('active', type === 'base');
-    $('scenBull')?.classList.toggle('active', type === 'bull');
+    ['SP','App','Int','Inf','Yld'].forEach(k => $('s' + k).value = s[k.toLowerCase()]);
+    ['bear','base','bull'].forEach(t => $('scen' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', type === t));
 
     refreshRatesForProfile();
     updateRateLabels();
@@ -185,19 +178,11 @@ function updateCreditUI() {
 function refreshRatesForProfile() {
     const tier = getCreditTier(parseInt(creditScore, 10));
     const base = parseFloat($('sInt').value) || 4.25;
-
-    const setVal = (id, anchor, risk) => {
-        const el = document.getElementById(id);
-        if (el && risk !== null) {
-            el.value = Math.max(0.1, base + anchor + risk).toFixed(2);
-        }
-    };
-
-    setVal('ratePrime', ANCHORS.prime, tier.riskP);
-    setVal('rateKalats', ANCHORS.kalats, tier.riskK);
-    setVal('rateMalatz', ANCHORS.malatz, tier.riskK); // Malatz non-linked, same risk as Kalats
-    setVal('rateKatz', ANCHORS.katz, tier.riskZ);
-    setVal('rateMatz', ANCHORS.matz, tier.riskZ); // Matz CPI-linked, same risk as Katz
+    const rateMap = {Prime: ['prime', 'riskP'], Kalats: ['kalats', 'riskK'], Malatz: ['malatz', 'riskK'], Katz: ['katz', 'riskZ'], Matz: ['matz', 'riskZ']};
+    Object.entries(rateMap).forEach(([track, [anchor, risk]]) => {
+        const el = $('rate' + track);
+        if (el && tier[risk] !== null) el.value = Math.max(0.1, base + ANCHORS[anchor] + tier[risk]).toFixed(2);
+    });
 }
 
 function setCreditScore(v) {
@@ -315,12 +300,8 @@ function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + '
 
 // Update slider value display labels
 function updateSliderLabels() {
-    $('vTrade').innerText = parseFloat($('rTrade').value).toFixed(1) + '%';
-    $('vMer').innerText = parseFloat($('rMer').value).toFixed(2) + '%';
-    $('vDiscount').innerText = $('rDiscount').value + '%';
-    $('vBuyCost').innerText = parseFloat($('rBuyCost').value).toFixed(1) + '%';
-    $('vMaint').innerText = parseFloat($('rMaint').value).toFixed(0) + '%';
-    $('vSellCost').innerText = parseFloat($('rSellCost').value).toFixed(1) + '%';
+    const sliders = {Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1};
+    Object.entries(sliders).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
 }
 
 // Update deal structure display (asset, leverage, mortgage, tax)
@@ -451,17 +432,11 @@ function checkMix() {
 
 function toggleRateEdit() {
     setState('rateEditMode', !rateEditMode);
-    // Keep for non-Alpine environments
-    const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
-    tracks.forEach(track => {
-        const lbl = document.getElementById('lblRate' + track);
-        const inp = document.getElementById('rate' + track);
+    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => {
+        const lbl = $('lblRate' + track), inp = $('rate' + track);
         if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block';
         if (inp) inp.classList.toggle('show', rateEditMode);
-        if (!rateEditMode && lbl && inp) {
-            let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
-            lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
-        }
+        if (!rateEditMode && lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%');
     });
 }
 
