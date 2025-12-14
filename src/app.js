@@ -485,16 +485,9 @@ function syncPrime() {
 
 function setSurplusMode(m, opts = {}) {
     setState('surplusMode', m);
-    // Class toggling for non-Alpine environments (tests)
-    $('surplusConsume')?.classList.toggle('active', m === 'consume');
-    $('surplusMatch')?.classList.toggle('active', m === 'match');
-    $('surplusInvest')?.classList.toggle('active', m === 'invest');
+    ['consume', 'match', 'invest'].forEach(mode => $('surplus' + mode.charAt(0).toUpperCase() + mode.slice(1))?.classList.toggle('active', m === mode));
     const descEl = $('surplusDescText') || $('surplusDesc');
-    if (descEl) {
-        if (m === 'invest') descEl.innerText = t('surplusDescInvest');
-        else if (m === 'consume') descEl.innerText = t('surplusDescConsume');
-        else if (m === 'match') descEl.innerText = t('surplusDescMatch');
-    }
+    if (descEl) descEl.innerText = t('surplusDesc' + m.charAt(0).toUpperCase() + m.slice(1));
     if (!opts.skipSim) runSim();
 }
 
@@ -630,36 +623,20 @@ function runSim(opts = {}) {
 
     // Terms
     const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
-    let termP = clampTerm(parseInt($('termPrime').value) || mortDur);
-    let termK = clampTerm(parseInt($('termKalats').value) || mortDur);
-    let termZ = clampTerm(parseInt($('termKatz').value) || mortDur);
-    let termM = clampTerm(parseInt($('termMalatz').value) || mortDur);
-    let termMT = clampTerm(parseInt($('termMatz').value) || mortDur);
+    const trackTerms = ['Prime','Kalats','Katz','Malatz','Matz'].map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
+    let [termP, termK, termZ, termM, termMT] = trackTerms;
 
     if (!advancedTermMode) {
         termP = termK = termZ = termM = termMT = clampTerm(mortDur);
-        // UI Sync
-        $('termPrime').value = termP;
-        $('termKalats').value = termK;
-        $('termKatz').value = termZ;
-        $('termMalatz').value = termM;
-        $('termMatz').value = termMT;
-        showTermVal('termPrimeVal', termP);
-        showTermVal('termKalatsVal', termK);
-        showTermVal('termKatzVal', termZ);
-        showTermVal('termMalatzVal', termM);
-        showTermVal('termMatzVal', termMT);
+        ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => {
+            $('term' + t).value = termP;
+            showTermVal('term' + t + 'Val', termP);
+        });
     }
 
     // Logic restored to sync horizon/terms
-    const activeTerms = [];
-    const getPct = (id) => parseFloat(document.getElementById(id).value) || 0;
-    if (getPct('pctPrime') > 0) activeTerms.push(termP);
-    if (getPct('pctKalats') > 0) activeTerms.push(termK);
-    if (getPct('pctKatz') > 0) activeTerms.push(termZ);
-    if (getPct('pctMalatz') > 0) activeTerms.push(termM);
-    if (getPct('pctMatz') > 0) activeTerms.push(termMT);
-
+    const termMap = {Prime: termP, Kalats: termK, Katz: termZ, Malatz: termM, Matz: termMT};
+    const activeTerms = Object.entries(termMap).filter(([t]) => $pct('pct' + t) > 0).map(([,v]) => v);
     if (activeTerms.length === 0) activeTerms.push(mortDur);
 
     const maxTrackYears = Math.max(...activeTerms);
@@ -810,19 +787,9 @@ function loadState() {
     if (!s) return false;
 
     // Restore state vars
-    if (s.horMode) setState('horMode', s.horMode);
-    if (s.surplusMode) setState('surplusMode', s.surplusMode);
-    if (s.repayMethod) setState('repayMethod', s.repayMethod);
-    if (s.creditScore) setState('creditScore', s.creditScore);
-    if (s.taxMode) setState('taxMode', s.taxMode);
-    if (s.exMode) setState('exMode', s.exMode);
-    if (s.lockDown != null) setState('lockDown', s.lockDown);
-    if (s.lockTerm != null) setState('lockTerm', s.lockTerm);
-    if (s.lockHor != null) setState('lockHor', s.lockHor);
+    ['horMode','surplusMode','repayMethod','creditScore','taxMode','exMode','lockDown','lockTerm','lockHor','advancedTermMode','buyerType','mode']
+        .forEach(k => { if (s[k] != null) setState(k, s[k]); });
     if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
-    if (s.advancedTermMode != null) setState('advancedTermMode', s.advancedTermMode);
-    if (s.buyerType) setState('buyerType', s.buyerType);
-    if (s.mode) setState('mode', s.mode);
 
     return true;
 }
@@ -855,8 +822,7 @@ function bootstrap() {
     setMode(hadSaved && mode ? mode : 'currency', { skipSim: true });
     // Restore horMode UI
     if (horMode === 'custom') {
-        $('pHor').children[0].classList.remove('active');
-        $('pHor').children[1].classList.add('active');
+        $pill('pHor', false);
         $('bHor').classList.add('show');
     }
     checkMix();
@@ -879,14 +845,9 @@ function bootstrap() {
 }
 
 function updateRateLabels() {
-    const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
-    tracks.forEach(track => {
-        const lbl = document.getElementById('lblRate' + track);
-        const inp = document.getElementById('rate' + track);
-        if (lbl && inp) {
-            let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
-            lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
-        }
+    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => {
+        const lbl = $('lblRate' + track), inp = $('rate' + track);
+        if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%');
     });
 }
 
