@@ -291,14 +291,6 @@ function setBuyerType(type) {
     runSim();
 }
 
-function recommendMix() {
-    const baseRate = parseFloat(document.getElementById('sInt').value) || 4.25;
-    const cpi = parseFloat(document.getElementById('sInf').value) || 2.5;
-    if (baseRate >= 4.5 || cpi >= 3.5) applyTamheel('shield');
-    else if (baseRate >= 3.0 || cpi >= 2.5) applyTamheel('arbitrage');
-    else applyTamheel('investor');
-}
-
 function showTermVal(elId, v) {
     const el = document.getElementById(elId);
     if (el) {
@@ -1564,7 +1556,6 @@ window.runSim = runSim;
 window.setCreditScore = setCreditScore;
 window.toggleLock = toggleLock;
 window.setBuyerType = setBuyerType;
-window.recommendMix = recommendMix;
 window.syncTrackTermsToMain = syncTrackTermsToMain;
 window.showTermVal = showTermVal;
 window.toggleAdvancedTerms = toggleAdvancedTerms;
