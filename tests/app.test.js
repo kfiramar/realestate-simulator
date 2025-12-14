@@ -26,6 +26,8 @@ const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.
 eval(configCode);
 const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf8');
 eval(chartsCode);
+const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf8');
+eval(prepayCode);
 
 describe('App Logic: UI Interaction', () => {
     

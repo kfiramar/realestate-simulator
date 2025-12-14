@@ -19,6 +19,8 @@ function bootstrapApp() {
     eval(configCode);
     const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf-8');
     eval(chartsCode);
+    const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf-8');
+    eval(prepayCode);
     require('../src/logic.js');
     require('../src/app.js');
     document.dispatchEvent(new Event('DOMContentLoaded'));
