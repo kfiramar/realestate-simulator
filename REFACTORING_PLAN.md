@@ -1,5 +1,31 @@
 # Real Estate Investment Simulator - Refactoring Plan
 
+## Current Status (Updated: Dec 14, 2025)
+
+| Phase | Description | Status | Notes |
+|-------|-------------|--------|-------|
+| 1 | Extract Translations | ✅ Complete | ~300 lines moved to src/i18n/ |
+| 2 | Extract Constants | ✅ Complete | ~50 lines moved to src/config/ |
+| 3 | Split logic.js | ⏸️ Deferred | 22 test files would need updates |
+| 4 | Extract Formatters | ⏸️ Deferred | Only 7 lines, fmtVal depends on global mode |
+| 5 | Extract Charts | ⏸️ Deferred | Tightly coupled to globals |
+| 6 | Extract Prepayments | ⏸️ Deferred | Requires state refactor first |
+| 7 | Extract Persistence | ⏸️ Deferred | Requires state refactor first |
+| 8 | Centralize State | ⏸️ Deferred | Major undertaking |
+| 9 | Extract UI Modules | ⏸️ Deferred | Requires state refactor first |
+| 10 | Final Cleanup | ⏸️ Deferred | After other phases |
+
+**app.js: 1928 → 1579 lines (18% reduction)**
+**All 276 tests passing**
+
+### Blocker: Global Dependencies
+
+Phases 3-10 are blocked by tight coupling to global variables. The IIFE pattern used requires either:
+1. Converting to ES modules (recommended)
+2. Exposing more globals (increases complexity)
+
+---
+
 ## Overview
 
 This document outlines a comprehensive refactoring plan for the Brickfolio real estate investment simulator. The goal is to improve code maintainability, testability, and developer experience while preserving all existing functionality.
@@ -68,20 +94,20 @@ src/
 
 ## Phase Index
 
-| Phase | Description | Risk | Est. Time |
-|-------|-------------|------|-----------|
-| [1](#phase-1-extract-translations) | Extract Translations | Low | 45 min |
-| [2](#phase-2-extract-constants) | Extract Constants | Low | 30 min |
-| [3](#phase-3-split-logicjs) | Split logic.js | Low | 45 min |
-| [4](#phase-4-extract-formatters) | Extract Formatters | Low | 20 min |
-| [5](#phase-5-extract-charts) | Extract Charts | Medium | 60 min |
-| [6](#phase-6-extract-prepayments) | Extract Prepayments | Medium | 45 min |
-| [7](#phase-7-extract-persistence) | Extract Persistence | Low | 30 min |
-| [8](#phase-8-centralize-state) | Centralize State | Medium | 60 min |
-| [9](#phase-9-extract-ui-modules) | Extract UI Modules | Medium | 45 min |
-| [10](#phase-10-cleanup) | Final Cleanup | Low | 30 min |
+| Phase | Description | Status | Risk | Est. Time |
+|-------|-------------|--------|------|-----------|
+| [1](#phase-1-extract-translations) | Extract Translations | ✅ Done | Low | 45 min |
+| [2](#phase-2-extract-constants) | Extract Constants | ✅ Done | Low | 30 min |
+| [3](#phase-3-split-logicjs) | Split logic.js | ⏸️ Deferred | Low | 45 min |
+| [4](#phase-4-extract-formatters) | Extract Formatters | ⏸️ Deferred | Low | 20 min |
+| [5](#phase-5-extract-charts) | Extract Charts | ⏸️ Deferred | Medium | 60 min |
+| [6](#phase-6-extract-prepayments) | Extract Prepayments | ⏸️ Deferred | Medium | 45 min |
+| [7](#phase-7-extract-persistence) | Extract Persistence | ⏸️ Deferred | Low | 30 min |
+| [8](#phase-8-centralize-state) | Centralize State | ⏸️ Deferred | Medium | 60 min |
+| [9](#phase-9-extract-ui-modules) | Extract UI Modules | ⏸️ Deferred | Medium | 45 min |
+| [10](#phase-10-cleanup) | Final Cleanup | ⏸️ Deferred | Low | 30 min |
 
-**Total estimated time: ~7 hours**
+**Completed: 2/10 phases | Remaining phases blocked by global dependencies**
 
 ---
 
