@@ -1,5 +1,60 @@
 // Pure logic module: constants, calcPmt, calcCAGR, searchSweetSpots, and simulate.
 
+// Purchase Tax (מס רכישה) brackets - valid 16.01.2024 to 15.01.2028
+const PURCHASE_TAX_FIRST_HOME = [
+    { limit: 1978745, rate: 0 },
+    { limit: 2347040, rate: 0.035 },
+    { limit: 6055070, rate: 0.05 },
+    { limit: 20183565, rate: 0.08 },
+    { limit: Infinity, rate: 0.10 }
+];
+
+const PURCHASE_TAX_ADDITIONAL = [
+    { limit: 6055070, rate: 0.08 },
+    { limit: Infinity, rate: 0.10 }
+];
+
+function calcPurchaseTax(propertyValue, isFirstHome = true) {
+    const brackets = isFirstHome ? PURCHASE_TAX_FIRST_HOME : PURCHASE_TAX_ADDITIONAL;
+    let tax = 0;
+    let prevLimit = 0;
+    
+    for (const bracket of brackets) {
+        if (propertyValue <= prevLimit) break;
+        const taxableInBracket = Math.min(propertyValue, bracket.limit) - prevLimit;
+        if (taxableInBracket > 0) {
+            tax += taxableInBracket * bracket.rate;
+        }
+        prevLimit = bracket.limit;
+    }
+    
+    return Math.round(tax);
+}
+
+// --- MAS SHEVACH (Capital Gains Tax) ---
+const MAS_SHEVACH_EXEMPTION_CAP = 5008000; // 2024-2027
+
+function calcMasShevach(salePrice, costBasis, exemptionType = 'single') {
+    const realGain = salePrice - costBasis;
+    if (realGain <= 0) return { tax: 0, exemptGain: 0, taxableGain: 0 };
+    
+    // 'none' = investment property, no exemption
+    if (exemptionType === 'none') {
+        return { tax: Math.round(realGain * 0.25), exemptGain: 0, taxableGain: realGain };
+    }
+    
+    // 'single' = single apartment exemption with cap
+    if (salePrice <= MAS_SHEVACH_EXEMPTION_CAP) {
+        return { tax: 0, exemptGain: realGain, taxableGain: 0 };
+    }
+    
+    // Luxury apartment: pro-rata split
+    const exemptFraction = MAS_SHEVACH_EXEMPTION_CAP / salePrice;
+    const exemptGain = realGain * exemptFraction;
+    const taxableGain = realGain * (1 - exemptFraction);
+    return { tax: Math.round(taxableGain * 0.25), exemptGain, taxableGain };
+}
+
 const H_SP = [0.1088, 0.0491, 0.1579, 0.0549, -0.3700, 0.2646, 0.1506, 0.0211, 0.1600, 0.3239, 0.1369, 0.0138, 0.1196, 0.2183, -0.0438, 0.3149, 0.1840, 0.2871, -0.1811, 0.2629, 0.2400];
 const H_RE = [-0.02, 0.04, 0.00, 0.03, 0.06, 0.19, 0.15, 0.04, 0.05, 0.08, 0.06, 0.07, 0.05, 0.04, 0.01, 0.03, 0.04, 0.12, 0.18, 0.02, 0.05];
 const H_EX = [4.48, 4.49, 4.45, 4.11, 3.59, 3.93, 3.73, 3.58, 3.85, 3.61, 3.58, 3.88, 3.84, 3.60, 3.59, 3.56, 3.44, 3.23, 3.36, 3.68, 3.75];
@@ -87,7 +142,7 @@ function simulate(params) {
     let balMT = initPrinc.mt;
 
     // Initial Costs
-    const entryCosts = assetPrice * fees.buy;
+    const entryCosts = assetPrice * fees.buy + (fees.purchaseTax || 0);
     let totalCashInvested = equity + entryCosts;
 
     // Cash flow tracking for IRR: [{ month, amount }]
@@ -371,45 +426,22 @@ function simulate(params) {
                 series.flowPrinc.push(firstMonthPrinc * -1);
                 series.flowNet.push(firstMonthNet);
 
-                // Net Worth Calc at Snapshot
+                // Net Worth Calc at Snapshot (PRE-TAX for chart - tax only at exit)
                 const exitVal = assetVal * (1 - fees.sell);
-                let reSideTax = 0;
-                if (tax.use) {
-                    const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
-                    if (reSideStockValue > reBasis) {
-                        reSideTax = (reSideStockValue - reBasis) * 0.25;
-                    }
-                }
-                const netRE = (exitVal - (balP + balK + balZ + balM + balMT)) + (reSideStockValue - reSideTax) + reSideCash;
+                const netRE = (exitVal - (balP + balK + balZ + balM + balMT)) + reSideStockValue + reSideCash;
 
                 let spValILS = 0;
                 if (config.exMode === 'hedged') spValILS = spValueHedged;
                 else spValILS = spUnits * currentEx;
 
-                let spTax = 0;
-                if (tax.use) {
-                    if (tax.mode === 'real') {
-                        const prof = spValILS - spBasisLinked;
-                        if (prof > 0) spTax = prof * 0.25;
-                    } else {
-                        if (config.exMode === 'hedged') {
-                            const prof = spValILS - spInvestedILS;
-                            if (prof > 0) spTax = prof * 0.25;
-                        } else {
-                            const profUSD = spUnits - spBasisUSD;
-                            if (profUSD > 0) spTax = (profUSD * currentEx) * 0.25;
-                        }
-                    }
-                }
-                const netSP = spValILS - spTax + spSideCash;
+                const netSP = spValILS + spSideCash;
 
                 series.reDataVal.push(netRE);
                 series.spDataVal.push(netSP);
                 series.reDataPct.push(((netRE - spInvestedILS) / spInvestedILS) * 100);
                 series.spDataPct.push(((netSP - spInvestedILS) / spInvestedILS) * 100);
-                const netSurplus = reSideStockValue - reSideTax;
-                series.surplusVal.push(netSurplus);
-                series.surplusPct.push((netSurplus / spInvestedILS) * 100);
+                series.surplusVal.push(reSideStockValue);
+                series.surplusPct.push((reSideStockValue / spInvestedILS) * 100);
             }
         }
     }
@@ -417,20 +449,29 @@ function simulate(params) {
     // Final Calculation
     const exitValue = assetVal * (1 - fees.sell);
     let reSideTax = 0;
-    if (tax.use) {
+    if (tax.useRE) {
         const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
         if (reSideStockValue > reBasis) {
             reSideTax = (reSideStockValue - reBasis) * 0.25;
         }
     }
-    const netRE = (exitValue - (balP + balK + balZ + balM + balMT)) + (reSideStockValue - reSideTax) + reSideCash;
+    
+    // Mas Shevach on real estate appreciation
+    let masShevach = 0;
+    if (tax.useMasShevach) {
+        const costBasisIndexed = assetPrice * cpiIndex; // CPI-adjusted cost basis
+        const shevachResult = calcMasShevach(assetVal, costBasisIndexed, tax.masShevachType || 'single');
+        masShevach = shevachResult.tax;
+    }
+    
+    const netRE = (exitValue - masShevach - (balP + balK + balZ + balM + balMT)) + (reSideStockValue - reSideTax) + reSideCash;
 
     let spValILS = 0;
     if (config.exMode === 'hedged') spValILS = spValueHedged;
     else spValILS = spUnits * currentEx;
 
     let spTax = 0;
-    if (tax.use) {
+    if (tax.useSP) {
         if (tax.mode === 'real') {
             let profit = spValILS - spBasisLinked;
             if (profit > 0) spTax = profit * 0.25;
@@ -450,25 +491,36 @@ function simulate(params) {
     const cagrRE = calcIRR(reCashFlows, netRE, totalMonths);
     const cagrSP = calcIRR(spCashFlows, netSP, totalMonths);
 
+    // Pre-tax values for chart visualization
+    const grossRE = (exitValue - (balP + balK + balZ + balM + balMT)) + reSideStockValue + reSideCash;
+    const grossSP = spValILS + spSideCash;
+    const totalRETax = masShevach + reSideTax;
+
     return {
         netRE, netSP, cagrRE, cagrSP,
+        grossRE, grossSP, totalRETax, reSideTax,
         totalCashInvested, totalInterestWasted, totalRentCollected,
         firstPosMonth,
         remainingLoan: balP + balK + balZ + balM + balMT,
         reSideStockValue,
         spValueHedged, spUnits, spBasisLinked, spBasisUSD,
+        masShevach, spTax,
         series
     };
 }
 
 // Adapter for legacy calcCAGR callers (Optimizer & Tests)
-function calcCAGR(eq, downPct, mortDur, simDur, useTax, tradeFee, merFee, exModeCalc, taxModeCalc, cfgCalc, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode) {
+function calcCAGR(eq, downPct, mortDur, simDur, useTaxSP, tradeFee, merFee, exModeCalc, taxModeCalc, cfgCalc, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) {
+    // Backward compat: if useTaxRE not provided, use same as useTaxSP
+    const taxSP = useTaxSP ?? true;
+    const taxRE = useTaxRE ?? taxSP;
     const params = {
         equity: eq,
         downPct: downPct,
         loanTerm: mortDur,
         simHorizon: simDur,
-        mix: mix, // Note: Legacy mix only has p, k, z. New tracks default to 0.
+        termMix: termMix || { p: mortDur, k: mortDur, z: mortDur, m: mortDur, mt: mortDur },
+        mix: mix,
         rates: {
             prime: overrides.RateP,
             kalats: overrides.RateK,
@@ -487,12 +539,17 @@ function calcCAGR(eq, downPct, mortDur, simDur, useTax, tradeFee, merFee, exMode
             buy: buyCostPct,
             sell: sellCostPct,
             trade: tradeFee,
-            mgmt: merFee
+            mgmt: merFee,
+            purchaseTax: purchaseTax || 0
         },
         maintPct: maintPct,
+        purchaseDiscount: purchaseDiscount || 0,
         tax: {
-            use: useTax,
+            useSP: taxSP,
+            useRE: taxRE,
             useRent: useRentTax,
+            useMasShevach: useMasShevach || false,
+            masShevachType: masShevachType || 'single',
             mode: taxModeCalc
         },
         config: {
@@ -510,10 +567,10 @@ function calcCAGR(eq, downPct, mortDur, simDur, useTax, tradeFee, merFee, exMode
 
 function searchSweetSpots(params) {
     const {
-        eq, curDown, curDur, simDur, useTax, useRentTax, tradeFee, merFee,
+        eq, curDown, curDur, simDur, useTaxSP, useTaxRE, useRentTax, tradeFee, merFee,
         buyCostPct, maintPct, sellCostPct, overrides, mix, drift,
         lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode, calcOverride,
-        surplusMode
+        surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount
     } = params;
 
     const cagrFn = calcOverride || calcCAGR;
@@ -530,10 +587,8 @@ function searchSweetSpots(params) {
     for (let d of downVals) {
         for (let t of termVals) {
             for (let h of horVals) {
-                // When horizon is locked or in auto mode with lock, use fixed h
-                // Only let horizon follow term in auto mode when NOT locked
                 const simH = (horMode === 'auto' && !lockHor) ? t : h;
-                let c = cagrFn(eq, d / 100, t, simH, useTax, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode);
+                let c = cagrFn(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount);
                 const isBetter = c > best.c;
                 const isNearTie = Math.abs(c - best.c) < 0.05 && t > best.t;
                 if (isBetter || isNearTie) best = { d, t, h: simH, c };
@@ -686,7 +741,7 @@ function generateSchedule(params) {
     };
 }
 
-const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest };
+const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach };
 
 if (typeof module !== 'undefined') {
     module.exports = Logic;

@@ -4,7 +4,8 @@ const path = require('path');
 function loadDom() {
     const htmlPath = path.resolve(__dirname, '../src/index.html');
     const html = fs.readFileSync(htmlPath, 'utf-8');
-    const body = html.split('<body>')[1].split('</body>')[0];
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    const body = bodyMatch ? bodyMatch[1] : '';
     document.documentElement.innerHTML = `<body>${body}</body>`;
 }
 

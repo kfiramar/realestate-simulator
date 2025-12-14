@@ -43,13 +43,13 @@
                         <select id="buyerType"
                             style="padding:6px; border-radius:6px; border:1px solid var(--border); font-weight:600; color:#475569;"
                             onchange="setBuyerType(this.value)">
-                            <option value="first" selected>First Home (75% LTV)</option>
-                            <option value="replacement">Replacement (70% LTV)</option>
-                            <option value="investor">Investment (50% LTV)</option>
+                            <option value="first" selected data-t="firstHome">First Home (75% LTV)</option>
+                            <option value="replacement" data-t="replacement">Replacement (70% LTV)</option>
+                            <option value="investor" data-t="investor">Investment (50% LTV)</option>
                         </select>
                     </div>
-                    <div class="card-row"><span class="card-lbl">Down Payment<span class="lock-toggle" id="lockDownBtn"
-                                onclick="toggleLock('down')">Free</span></span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="downPayment">Down Payment<span class="lock-toggle" id="lockDownBtn"
+                                onclick="toggleLock('down')" data-t="free">Free</span></span> <span class="card-val"
                             id="dDown">30%</span></div>
                     <div class="range-wrapper">
                         <input type="range" id="rDown" min="25" max="100" step="5" value="30" oninput="runSim()">
@@ -60,16 +60,16 @@
                     <div class="card-row"><span class="card-lbl" data-t="mortgageMix">Mortgage Mix (Tamheel)</span> <span class="card-val"
                             id="valMixSum" style="color:#16a34a; display:none;">100%</span></div>
                     <div class="scenario-grid" style="margin-bottom:10px;">
-                        <div class="scen-btn" style="flex:1" onclick="applyTamheel('defaultEven')">🧭 Default</div>
+                        <div class="scen-btn" style="flex:1" onclick="applyTamheel('defaultEven')" data-t="tamheelDefault">🧭 Default</div>
                     </div>
                     <div class="scenario-grid" style="margin-bottom:15px; margin-top:5px;">
-                        <div class="scen-btn" onclick="applyTamheel('arbitrage')">📉 Arbitrage</div>
-                        <div class="scen-btn" onclick="applyTamheel('shield')">🛡️ Shield</div>
-                        <div class="scen-btn" onclick="applyTamheel('investor')">💸 Investor</div>
+                        <div class="scen-btn" onclick="applyTamheel('arbitrage')" data-t="tamheelArbitrage">📉 Arbitrage</div>
+                        <div class="scen-btn" onclick="applyTamheel('shield')" data-t="tamheelShield">🛡️ Shield</div>
+                        <div class="scen-btn" onclick="applyTamheel('investor')" data-t="tamheelInvestor">💸 Investor</div>
                     </div>
-                    <div class="card-sub" style="display:flex; justify-content:space-between; align-items:end;">
-                        <span>Mix Allocation</span>
-                        <span class="rate-toggle-btn" onclick="toggleRateEdit()">Edit Rates</span>
+                    <div class="card-sub mix-alloc-row" style="display:flex; justify-content:space-between; align-items:end;">
+                        <span class="rate-toggle-btn" onclick="toggleRateEdit()" data-t="editRates">Edit Rates</span>
+                        <span data-t="mixAllocation">Mix Allocation</span>
                     </div>
 
                     <div class="mix-visual-bar" id="mixVisualBar">
@@ -87,13 +87,13 @@
                             <input type="range" id="sliderPrime" min="0" max="100" step="1" value="34"
                                 oninput="syncMixInput('Prime')">
                         </div>
-                        <div class="mix-pct-val" id="dispPrime">34%</div>
+                        <div class="mix-pct-val" id="dispPrime">30%</div>
                         <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRatePrime" onclick="toggleRateEdit()">5.75%</span>
-                            <input type="number" class="mix-rate-input" id="ratePrime" value="5.75" step="0.05"
+                            <span class="mix-rate-val" id="lblRatePrime" onclick="toggleRateEdit()">4.95%</span>
+                            <input type="number" class="mix-rate-input" id="ratePrime" value="4.95" step="0.05"
                                 oninput="runSim()">
                         </div>
-                        <input type="hidden" id="pctPrime" value="34">
+                        <input type="hidden" id="pctPrime" value="30">
                     </div>
 
                     <div class="mix-row">
@@ -103,13 +103,13 @@
                             <input type="range" id="sliderKalats" min="0" max="100" step="1" value="33"
                                 oninput="syncMixInput('Kalats')">
                         </div>
-                        <div class="mix-pct-val" id="dispKalats">33%</div>
+                        <div class="mix-pct-val" id="dispKalats">40%</div>
                         <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateKalats" onclick="toggleRateEdit()">4.95%</span>
-                            <input type="number" class="mix-rate-input" id="rateKalats" value="4.95" step="0.1"
+                            <span class="mix-rate-val" id="lblRateKalats" onclick="toggleRateEdit()">4.70%</span>
+                            <input type="number" class="mix-rate-input" id="rateKalats" value="4.70" step="0.1"
                                 oninput="runSim()">
                         </div>
-                        <input type="hidden" id="pctKalats" value="33">
+                        <input type="hidden" id="pctKalats" value="40">
                     </div>
 
                     <div class="mix-row">
@@ -119,13 +119,13 @@
                             <input type="range" id="sliderMalatz" min="0" max="100" step="1" value="33"
                                 oninput="syncMixInput('Malatz')">
                         </div>
-                        <div class="mix-pct-val" id="dispMalatz">33%</div>
+                        <div class="mix-pct-val" id="dispMalatz">30%</div>
                         <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateMalatz" onclick="toggleRateEdit()">4.50%</span>
-                            <input type="number" class="mix-rate-input" id="rateMalatz" value="4.50" step="0.1"
+                            <span class="mix-rate-val" id="lblRateMalatz" onclick="toggleRateEdit()">4.61%</span>
+                            <input type="number" class="mix-rate-input" id="rateMalatz" value="4.61" step="0.1"
                                 oninput="runSim()">
                         </div>
-                        <input type="hidden" id="pctMalatz" value="33">
+                        <input type="hidden" id="pctMalatz" value="30">
                     </div>
 
                     <div class="mix-row">
@@ -137,8 +137,8 @@
                         </div>
                         <div class="mix-pct-val" id="dispKatz">0%</div>
                         <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateKatz" onclick="toggleRateEdit()">3.2% + CPI</span>
-                            <input type="number" class="mix-rate-input" id="rateKatz" value="3.2" step="0.1"
+                            <span class="mix-rate-val" id="lblRateKatz" onclick="toggleRateEdit()">2.85% + CPI</span>
+                            <input type="number" class="mix-rate-input" id="rateKatz" value="2.85" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctKatz" value="0">
@@ -153,8 +153,8 @@
                         </div>
                         <div class="mix-pct-val" id="dispMatz">0%</div>
                         <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateMatz" onclick="toggleRateEdit()">2.15% + CPI</span>
-                            <input type="number" class="mix-rate-input" id="rateMatz" value="2.15" step="0.1"
+                            <span class="mix-rate-val" id="lblRateMatz" onclick="toggleRateEdit()">3.10% + CPI</span>
+                            <input type="number" class="mix-rate-input" id="rateMatz" value="3.10" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctMatz" value="0">
@@ -163,12 +163,12 @@
                     <!-- Early Repayments Section -->
                     <div class="prepay-section">
                         <div class="prepay-header" onclick="togglePrepaySection()">
-                            <span>Early Repayments</span>
+                            <span data-t="earlyRepayments">Early Repayments</span>
                             <span class="prepay-arrow" id="prepayArrow">+</span>
                         </div>
                         <div class="prepay-container" id="prepayContainer" style="display:none;">
                             <div id="prepayList"></div>
-                            <button class="prepay-add-btn" onclick="addPrepayment()">+ Add Prepayment</button>
+                            <button class="prepay-add-btn" onclick="addPrepayment()" data-t="addPrepayment">+ Add Prepayment</button>
                         </div>
                     </div>
 
@@ -176,16 +176,16 @@
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
                         <span class="card-lbl" data-t="repayMethod">Repayment Method</span>
                         <div class="pills" id="pRepayMethod">
-                            <div class="pill active" id="repaySpitzer" onclick="setRepayMethod('spitzer')">Spitzer <span class="opt-star" id="starSpitzer">★</span></div>
-                            <div class="pill" id="repayEqualPrincipal" onclick="setRepayMethod('equalPrincipal')">Equal Principal <span class="opt-star" id="starEqual">★</span></div>
+                            <div class="pill active" id="repaySpitzer" onclick="setRepayMethod('spitzer')"><span data-t="spitzer">Spitzer</span> <span class="opt-star" id="starSpitzer">★</span></div>
+                            <div class="pill" id="repayEqualPrincipal" onclick="setRepayMethod('equalPrincipal')"><span data-t="equalPrincipal">Equal Principal</span> <span class="opt-star" id="starEqual">★</span></div>
                         </div>
                     </div>
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
-                        <span class="card-lbl">Mortgage Term <span class="lock-toggle" id="lockTermBtn"
-                                onclick="toggleLock('term')">Free</span></span>
+                        <span class="card-lbl" data-t="mortgageTerm">Mortgage Term <span class="lock-toggle" id="lockTermBtn"
+                                onclick="toggleLock('term')" data-t="free">Free</span></span>
                         <span class="card-val" id="dDur">25 Yr</span>
                         <div class="pill toggle" id="btnAdvancedTerm" onclick="toggleAdvancedTerms()"
-                            style="margin-left:auto;">Advanced</div>
+                            style="margin-left:auto;" data-t="advanced">Advanced</div>
                     </div>
                     <div id="basicTermBox">
                         <div class="range-wrapper">
@@ -198,33 +198,33 @@
                             <div class="mix-label" data-t="prime">Prime</div>
                             <input type="range" id="termPrime" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termPrimeVal', this.value); runSim()">
-                            <span class="card-val" id="termPrimeVal" style="width:45px; text-align:right;">25y</span>
+                            <span class="card-val" id="termPrimeVal" style="width:60px;">25y</span>
                         </div>
                         <div class="mix-row">
                             <div class="mix-label" data-t="kalatz">Kalats</div>
                             <input type="range" id="termKalats" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termKalatsVal', this.value); runSim()">
-                            <span class="card-val" id="termKalatsVal" style="width:45px; text-align:right;">25y</span>
+                            <span class="card-val" id="termKalatsVal" style="width:60px;">25y</span>
                         </div>
                         <div class="mix-row">
                             <div class="mix-label" data-t="malatz">Malatz</div>
                             <input type="range" id="termMalatz" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termMalatzVal', this.value); runSim()">
-                            <span class="card-val" id="termMalatzVal" style="width:45px; text-align:right;">25y</span>
+                            <span class="card-val" id="termMalatzVal" style="width:60px;">25y</span>
                         </div>
                         <div class="mix-row">
                             <div class="mix-label" data-t="katz">Katz</div>
                             <input type="range" id="termKatz" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termKatzVal', this.value); runSim()">
-                            <span class="card-val" id="termKatzVal" style="width:45px; text-align:right;">25y</span>
+                            <span class="card-val" id="termKatzVal" style="width:60px;">25y</span>
                         </div>
                         <div class="mix-row">
                             <div class="mix-label" data-t="matz">Matz</div>
                             <input type="range" id="termMatz" min="1" max="30" step="1" value="30"
                                 oninput="showTermVal('termMatzVal', this.value); runSim()">
-                            <span class="card-val" id="termMatzVal" style="width:45px; text-align:right;">25y</span>
+                            <span class="card-val" id="termMatzVal" style="width:60px;">25y</span>
                         </div>
-                        <div class="card-sub">Use Advanced to set different terms per track. Click again to revert to
+                        <div class="card-sub" data-t="advancedTermHint">Use Advanced to set different terms per track. Click again to revert to
                             single term.</div>
                     </div>
 
@@ -243,12 +243,12 @@
                 </div>
 
                 <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;">
-                    <div class="card-row"><span class="card-lbl">Simulation Timeframe <span class="lock-toggle locked"
-                                id="lockHorBtn" onclick="toggleLock('hor')">Locked</span></span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="simTimeframe">Simulation Timeframe <span class="lock-toggle locked"
+                                id="lockHorBtn" onclick="toggleLock('hor')" data-t="locked">Locked</span></span> <span class="card-val"
                             id="dHor">Auto</span></div>
                     <div class="pills" id="pHor">
-                        <div class="pill active" onclick="tglHor(true)">Auto</div>
-                        <div class="pill" onclick="tglHor(false)">Custom</div>
+                        <div class="pill active" onclick="tglHor(true)" data-t="auto">Auto</div>
+                        <div class="pill" onclick="tglHor(false)" data-t="custom">Custom</div>
                     </div>
                     <div class="input-box" id="bHor">
                         <div class="range-wrapper">
@@ -259,15 +259,15 @@
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:end; margin-top:15px;">
-                    <div class="section-title" style="margin:0">Market Variables</div>
+                    <div class="section-title" style="margin:0" data-t="assumptions">Market Variables</div>
                     <div class="pills" id="pGlobal">
-                        <div class="pill" onclick="setGlobalMode(true)">Hist</div>
-                        <div class="pill active" onclick="setGlobalMode(false)">Fixed</div>
+                        <div class="pill" onclick="setGlobalMode(true)" data-t="hist">Hist</div>
+                        <div class="pill active" onclick="setGlobalMode(false)" data-t="fixed">Fixed</div>
                     </div>
                 </div>
 
                 <div class="scenario-box" id="scenBox">
-                    <div
+                    <div data-t="quickScenarios"
                         style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:4px;">
                         QUICK SCENARIOS</div>
                     <div class="scenario-grid">
@@ -282,8 +282,8 @@
                     <div class="card-row"><span class="card-lbl" data-t="appreciation">Home Appreciation</span> <span class="card-val"
                             id="vApp">Fixed</span></div>
                     <div class="pills" id="pApp">
-                        <div class="pill" onclick="tgl('App',true)">Hist</div>
-                        <div class="pill active" onclick="tgl('App',false)">Fixed</div>
+                        <div class="pill" onclick="tgl('App',true)" data-t="hist">Hist</div>
+                        <div class="pill active" onclick="tgl('App',false)" data-t="fixed">Fixed</div>
                     </div>
                     <div class="input-box show" id="bApp"><input type="range" id="sApp" min="0" max="10" step="0.5"
                             value="4" oninput="runSim()"></div>
@@ -292,49 +292,49 @@
                         <div class="card-row"><span class="card-lbl" data-t="rentYield">Rental Yield</span> <span class="card-val"
                                 id="vYld">Fixed</span></div>
                         <div class="pills" id="pYld">
-                            <div class="pill" onclick="tgl('Yld',true)">Hist</div>
-                            <div class="pill active" onclick="tgl('Yld',false)">Fixed</div>
+                            <div class="pill" onclick="tgl('Yld',true)" data-t="hist">Hist</div>
+                            <div class="pill active" onclick="tgl('Yld',false)" data-t="fixed">Fixed</div>
                         </div>
                         <div class="input-box show" id="bYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1"
                                 value="3.0" oninput="runSim()"></div>
                         <label class="chk-row" style="margin-top:10px;">
                             <input type="checkbox" id="cRentTax" checked onchange="runSim()">
-                            <span>Rent Tax (10% > 5.6k)</span>
+                            <span data-t="rentTax">Rent Tax (10% > 5.6k)</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl" data-t="spReturn">S>S&P 500 Return<P 500 Return</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="spReturn">S&P 500 Return</span> <span class="card-val"
                             id="vSP">Fixed</span></div>
                     <div class="pills" id="pSP">
-                        <div class="pill" onclick="tgl('SP',true)">Hist</div>
-                        <div class="pill active" onclick="tgl('SP',false)">Fixed</div>
+                        <div class="pill" onclick="tgl('SP',true)" data-t="hist">Hist</div>
+                        <div class="pill active" onclick="tgl('SP',false)" data-t="fixed">Fixed</div>
                     </div>
                     <div class="input-box show" id="bSP"><input type="range" id="sSP" min="4" max="15" step="0.5"
                             value="9" oninput="runSim()"></div>
 
                     <div class="fees-box">
                         <div class="card-row" style="margin-bottom:2px;"><span class="card-lbl"
-                                style="font-weight:400; font-size:0.7rem">Annual Mgmt Fee</span><span class="card-val"
+                                style="font-weight:400; font-size:0.7rem" data-t="annualMgmtFee">Annual Mgmt Fee</span><span class="card-val"
                                 style="font-size:0.7rem" id="vMer">0%</span></div>
                         <input type="range" id="rMer" min="0" max="1.0" step="0.05" value="0.15" oninput="runSim()">
                         <div class="card-row" style="margin-bottom:2px; margin-top:6px;"><span class="card-lbl"
-                                style="font-weight:400; font-size:0.7rem">Deposit Fee</span><span class="card-val"
+                                style="font-weight:400; font-size:0.7rem" data-t="depositFee">Deposit Fee</span><span class="card-val"
                                 style="font-size:0.7rem" id="vTrade">0%</span></div>
                         <input type="range" id="rTrade" min="0" max="1.0" step="0.05" value="0.1" oninput="runSim()">
                         <div class="card-row" style="margin-top:12px;">
-                            <span class="card-lbl">Rent Surplus</span>
+                            <span class="card-lbl" data-t="rentSurplus">Rent Surplus</span>
                             <div style="display:flex; flex-direction:column; width:60%;">
                                 <div class="pills" id="surplusPills" style="width:100%;">
                                     <div class="pill" id="surplusInvest" onclick="setSurplusMode('invest')"
-                                        style="flex:1; text-align:center;">Reinvest</div>
+                                        style="flex:1; text-align:center;" data-t="reinvest">Reinvest</div>
                                     <div class="pill" id="surplusConsume" onclick="setSurplusMode('consume')"
-                                        style="flex:1; text-align:center;">Pocket</div>
+                                        style="flex:1; text-align:center;" data-t="pocket">Pocket</div>
                                     <div class="pill active" id="surplusMatch" onclick="setSurplusMode('match')"
-                                        style="flex:1; text-align:center;">Match</div>
+                                        style="flex:1; text-align:center;" data-t="match">Match</div>
                                 </div>
-                                <div id="surplusDescText" class="card-sub"
+                                <div id="surplusDescText" class="card-sub" data-t="surplusDescMatch"
                                     style="margin-top:4px; text-align:right; font-size:0.65rem;">Sells S&P 500 to match
                                     rent surplus cashflow</div>
                             </div>
@@ -346,12 +346,12 @@
                     <div class="card-row"><span class="card-lbl" data-t="interest">Interest (Base)</span> <span class="card-val"
                             id="vInt">Fixed</span></div>
                     <div class="pills" id="pInt">
-                        <div class="pill" onclick="tgl('Int',true)">Hist</div>
-                        <div class="pill active" onclick="tgl('Int',false)">Fixed</div>
+                        <div class="pill" onclick="tgl('Int',true)" data-t="hist">Hist</div>
+                        <div class="pill active" onclick="tgl('Int',false)" data-t="fixed">Fixed</div>
                     </div>
                     <div class="input-box show" id="bInt">
                         <input type="range" id="sInt" min="1" max="8" step="0.25" value="4.25" oninput="syncPrime()">
-                        <div style="font-size:0.65rem; color:#64748b; margin-top:4px;">*Affects Prime Rate (BoI + 1.5%)
+                        <div style="font-size:0.65rem; color:#64748b; margin-top:4px;" data-t="affectsPrime">*Affects Prime Rate (BoI + 1.5%)
                         </div>
                     </div>
                 </div>
@@ -360,8 +360,8 @@
                     <div class="card-row"><span class="card-lbl" data-t="inflation">Inflation (CPI)</span> <span class="card-val"
                             id="vInf">Fixed</span></div>
                     <div class="pills" id="pInf">
-                        <div class="pill" onclick="tgl('Inf',true)">Hist</div>
-                        <div class="pill active" onclick="tgl('Inf',false)">Fixed</div>
+                        <div class="pill" onclick="tgl('Inf',true)" data-t="hist">Hist</div>
+                        <div class="pill active" onclick="tgl('Inf',false)" data-t="fixed">Fixed</div>
                     </div>
                     <div class="input-box show" id="bInf">
                         <input type="range" id="sInf" min="0" max="6" step="0.5" value="2.5"
@@ -379,38 +379,42 @@
                     <div class="card-row"><span class="card-lbl" data-t="discount">Purchase Discount</span> <span class="card-val"
                             id="vDiscount">1%</span></div>
                     <input type="range" id="rDiscount" min="-10" max="10" step="1" value="1" oninput="runSim()">
-                    <div class="card-sub">Below market price (negative = overpay)</div>
+                    <div class="card-sub" data-t="discountHint">Below market price (negative = overpay)</div>
 
                     <div class="card-row" style="margin-top:8px;"><span class="card-lbl" data-t="buyCost">Buying Friction</span> <span class="card-val"
                             id="vBuyCost">2.0%</span></div>
                     <input type="range" id="rBuyCost" min="0" max="15" step="0.5" value="2.0" oninput="runSim()">
-                    <div class="card-sub">Entry costs (legal/registration; no purchase tax/broker)</div>
+                    <div class="card-sub" data-t="buyCostHint">Entry costs (legal/registration; no purchase tax/broker)</div>
 
                     <div class="card-row" style="margin-top:8px;"><span class="card-lbl" data-t="maintenance">Maint. & Vacancy</span> <span
                             class="card-val" id="vMaint">8%</span></div>
                     <input type="range" id="rMaint" min="0" max="30" step="1" value="8" oninput="runSim()">
-                    <div class="card-sub">% of Gross Rent lost annually</div>
+                    <div class="card-sub" data-t="maintHint">% of Gross Rent lost annually</div>
 
                     <div class="card-row" style="margin-top:8px;"><span class="card-lbl" data-t="sellCost">Selling Friction</span> <span
                             class="card-val" id="vSellCost">2.0%</span></div>
                     <input type="range" id="rSellCost" min="0" max="10" step="0.5" value="2.0" oninput="runSim()">
-                    <div class="card-sub">Agent & Lawyer at Exit</div>
+                    <div class="card-sub" data-t="sellCostHint">Agent & Lawyer at Exit</div>
                 </div>
 
                 <div class="section-title" data-t="advancedConfig">Advanced Configuration</div>
                 <div class="control-card" style="border-left:3px solid #8b5cf6">
-                    <div class="card-row"><span class="card-lbl">Taxation Basis</span> <span class="card-val"
+                    <div class="card-row"><span class="card-lbl" data-t="taxBasis">Taxation Basis</span> <span class="card-val"
                             id="vTaxMode">Real</span></div>
                     <div class="select-list">
                         <div class="select-item active" id="txReal" onclick="setTaxMode('real')">
-                            <div class="radio"></div><span class="item-text">Real (vs Inflation)</span>
+                            <div class="radio"></div><span class="item-text" data-t="realVsInflation">Real (vs Inflation)</span>
                         </div>
                         <div class="select-item" id="txForex" onclick="setTaxMode('forex')">
-                            <div class="radio"></div><span class="item-text">Nominal (vs USD)</span>
+                            <div class="radio"></div><span class="item-text" data-t="nominalVsUsd">Nominal (vs USD)</span>
                         </div>
                     </div>
-                    <label class="chk-row" style="margin-top:8px;"><input type="checkbox" id="cTax" checked
-                            onchange="runSim()"> Apply 25% Tax on Profit</label>
+                    <label class="chk-row" style="margin-top:8px;"><input type="checkbox" id="cTaxSP" checked
+                            onchange="runSim()"> <span data-t="applyTaxSP">S&P Path: 25% Capital Gains</span></label>
+                    <label class="chk-row"><input type="checkbox" id="cPurchaseTax" checked
+                            onchange="runSim()"> <span data-t="includePurchaseTax">Include Purchase Tax</span></label>
+                    <label class="chk-row"><input type="checkbox" id="cMasShevach"
+                            onchange="runSim()"> <span data-t="applyMasShevach">Apply Mas Shevach</span></label>
                 </div>
                 <br><br>
             </div>
@@ -458,6 +462,10 @@
                     <span class="inline-value" id="valMortgage">1.2M</span>
                 </div>
                 <div class="inline-spec">
+                    <span class="inline-label" data-t="purchaseTax">Purchase Tax</span>
+                    <span class="inline-value" id="valPurchaseTax">0</span>
+                </div>
+                <div class="inline-spec">
                     <span class="inline-label" data-t="leverage">Leverage</span>
                     <span class="inline-value" id="valLev">x3.3</span>
                     <div class="lev-bar-bg compact">
@@ -465,26 +473,34 @@
                     </div>
                 </div>
                 <div class="inline-spec">
-                    <span class="inline-label">Years to +CF</span>
+                    <span class="inline-label" data-t="yearsToPosCF">Years to +CF</span>
                     <span class="inline-value" id="valPosCF">--</span>
                 </div>
                 <div class="inline-spec">
-                    <span class="inline-label">Money Invested</span>
+                    <span class="inline-label" data-t="moneyInvested">Money Invested</span>
                     <span class="inline-value" id="kInvested">0</span>
+                </div>
+                <div class="inline-spec">
+                    <span class="inline-label" data-t="masShevachPaid">Mas Shevach</span>
+                    <span class="inline-value" id="kMasShevach">0</span>
+                </div>
+                <div class="inline-spec">
+                    <span class="inline-label" data-t="capGainsPaid">Capital Gains Tax</span>
+                    <span class="inline-value" id="kCapGains">0</span>
                 </div>
             </div>
 
-            <div class="charts-warning" id="chartsWarn" style="display:none;">Mix must total 100% of mortgage to view
+            <div class="charts-warning" id="chartsWarn" style="display:none;" data-t="mixWarning">Mix must total 100% of mortgage to view
                 charts</div>
             <div class="charts-container" id="chartsContainer">
                 <div class="chart-wrapper">
-                    <div class="chart-title">Net Wealth Accumulation</div>
+                    <div class="chart-title" data-t="wealthChart">Net Wealth Accumulation</div>
                     <div style="position:relative; flex:1;">
                         <canvas id="wealthChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-wrapper">
-                    <div class="chart-title">Monthly Cashflow (Revenue vs Cost)</div>
+                    <div class="chart-title" data-t="flowChart">Monthly Cashflow (Revenue vs Cost)</div>
                     <div style="position:relative; flex:1;">
                         <canvas id="flowChart"></canvas>
                     </div>

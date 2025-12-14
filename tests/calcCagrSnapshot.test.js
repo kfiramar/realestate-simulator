@@ -24,7 +24,7 @@ describe('calcCAGR deterministic snapshot', () => {
         document.getElementById('cRentTax').checked = false;
 
         // Disable tax
-        document.getElementById('cTax').checked = false;
+        document.getElementById('cTaxSP').checked = false;
 
         // Fixed returns: RE apprec 4%, SP 8%, Int 4%, CPI 2%, Yield 3% (ignored by maint=0)
         document.getElementById('sApp').value = 4;

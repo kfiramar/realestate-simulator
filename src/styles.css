@@ -9,12 +9,7 @@
     --text: #0f172a;
 }
 
-/* RTL Support */
-[dir="rtl"] { direction: rtl; text-align: right; }
-[dir="rtl"] .sidebar { border-right: none; border-left: 1px solid var(--border); }
-[dir="rtl"] .card-row { flex-direction: row-reverse; }
-[dir="rtl"] .mix-row { flex-direction: row-reverse; }
-[dir="rtl"] .kpi-box { text-align: center; }
+/* RTL Support - handled at end of file */
 
 body.loading { opacity: 0; }
 body { transition: opacity 0.1s; }
@@ -1099,3 +1094,39 @@ body.dark .meter-seg[style*="#fca5a5"] { background: #fca5a5 !important; }
 /* KPI borders */
 body.dark .kpi-re, body.dark .kpi-re-border { border-bottom-color: var(--success) !important; }
 body.dark .kpi-sp, body.dark .kpi-sp-border { border-bottom-color: var(--primary) !important; }
+
+/* RTL Override - must be at end */
+body.rtl .sidebar { border-right: none; border-left: 1px solid var(--border); }
+body.rtl .sidebar-content { padding: 16px 16px 16px 8px; }
+body.rtl .section-title { text-align: right; }
+body.rtl .card-sub { text-align: right; }
+body.rtl .rate-toggle-btn { margin-left: 0; margin-right: auto; }
+body.rtl .mix-rate-box { justify-content: flex-start; }
+body.rtl .lock-toggle { margin-right: 6px; }
+body.rtl [id^="term"][id$="Val"] { white-space: nowrap; width: 60px !important; direction: ltr; text-align: left !important; }
+body.rtl .layout { flex-direction: row-reverse; }
+body.rtl input[type="range"] { direction: rtl; }
+
+.mix-alloc-row { flex-direction: row-reverse; }
+body.rtl .card-lbl { text-align: right; }
+body.rtl .mix-label { text-align: right; }
+body.rtl .chart-title { text-align: right; }
+body.rtl .equity-box { text-align: right; }
+body.rtl .inline-spec { text-align: right; }
+body.rtl header h1 { text-align: right; }
+body.rtl .card-row { direction: rtl; }
+body.rtl .card-row > * { direction: ltr; }
+body.rtl .mix-row { direction: rtl; }
+body.rtl .mix-row > * { direction: ltr; }
+body.rtl .pills { direction: rtl; }
+body.rtl .pills > * { direction: ltr; }
+body.rtl .scenario-grid { direction: rtl; }
+body.rtl .scenario-grid > * { direction: ltr; }
+body.rtl .inline-summary { direction: rtl; }
+body.rtl .inline-summary > * { direction: ltr; }
+body.rtl .prepay-header { direction: rtl; }
+body.rtl .prepay-header > * { direction: ltr; }
+body.rtl .select-item { direction: rtl; }
+body.rtl .select-item > * { direction: ltr; }
+body.rtl .chk-row { direction: rtl; }
+body.rtl .chk-row > * { direction: ltr; }

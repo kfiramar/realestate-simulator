@@ -33,7 +33,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.06, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.03 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged', repayMethod: 'equalPrincipal',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -72,7 +72,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -96,7 +96,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.03, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: true, useRent: false, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -120,7 +120,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.03, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: true, useRent: false, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -145,7 +145,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.03, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: true, useRent: false, mode: 'nominal' },
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -173,7 +173,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -196,7 +196,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.02 }, // Low rent = deficit
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -221,7 +221,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.03, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.05, boi: 0.05, rentYield: 0.10 }, // 5% CPI
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -250,7 +250,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: true }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -272,7 +272,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.10 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: true }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -295,7 +295,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.03 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -324,7 +324,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.00, cpi: 0.00, boi: 0.05, rentYield: 0.03 }, // 3% yield, no appreciation
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -351,7 +351,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.08 }, // High rent = surplus
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'invest', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },
@@ -371,7 +371,7 @@ describe('Mathematical Verification', () => {
                 rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
                 market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.08 },
                 fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-                tax: { use: false, useRent: false, mode: 'real' },
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
                 config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
                     history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
                 },

@@ -29,9 +29,9 @@ const T = {
         interest: 'Interest (Base)',
         rentYield: 'Rental Yield',
         scenario: 'Scenario',
-        base: 'Base',
-        optimistic: 'Optimistic',
-        pessimistic: 'Pessimistic',
+        base: '😐 Base',
+        optimistic: '🚀 Bull',
+        pessimistic: '🐻 Bear',
         costs: 'Hidden Costs & Friction',
         buyCost: 'Buying Friction',
         sellCost: 'Selling Friction',
@@ -60,7 +60,7 @@ const T = {
         value: '₪ Value',
         roi: '% ROI',
         repayMethod: 'Repayment Method',
-        spitzer: 'Spitzer (Equal PMT)',
+        spitzer: 'Spitzer',
         equalPrincipal: 'Equal Principal',
         mortgageTerm: 'Mortgage Term',
         simTimeframe: 'Simulation Timeframe',
@@ -73,13 +73,84 @@ const T = {
         exposed: 'Exposed (USD)',
         rentSurplus: 'Rent Surplus',
         reinvest: 'Reinvest',
-        match: 'Match Rent',
+        pocket: 'Pocket',
+        match: 'Match',
         reAnnualRoi: 'RE Annual ROI',
         spAnnualRoi: 'S&P Annual ROI',
         roiDiff: 'ROI Difference',
         reNet: 'Real Estate Net',
         spNet: 'S&P 500 Net',
-        rentIncome: 'Rent Income'
+        rentIncome: 'Rent Income',
+        masShevachPaid: 'Mas Shevach',
+        capGainsPaid: 'Capital Gains Tax',
+        mixAllocation: 'Mix Allocation',
+        editRates: 'Edit Rates',
+        earlyRepayments: 'Early Repayments',
+        addPrepayment: '+ Add Prepayment',
+        advanced: 'Advanced',
+        advancedTermHint: 'Use Advanced to set different terms per track. Click again to revert to single term.',
+        riskTier: 'Risk Tier',
+        auto: 'Auto',
+        custom: 'Custom',
+        hist: 'Hist',
+        fixed: 'Fixed',
+        quickScenarios: 'QUICK SCENARIOS',
+        rentTax: 'Rent Tax (10% > 5.6k)',
+        annualMgmtFee: 'Annual Mgmt Fee',
+        depositFee: 'Deposit Fee',
+        surplusDescInvest: 'Buy S&P (reinvests rent surplus into S&P 500)',
+        surplusDescConsume: 'Pocket (keep rent surplus as cash)',
+        surplusDescMatch: 'Sells S&P 500 to match rent surplus cashflow',
+        affectsPrime: '*Affects Prime Rate (BoI + 1.5%)',
+        discountHint: 'Below market price (negative = overpay)',
+        buyCostHint: 'Entry costs (legal/registration; no purchase tax/broker)',
+        maintHint: '% of Gross Rent lost annually',
+        sellCostHint: 'Agent & Lawyer at Exit',
+        taxBasis: 'Taxation Basis',
+        realVsInflation: 'Real (vs Inflation)',
+        nominalVsUsd: 'Nominal (vs USD)',
+        applyTaxSP: 'Capital Gains Tax (25%)',
+        yearsToPosCF: 'Years to +CF',
+        moneyInvested: 'Money Invested',
+        mixWarning: 'Mix must total 100% of mortgage to view charts',
+        wealthChart: 'Net Wealth Accumulation',
+        flowChart: 'Monthly Cashflow (Revenue vs Cost)',
+        free: 'Free',
+        locked: 'Locked',
+        tamheelDefault: '⚖️ Balanced',
+        tamheelArbitrage: '📉 Rate-Cuts',
+        tamheelShield: '🛡️ Stability',
+        tamheelInvestor: '📊 CPI Mix',
+        cpiSuffix: '+ CPI',
+        yrSuffix: 'Yr',
+        ySuffix: 'Y',
+        chartRealEstate: 'Real Estate',
+        chartSP500: 'S&P 500',
+        chartREAfterTax: 'RE After Tax',
+        chartSPAfterTax: 'S&P After Tax',
+        chartRETax: 'RE Tax',
+        chartSPTax: 'S&P Tax',
+        afterTax: 'After Tax',
+        taxPaid: 'Tax',
+        taxDeduction: 'Tax',
+        chartReinvested: 'Reinvested Surplus',
+        chartNetCashflow: 'Net Cashflow',
+        chartRentMinusInt: 'Rent minus Interest',
+        chartRevenue: 'Revenue (Rent)',
+        chartInterest: 'Interest (Cost)',
+        chartPrincipal: 'Principal (Equity)',
+        chartYAxisROI: 'Cumulative ROI (%)',
+        chartYAxisWealth: 'Net Wealth (₪)',
+        chartYAxisMonthly: 'Monthly ₪',
+        chartTotalMortgage: 'Total Mortgage',
+        tooltipRentMinusInt: 'Rent - Interest',
+        tooltipInterest: 'Interest',
+        tooltipPrincipal: 'Principal',
+        tooltipRent: 'Rent',
+        tooltipNet: 'Net',
+        purchaseTax: 'Purchase Tax',
+        includePurchaseTax: 'Apply Mas Rechisha',
+        applyMasShevach: 'Apply Mas Shevach (CPI-adjusted)'
     },
     he: {
         title: 'בריקפוליו',
@@ -107,9 +178,9 @@ const T = {
         interest: 'ריבית (בסיס)',
         rentYield: 'תשואת שכירות',
         scenario: 'תרחיש',
-        base: 'בסיס',
-        optimistic: 'אופטימי',
-        pessimistic: 'פסימי',
+        base: '😐 בסיס',
+        optimistic: '🚀 שורי',
+        pessimistic: '🐻 דובי',
         costs: 'עלויות נסתרות',
         buyCost: 'עלות רכישה',
         sellCost: 'עלות מכירה',
@@ -138,7 +209,7 @@ const T = {
         value: '₪ ערך',
         roi: '% תשואה',
         repayMethod: 'שיטת החזר',
-        spitzer: 'שפיצר (תשלום קבוע)',
+        spitzer: 'שפיצר',
         equalPrincipal: 'קרן שווה',
         mortgageTerm: 'תקופת משכנתא',
         simTimeframe: 'אופק סימולציה',
@@ -151,13 +222,84 @@ const T = {
         exposed: 'חשוף ($)',
         rentSurplus: 'עודף שכירות',
         reinvest: 'השקעה מחדש',
-        match: 'התאמה לשכירות',
+        pocket: 'כיס',
+        match: 'התאמה',
         reAnnualRoi: 'תשואה שנתית נדל"ן',
         spAnnualRoi: 'תשואה שנתית S&P',
         roiDiff: 'הפרש תשואות',
         reNet: 'נדל"ן נטו',
         spNet: 'S&P 500 נטו',
-        rentIncome: 'הכנסה משכירות'
+        rentIncome: 'הכנסה משכירות',
+        masShevachPaid: 'מס שבח',
+        capGainsPaid: 'מס רווחי הון',
+        mixAllocation: 'הקצאת תמהיל',
+        editRates: 'עריכת ריביות',
+        earlyRepayments: 'פירעונות מוקדמים',
+        addPrepayment: '+ הוסף פירעון',
+        advanced: 'מתקדם',
+        advancedTermHint: 'השתמש במתקדם לקביעת תקופות שונות לכל מסלול. לחץ שוב לחזרה לתקופה אחידה.',
+        riskTier: 'דרגת סיכון',
+        auto: 'אוטומטי',
+        custom: 'מותאם',
+        hist: 'היסטורי',
+        fixed: 'קבוע',
+        quickScenarios: 'תרחישים מהירים',
+        rentTax: 'מס שכירות (10% > 5.6k)',
+        annualMgmtFee: 'דמי ניהול שנתיים',
+        depositFee: 'עמלת הפקדה',
+        surplusDescInvest: 'קנה S&P (משקיע עודף שכירות ב-S&P 500)',
+        surplusDescConsume: 'כיס (שמור עודף שכירות כמזומן)',
+        surplusDescMatch: 'מוכר S&P 500 להתאמה לעודף שכירות',
+        affectsPrime: '*משפיע על ריבית פריים (בנק ישראל + 1.5%)',
+        discountHint: 'מתחת למחיר שוק (שלילי = תשלום יתר)',
+        buyCostHint: 'עלויות כניסה (עו"ד/רישום; ללא מס רכישה/תיווך)',
+        maintHint: '% מהשכירות ברוטו שאובד שנתית',
+        sellCostHint: 'מתווך ועו"ד ביציאה',
+        taxBasis: 'בסיס מיסוי',
+        realVsInflation: 'ריאלי (מול אינפלציה)',
+        nominalVsUsd: 'נומינלי (מול דולר)',
+        applyTaxSP: 'מס רווחי הון (25%)',
+        yearsToPosCF: 'שנים לתזרים חיובי',
+        moneyInvested: 'כסף שהושקע',
+        mixWarning: 'התמהיל חייב להסתכם ב-100% לצפייה בגרפים',
+        wealthChart: 'צבירת הון נטו',
+        flowChart: 'תזרים חודשי (הכנסות מול הוצאות)',
+        free: 'חופשי',
+        locked: 'נעול',
+        tamheelDefault: '⚖️ מאוזן',
+        tamheelArbitrage: '📉 הורדת ריבית',
+        tamheelShield: '🛡️ יציבות',
+        tamheelInvestor: '📊 צמוד מדד',
+        cpiSuffix: '+ מדד',
+        yrSuffix: 'שנה',
+        ySuffix: 'שנה',
+        chartRealEstate: 'נדל"ן',
+        chartSP500: 'S&P 500',
+        chartREAfterTax: 'נדל"ן אחרי מס',
+        chartSPAfterTax: 'S&P אחרי מס',
+        chartRETax: 'מס נדל"ן',
+        chartSPTax: 'מס S&P',
+        afterTax: 'אחרי מס',
+        taxPaid: 'מס',
+        taxDeduction: 'מס',
+        chartReinvested: 'עודף מושקע מחדש',
+        chartNetCashflow: 'תזרים נטו',
+        chartRentMinusInt: 'שכירות פחות ריבית',
+        chartRevenue: 'הכנסה (שכירות)',
+        chartInterest: 'ריבית (עלות)',
+        chartPrincipal: 'קרן (הון)',
+        chartYAxisROI: 'תשואה מצטברת (%)',
+        chartYAxisWealth: 'הון נטו (₪)',
+        chartYAxisMonthly: '₪ חודשי',
+        chartTotalMortgage: 'סה"כ משכנתא',
+        tooltipRentMinusInt: 'שכירות - ריבית',
+        tooltipInterest: 'ריבית',
+        tooltipPrincipal: 'קרן',
+        tooltipRent: 'שכירות',
+        tooltipNet: 'נטו',
+        purchaseTax: 'מס רכישה',
+        includePurchaseTax: 'החל מס רכישה',
+        applyMasShevach: 'החל מס שבח (צמוד מדד)'
     }
 };
 
@@ -168,18 +310,39 @@ function toggleLang() {
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('rtl', lang === 'he');
     applyTranslations();
 }
 
 function applyTranslations() {
     document.querySelectorAll('[data-t]').forEach(el => {
-        el.textContent = t(el.dataset.t);
+        if (el.tagName === 'OPTION') {
+            el.textContent = t(el.dataset.t);
+        } else if (el.children.length === 0 || el.classList.contains('card-lbl')) {
+            // For elements with no children or card-lbl (which may have lock toggle child)
+            const lockChild = el.querySelector('.lock-toggle');
+            if (lockChild) {
+                // Preserve the lock toggle, only update text before it
+                const textNode = el.firstChild;
+                if (textNode && textNode.nodeType === 3) {
+                    textNode.textContent = t(el.dataset.t);
+                }
+            } else {
+                el.textContent = t(el.dataset.t);
+            }
+        } else {
+            el.textContent = t(el.dataset.t);
+        }
     });
     document.querySelectorAll('[data-t-placeholder]').forEach(el => {
         el.placeholder = t(el.dataset.tPlaceholder);
     });
-    // Update chart labels on language change
-    if (wealthChart || flowChart) runSim();
+    // Update dynamic UI elements
+    updateLockUI();
+    setSurplusMode(surplusMode, { skipSim: true });
+    updateRateLabels();
+    // Update all values on language change
+    runSim();
 }
 
 const SCENARIOS = {
@@ -190,36 +353,49 @@ const SCENARIOS = {
     bull: { sp: 10.0, app: 7.0, int: 3.0, inf: 2.0, yld: 3.0, drift: -0.5 }
 };
 
+// Common Israeli mortgage mixes (תמהיל משכנתא) - Dec 2025
+// All comply with BoI rules: ≥33% fixed, ≤66% variable
 const TAMHEEL_PROFILES = {
-    // Mix percentages only. Rates are driven by Credit Score + Base Rate.
-    arbitrage: { p: 45, k: 55, z: 0, m: 0, mt: 0 },
-    shield: { p: 35, k: 65, z: 0, m: 0, mt: 0 },
-    investor: { p: 33, k: 27, z: 40, m: 0, mt: 0 },
-    defaultEven: { p: 33, k: 33, z: 34, m: 0, mt: 0 }
+    // Mix 1: "2025 Balanced Base" - most common modern recommendation
+    // 30% Prime + 40% KLATZ + 30% MALATZ - balanced exposure
+    defaultEven: { p: 30, k: 40, z: 0, m: 30, mt: 0, tP: 30, tK: 20, tZ: 20, tM: 30, tMt: 15 },
+    
+    // Mix 2: "High Stability" - risk-averse, payment predictability
+    // 25% Prime + 50% KLATZ + 25% MALATZ
+    shield: { p: 25, k: 50, z: 0, m: 25, mt: 0, tP: 30, tK: 25, tZ: 25, tM: 30, tMt: 20 },
+    
+    // Mix 3: "Classic Thirds with CPI" - lower initial payment, CPI risk
+    // 33% Prime + 34% KLATZ + 33% Variable CPI-linked
+    investor: { p: 33, k: 34, z: 0, m: 0, mt: 33, tP: 30, tK: 20, tZ: 20, tM: 30, tMt: 20 },
+    
+    // Mix 4: "Rate-Cuts Thesis" - max flexibility for refinancing
+    // 37% Prime + 33% KALATZ + 30% MALATZ
+    arbitrage: { p: 37, k: 33, z: 0, m: 30, mt: 0, tP: 30, tK: 12, tZ: 12, tM: 30, tMt: 10 }
 };
 
 // Base Spreads (Anchors) relative to BoI rate
-// Oct 2025 BoI averages: Prime 5.36%, Kalatz 4.81%, Katz 3.20%, Matz 3.44%, Malatz 4.76%
-// BoI rate: 4.25%, Prime: 5.75%
+// Dec 2025 market data: BoI 4.25%, Prime 5.75% (BoI+1.5%), 5Y gov yield ~3.75%
+// Market ranges (LTV 60-75%): Prime 4.70-5.00%, MALATZ 4.45-4.75%, KLATZ 4.60-4.80%
 // CPI-Linked: Katz, Matz | Non-Linked: Prime, Kalatz, Malatz
 const ANCHORS = {
-    prime: 1.50,    // Prime = BoI + 1.5% (fixed by law), then subtract discount
-    kalats: 0.56,   // Fixed, Non-Linked: ~4.81% avg
-    malatz: 0.51,   // Var 5yr, Non-Linked: ~4.76% avg
-    katz: -1.05,    // Fixed, CPI-Linked: ~3.20% real avg
-    matz: -0.81     // Var 5yr, CPI-Linked: ~3.44% real avg
+    prime: 1.50,    // Prime = BoI + 1.5% (fixed by law), discount applied via risk
+    kalats: 0.60,   // Fixed, Non-Linked (KLATZ): target 4.60-4.70% for top tier
+    malatz: 0.51,   // Var 5yr, Non-Linked (MALATZ): ~5Y gov 3.75% + spread
+    katz: -1.30,    // Fixed, CPI-Linked: ~2.70% real rate for top tier
+    matz: -1.05     // Var 5yr, CPI-Linked: ~2.95% real rate for top tier
 };
 
 // Risk Premiums by credit tier (added to BoI + Anchor)
-// Banks price P-0.32% to P-0.95%; ~0.10-0.60% swing by credit tier
+// Prime discount ranges: P-0.95 (elite) to P-0.32 (good) to P+0.40 (poor)
+// Market avg ~P-0.39, so tier C/D is "market average"
 const CREDIT_MATRIX = {
-    A: { range: [950, 1000], riskP: -0.95, riskK: -0.20, riskM: -0.15, riskZ: -0.15, maxLTV: 0.75 }, // Elite: P-0.95
-    B: { range: [900, 949], riskP: -0.60, riskK: -0.10, riskM: -0.05, riskZ: -0.05, maxLTV: 0.75 },  // Premium: P-0.60
-    C: { range: [850, 899], riskP: -0.40, riskK: 0.00, riskM: 0.05, riskZ: 0.05, maxLTV: 0.75 },     // Very Good: P-0.40
-    D: { range: [800, 849], riskP: -0.32, riskK: 0.10, riskM: 0.15, riskZ: 0.15, maxLTV: 0.75 },     // Good: P-0.32
-    E: { range: [750, 799], riskP: -0.10, riskK: 0.30, riskM: 0.30, riskZ: 0.30, maxLTV: 0.70 },     // Average
-    F: { range: [700, 749], riskP: 0.15, riskK: 0.50, riskM: 0.45, riskZ: 0.45, maxLTV: 0.65 },      // Below Avg
-    G: { range: [660, 699], riskP: 0.40, riskK: 0.80, riskM: 0.70, riskZ: 0.70, maxLTV: 0.60 },      // Poor
+    A: { range: [950, 1000], riskP: -0.95, riskK: -0.25, riskM: -0.20, riskZ: -0.20, maxLTV: 0.75 }, // Elite: P-0.95 → 4.80%
+    B: { range: [900, 949], riskP: -0.80, riskK: -0.15, riskM: -0.10, riskZ: -0.10, maxLTV: 0.75 },  // Strong: P-0.80 → 4.95%
+    C: { range: [850, 899], riskP: -0.60, riskK: -0.05, riskM: 0.00, riskZ: 0.00, maxLTV: 0.75 },    // Good: P-0.60 → 5.15%
+    D: { range: [800, 849], riskP: -0.40, riskK: 0.05, riskM: 0.10, riskZ: 0.10, maxLTV: 0.75 },     // OK: P-0.40 → 5.35%
+    E: { range: [750, 799], riskP: -0.20, riskK: 0.20, riskM: 0.25, riskZ: 0.25, maxLTV: 0.70 },     // Weak: P-0.20 → 5.55%
+    F: { range: [700, 749], riskP: 0.00, riskK: 0.40, riskM: 0.40, riskZ: 0.40, maxLTV: 0.65 },      // Bad: P+0.00 → 5.75%
+    G: { range: [660, 699], riskP: 0.25, riskK: 0.65, riskM: 0.60, riskZ: 0.60, maxLTV: 0.60 },      // Poor
     H: { range: [0, 659], riskP: null, riskK: null, riskM: null, riskZ: null, maxLTV: 0 }            // Reject
 };
 
@@ -293,6 +469,7 @@ function applyScenario(type, opts = {}) {
     document.getElementById('scenBull').classList.toggle('active', type === 'bull');
 
     refreshRatesForProfile();
+    updateRateLabels();
     updateCreditUI();
     applyLtvCaps();
     updMeter();
@@ -306,6 +483,17 @@ function applyTamheel(type) {
     document.getElementById('pctKatz').value = t.z;
     document.getElementById('pctMalatz').value = t.m || 0;
     document.getElementById('pctMatz').value = t.mt || 0;
+    // Set term years per track
+    document.getElementById('termPrime').value = t.tP;
+    document.getElementById('termKalats').value = t.tK;
+    document.getElementById('termKatz').value = t.tZ;
+    document.getElementById('termMalatz').value = t.tM;
+    document.getElementById('termMatz').value = t.tMt;
+    ['termPrimeVal','termKalatsVal','termKatzVal','termMalatzVal','termMatzVal'].forEach((id, i) => {
+        document.getElementById(id).textContent = [t.tP, t.tK, t.tZ, t.tM, t.tMt][i] + 'y';
+    });
+    // Open advanced terms tab
+    if (!advancedTermMode) toggleAdvancedTerms();
     checkMix();
 }
 
@@ -383,6 +571,7 @@ function setCreditScore(v) {
     updateCreditUI();
     applyLtvCaps();
     refreshRatesForProfile();
+    updateRateLabels();
     runSim();
 }
 
@@ -408,7 +597,7 @@ function updateLockUI() {
     const setBtn = (id, locked) => {
         const el = document.getElementById(id);
         el.classList.toggle('locked', locked);
-        el.innerText = locked ? 'Locked' : 'Free';
+        el.innerText = locked ? t('locked') : t('free');
     };
     setBtn('lockDownBtn', lockDown);
     setBtn('lockTermBtn', lockTerm);
@@ -419,7 +608,7 @@ function updateLockUI() {
         if (lockDown) locks.push('Down');
         if (lockTerm) locks.push('Term');
         if (lockHor) locks.push('Horizon');
-        summaryEl.innerText = locks.length ? locks.join(' & ') : 'Free';
+        summaryEl.innerText = locks.length ? locks.join(' & ') : t('free');
     }
 }
 function toggleLock(target) {
@@ -454,7 +643,13 @@ function recommendMix() {
 
 function showTermVal(elId, v) {
     const el = document.getElementById(elId);
-    if (el) el.innerText = `${v}y`;
+    if (el) {
+        if (lang === 'he') {
+            el.innerHTML = '<span style="direction:ltr;display:inline-block">' + v + ' ' + t('ySuffix') + '</span>';
+        } else {
+            el.innerHTML = v + t('ySuffix');
+        }
+    }
 }
 
 function syncTrackTermsToMain() {
@@ -640,9 +835,9 @@ let rateEditMode = false;
 function toggleRateEdit() {
     rateEditMode = !rateEditMode;
     const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
-    tracks.forEach(t => {
-        const lbl = document.getElementById('lblRate' + t);
-        const inp = document.getElementById('rate' + t);
+    tracks.forEach(track => {
+        const lbl = document.getElementById('lblRate' + track);
+        const inp = document.getElementById('rate' + track);
         if (rateEditMode) {
             lbl.style.display = 'none';
             inp.classList.add('show');
@@ -650,7 +845,7 @@ function toggleRateEdit() {
             lbl.style.display = 'block';
             inp.classList.remove('show');
             // Sync label with input value
-            let suffix = (t === 'Katz' || t === 'Matz') ? '% + CPI' : '%';
+            let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
             lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
         }
     });
@@ -721,31 +916,31 @@ function getTrackInitialBalance(trackId) {
 function getTrackBalanceAtYear(trackId, year) {
     const initial = getTrackInitialBalance(trackId);
     if (initial <= 0 || year <= 0) return initial;
-    
+
     const rateMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
     const termMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
     const rateName = rateMap[trackId];
     const termName = termMap[trackId];
-    
+
     const rate = (parseFloat(document.getElementById('rate' + rateName)?.value) || 5) / 100;
-    const termYears = parseInt(document.getElementById('term' + termName)?.value) || 
+    const termYears = parseInt(document.getElementById('term' + termName)?.value) ||
                       parseInt(document.getElementById('rDur')?.value) || 25;
-    
+
     // Calculate remaining balance using amortization formula
     const monthlyRate = rate / 12;
     const totalMonths = termYears * 12;
     const paidMonths = year * 12;
-    
+
     if (monthlyRate === 0) {
         // Simple linear payoff
         return initial * (1 - paidMonths / totalMonths);
     }
-    
+
     // Remaining balance formula: P * [(1+r)^n - (1+r)^p] / [(1+r)^n - 1]
     const factor = Math.pow(1 + monthlyRate, totalMonths);
     const paidFactor = Math.pow(1 + monthlyRate, paidMonths);
     const remaining = initial * (factor - paidFactor) / (factor - 1);
-    
+
     return Math.max(0, remaining);
 }
 
@@ -753,14 +948,14 @@ function getRemainingForTrack(trackId, excludeId = null, atYear = null) {
     // Get balance at the specified year (or initial if no year)
     const p = excludeId !== null ? prepayments.find(x => x.id === excludeId) : null;
     const year = atYear !== null ? atYear : (p ? p.yr : 0);
-    
+
     const balanceAtYear = year > 0 ? getTrackBalanceAtYear(trackId, year) : getTrackInitialBalance(trackId);
-    
+
     // Subtract other prepayments on this track that happen before or at this year
     const used = prepayments
         .filter(pp => pp.track === trackId && pp.id !== excludeId && pp.yr <= year)
         .reduce((sum, pp) => sum + pp.amt, 0);
-    
+
     return Math.max(0, balanceAtYear - used);
 }
 
@@ -775,9 +970,9 @@ function getMaxPrepayForTrack(trackId, year, excludeId) {
 function updatePrepayment(id, field, value) {
     const p = prepayments.find(x => x.id === id);
     if (!p) return;
-    
+
     let needsRender = false;
-    
+
     if (field === 'yr') {
         const newYr = Math.max(1, Math.min(30, parseInt(value) || 1));
         if (newYr !== p.yr) {
@@ -813,7 +1008,7 @@ function updatePrepayment(id, field, value) {
         if (p.amt > max) p.amt = max;
         needsRender = true;
     }
-    
+
     if (needsRender) renderPrepayments();
     runSim();
 }
@@ -822,25 +1017,25 @@ function renderPrepayments() {
     const list = document.getElementById('prepayList');
     if (!list) return;
     const active = getActiveTracksForPrepay();
-    
+
     list.innerHTML = prepayments.map(p => {
         const trackValid = active.some(t => t.id === p.track);
         if (!trackValid && active.length > 0) p.track = active[0].id;
-        
+
         // Max is balance at year minus other prepayments (not including this one's current value)
         const balanceAtYear = getTrackBalanceAtYear(p.track, p.yr);
         const otherPrepays = prepayments
             .filter(pp => pp.track === p.track && pp.id !== p.id && pp.yr <= p.yr)
             .reduce((sum, pp) => sum + pp.amt, 0);
         const maxVal = Math.max(0, balanceAtYear - otherPrepays);
-        
+
         // Cap current amount if it exceeds max
         if (p.amt > maxVal) p.amt = maxVal;
-        
+
         const options = active.map(t => {
             return `<option value="${t.id}" ${p.track === t.id ? 'selected' : ''}>${t.name}</option>`;
         }).join('');
-        
+
         return `<div class="prepay-item">
             <select onchange="updatePrepayment(${p.id},'track',this.value)">${options}</select>
             <span class="prepay-label">₪</span>
@@ -876,9 +1071,9 @@ function setSurplusMode(m, opts = {}) {
     document.getElementById('surplusInvest').classList.toggle('active', m === 'invest');
     const descEl = document.getElementById('surplusDescText') || document.getElementById('surplusDesc');
     if (descEl) {
-        if (m === 'invest') descEl.innerText = "Buy S&P (reinvests rent surplus into S&P 500)";
-        else if (m === 'consume') descEl.innerText = "Keeps rent surplus as cash (Uninvested)";
-        else if (m === 'match') descEl.innerText = "Sells S&P 500 to match rent surplus cashflow";
+        if (m === 'invest') descEl.innerText = t('surplusDescInvest');
+        else if (m === 'consume') descEl.innerText = t('surplusDescConsume');
+        else if (m === 'match') descEl.innerText = t('surplusDescMatch');
     }
     if (!opts.skipSim) runSim();
 }
@@ -915,11 +1110,21 @@ function updateSweetSpots() {
     let curDown = parseInt(document.getElementById('rDown').value) / 100;
     let curDur = parseInt(document.getElementById('rDur').value);
     let simDur = horMode === 'auto' ? curDur : parseInt(document.getElementById('rHor').value);
+    
+    // Calculate purchase tax for optimizer
+    const assetPrice = eq / curDown;
+    const isFirstHome = buyerType === 'first';
+    const includePurchaseTax = document.getElementById('cPurchaseTax')?.checked ?? true;
+    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPrice, isFirstHome) : 0;
 
     const params = {
         eq, curDown, curDur, simDur,
-        useTax: document.getElementById('cTax')?.checked ?? true,
+        useTaxSP: document.getElementById('cTaxSP')?.checked ?? true,
+        useTaxRE: document.getElementById('cTaxSP')?.checked ?? true,
         useRentTax: document.getElementById('cRentTax')?.checked ?? false,
+        useMasShevach: document.getElementById('cMasShevach')?.checked ?? false,
+        masShevachType: buyerType === 'investor' ? 'none' : 'single',
+        purchaseTax,
         tradeFee: parseFloat(document.getElementById('rTrade').value) / 100,
         merFee: parseFloat(document.getElementById('rMer').value) / 100,
         buyCostPct: parseFloat(document.getElementById('rBuyCost').value) / 100,
@@ -936,7 +1141,6 @@ function updateSweetSpots() {
             RateZ: parseFloat(document.getElementById('rateKatz').value) / 100,
             RateM: parseFloat(document.getElementById('rateMalatz').value) / 100,
             RateMT: parseFloat(document.getElementById('rateMatz').value) / 100,
-            // Optimizer (calcCAGR) defaults M/MT to 0 currently, which is fine as sweet spot is about structure
         },
         mix: {
             prime: parseFloat(document.getElementById('pctPrime').value),
@@ -945,10 +1149,18 @@ function updateSweetSpots() {
             malatz: parseFloat(document.getElementById('pctMalatz').value),
             matz: parseFloat(document.getElementById('pctMatz').value)
         },
-        drift: -0.5, // Simplified drift for sweet spot visual
+        termMix: {
+            p: parseInt(document.getElementById('termPrime').value) || curDur,
+            k: parseInt(document.getElementById('termKalats').value) || curDur,
+            z: parseInt(document.getElementById('termKatz').value) || curDur,
+            m: parseInt(document.getElementById('termMalatz').value) || curDur,
+            mt: parseInt(document.getElementById('termMatz').value) || curDur
+        },
+        drift: -0.5,
         lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride || undefined,
-        surplusMode
+        surplusMode,
+        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100
     };
 
     const best = AppLogic.searchSweetSpots(params);
@@ -956,15 +1168,24 @@ function updateSweetSpots() {
     const downMin = 25;
     const downMax = 100;
     let posDown = ((best.d - downMin) / (downMax - downMin)) * 100;
+    if (lang === 'he') posDown = 100 - posDown;
     document.getElementById('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
     document.getElementById('spotDown').classList.add('visible');
 
     let posDur = ((best.t - 1) / (30 - 1)) * 100;
-    document.getElementById('spotDur').style.left = `calc(${posDur}% + (8px - (0.16px * ${posDur})))`;
-    document.getElementById('spotDur').classList.add('visible');
+    if (lang === 'he') posDur = 100 - posDur;
+    const spotDur = document.getElementById('spotDur');
+    if (advancedTermMode) {
+        // In advanced mode, each track has its own term - hide the single term sweet spot
+        spotDur.classList.remove('visible');
+    } else {
+        spotDur.style.left = `calc(${posDur}% + (8px - (0.16px * ${posDur})))`;
+        spotDur.classList.add('visible');
+    }
 
     if (horMode === 'custom' || lockHor) {
         let posHor = ((best.h - 1) / (50 - 1)) * 100;
+        if (lang === 'he') posHor = 100 - posHor;
         let spotH = document.getElementById('spotHor');
         spotH.style.left = `calc(${posHor}% + (8px - (0.16px * ${posHor})))`;
         spotH.classList.add('visible');
@@ -985,8 +1206,15 @@ function runSim(opts = {}) {
     let simDur = horMode === 'auto' ? mortDur : parseInt(document.getElementById('rHor').value);
 
     document.getElementById('dDown').innerText = (downPct * 100).toFixed(0) + '%';
-    document.getElementById('dDur').innerText = mortDur + ' Yr';
-    document.getElementById('dHor').innerText = horMode === 'auto' ? 'Auto (' + mortDur + 'Y)' : simDur + ' Yr';
+    const dDurEl = document.getElementById('dDur');
+    const dHorEl = document.getElementById('dHor');
+    if (lang === 'he') {
+        dDurEl.innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
+        dHorEl.innerHTML = horMode === 'auto' ? t('auto') + ' <span style="direction:ltr;display:inline-block">(' + mortDur + t('ySuffix') + ')</span>' : '<span style="direction:ltr;display:inline-block">' + simDur + ' ' + t('yrSuffix') + '</span>';
+    } else {
+        dDurEl.innerText = mortDur + ' ' + t('yrSuffix');
+        dHorEl.innerText = horMode === 'auto' ? t('auto') + ' (' + mortDur + t('ySuffix') + ')' : simDur + ' ' + t('yrSuffix');
+    }
 
     // ... Update other UI labels ...
     document.getElementById('vTrade').innerText = parseFloat(document.getElementById('rTrade').value).toFixed(1) + '%';
@@ -1004,6 +1232,13 @@ function runSim(opts = {}) {
     let initialLoan = assetPriceStart - eq;
     document.getElementById('valMortgage').innerText = fmt(initialLoan) + ' ₪';
 
+    // Purchase tax calculation
+    const isFirstHome = buyerType === 'first';
+    const includePurchaseTax = document.getElementById('cPurchaseTax')?.checked ?? true;
+    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPriceStart, isFirstHome) : 0;
+    const taxEl = document.getElementById('valPurchaseTax');
+    if (taxEl) taxEl.innerText = fmt(purchaseTax) + ' ₪';
+
     // Update track percentage displays with amounts
     const tracks = ['Prime','Kalats','Malatz','Katz','Matz'];
     tracks.forEach(t => {
@@ -1017,7 +1252,9 @@ function runSim(opts = {}) {
 
     for (let k in cfg) {
         let el = document.getElementById(cfg[k].v);
-        if (cfg[k].is) el.innerText = 'Hist'; else el.innerText = document.getElementById(cfg[k].s).value + '%';
+        if (el) {
+            if (cfg[k].is) el.innerText = 'Hist'; else el.innerText = document.getElementById(cfg[k].s).value + '%';
+        }
     }
 
     // Terms
@@ -1058,13 +1295,21 @@ function runSim(opts = {}) {
     if (advancedTermMode) {
         mortDur = maxTrackYears;
         mainTermSlider.value = mortDur;
-        document.getElementById('dDur').innerText = mortDur + ' Yr';
+        if (lang === 'he') {
+            document.getElementById('dDur').innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
+        } else {
+            document.getElementById('dDur').innerText = mortDur + ' ' + t('yrSuffix');
+        }
     }
 
     const effectiveMax = Math.max(maxTrackYears, mortDur);
     if (horMode === 'auto') {
         document.getElementById('rHor').value = effectiveMax;
-        document.getElementById('dHor').innerText = 'Auto (' + effectiveMax + 'Y)';
+        if (lang === 'he') {
+            document.getElementById('dHor').innerHTML = t('auto') + ' <span style="direction:ltr;display:inline-block">(' + effectiveMax + t('ySuffix') + ')</span>';
+        } else {
+            document.getElementById('dHor').innerText = t('auto') + ' (' + effectiveMax + t('ySuffix') + ')';
+        }
         simDur = effectiveMax;
     }
 
@@ -1105,13 +1350,17 @@ function runSim(opts = {}) {
             buy: parseFloat(document.getElementById('rBuyCost').value) / 100,
             sell: parseFloat(document.getElementById('rSellCost').value) / 100,
             trade: parseFloat(document.getElementById('rTrade').value) / 100,
-            mgmt: parseFloat(document.getElementById('rMer').value) / 100
+            mgmt: parseFloat(document.getElementById('rMer').value) / 100,
+            purchaseTax: purchaseTax
         },
         maintPct: parseFloat(document.getElementById('rMaint').value) / 100,
         purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100,
         tax: {
-            use: document.getElementById('cTax')?.checked ?? true,
+            useSP: document.getElementById('cTaxSP')?.checked ?? true,
+            useRE: document.getElementById('cTaxSP')?.checked ?? true,
             useRent: document.getElementById('cRentTax')?.checked ?? false,
+            useMasShevach: document.getElementById('cMasShevach')?.checked ?? false,
+            masShevachType: buyerType === 'investor' ? 'none' : 'single',
             mode: taxMode
         },
         config: {
@@ -1150,6 +1399,11 @@ function runSim(opts = {}) {
     document.getElementById('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${intPctOfAsset.toFixed(0) + '%)'}`;
     document.getElementById('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
     document.getElementById('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
+    
+    const kMasShevach = document.getElementById('kMasShevach');
+    if (kMasShevach) kMasShevach.innerText = fmt(res.masShevach || 0) + ' ₪';
+    const kCapGains = document.getElementById('kCapGains');
+    if (kCapGains) kCapGains.innerText = fmt(res.spTax || 0) + ' ₪';
 
     const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
     const posTxt = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y';
@@ -1168,13 +1422,15 @@ function runSim(opts = {}) {
         }
         drawCharts(res.series.labels, res.series.reDataVal, res.series.reDataPct, res.series.spDataVal, res.series.spDataPct,
             res.series.flowRent, res.series.flowInt, res.series.flowPrinc, res.series.flowNet,
-            res.series.surplusVal, res.series.surplusPct);
+            res.series.surplusVal, res.series.surplusPct,
+            { reTax: res.totalRETax, spTax: res.spTax, netRE: res.netRE, netSP: res.netSP, invested: res.totalCashInvested,
+              surplusTax: res.reSideTax, surplusGross: res.reSideStockValue });
     }
     saveState();
     document.body.classList.remove('loading');
 }
 
-function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries) {
+function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries, taxInfo = {}) {
     const isDark = document.body.classList.contains('dark');
     const textColor = isDark ? '#e2e8f0' : '#666';
     const gridColor = isDark ? '#475569' : 'rgba(0,0,0,0.1)';
@@ -1186,21 +1442,100 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
     let plotS = mode === 'percent' ? sPct : sVal;
     let plotSurp = mode === 'percent' ? surplusPctSeries : surplusValSeries;
     const reinvestActive = (surplusMode === 'invest');
-    let yTxt = mode === 'percent' ? 'Cumulative ROI (%)' : 'Net Wealth (₪)';
+    let yTxt = mode === 'percent' ? t('chartYAxisROI') : t('chartYAxisWealth');
+
+    // Tax visualization - show after-tax as dashed extension at end
+    const { reTax = 0, spTax = 0, netRE = 0, netSP = 0, invested = 0, surplusTax = 0, surplusGross = 0 } = taxInfo;
+    const lastIdx = plotR.length - 1;
+    const hasRETax = reTax > 0;
+    const hasSPTax = spTax > 0;
+    const hasSurplusTax = surplusTax > 0;
+
+    // Create extended data with after-tax final point
+    let plotRWithTax = [...plotR];
+    let plotSWithTax = [...plotS];
+    
+    if (mode !== 'percent') {
+        if (hasRETax) plotRWithTax.push(netRE);
+        else plotRWithTax.push(plotR[lastIdx]);
+        if (hasSPTax) plotSWithTax.push(netSP);
+        else plotSWithTax.push(plotS[lastIdx]);
+    } else {
+        if (hasRETax) plotRWithTax.push(((netRE - invested) / invested) * 100);
+        else plotRWithTax.push(plotR[lastIdx]);
+        if (hasSPTax) plotSWithTax.push(((netSP - invested) / invested) * 100);
+        else plotSWithTax.push(plotS[lastIdx]);
+    }
+    
+    // Extended labels with "Tax" zone
+    const hasTax = hasRETax || hasSPTax || hasSurplusTax;
+    const labelsExt = hasTax ? [...l, t('taxDeduction') || 'Tax'] : l;
 
     let datasets = [
-        { label: 'Real Estate', data: plotR, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 },
-        { label: 'S&P 500', data: plotS, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 }
+        { 
+            label: t('chartRealEstate'), 
+            data: plotRWithTax, 
+            borderColor: '#16a34a', 
+            backgroundColor: 'rgba(22,163,74,0.05)', 
+            borderWidth: 3, 
+            fill: true, 
+            pointRadius: plotRWithTax.map((_, i) => i === plotRWithTax.length - 1 && hasRETax ? 5 : 0),
+            pointBackgroundColor: '#0d5c2a',
+            pointHoverRadius: 6,
+            segment: {
+                borderDash: ctx => ctx.p0DataIndex === lastIdx ? [6, 4] : undefined,
+                borderColor: ctx => ctx.p0DataIndex === lastIdx && hasRETax ? '#0d5c2a' : undefined
+            }
+        },
+        { 
+            label: t('chartSP500'), 
+            data: plotSWithTax, 
+            borderColor: '#2563eb', 
+            backgroundColor: 'rgba(37,99,235,0.05)', 
+            borderWidth: 3, 
+            fill: true, 
+            pointRadius: plotSWithTax.map((_, i) => i === plotSWithTax.length - 1 && hasSPTax ? 5 : 0),
+            pointBackgroundColor: '#1e40af',
+            pointHoverRadius: 6,
+            segment: {
+                borderDash: ctx => ctx.p0DataIndex === lastIdx ? [6, 4] : undefined,
+                borderColor: ctx => ctx.p0DataIndex === lastIdx && hasSPTax ? '#1e40af' : undefined
+            }
+        }
     ];
 
+    // Reinvested surplus with tax drop
     if (reinvestActive && plotSurp && plotSurp.some(v => v > 0)) {
-        datasets.push({ label: 'Reinvested Surplus', data: plotSurp, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)', borderWidth: 2, fill: true, pointRadius: 0, pointHoverRadius: 6, borderDash: [6, 4] });
+        const surplusNet = surplusGross - surplusTax;
+        let plotSurpWithTax = [...plotSurp];
+        if (hasTax) {
+            if (mode !== 'percent') {
+                plotSurpWithTax.push(hasSurplusTax ? surplusNet : plotSurp[lastIdx]);
+            } else {
+                plotSurpWithTax.push(hasSurplusTax ? (surplusNet / invested) * 100 : plotSurp[lastIdx]);
+            }
+        }
+        datasets.push({ 
+            label: t('chartReinvested'), 
+            data: plotSurpWithTax, 
+            borderColor: '#f59e0b', 
+            backgroundColor: 'rgba(245,158,11,0.12)', 
+            borderWidth: 2, 
+            fill: true, 
+            pointRadius: plotSurpWithTax.map((_, i) => i === plotSurpWithTax.length - 1 && hasSurplusTax ? 5 : 0),
+            pointBackgroundColor: '#b45309',
+            pointHoverRadius: 6, 
+            segment: {
+                borderDash: ctx => ctx.p0DataIndex === lastIdx && hasSurplusTax ? [4, 3] : [6, 4],
+                borderColor: ctx => ctx.p0DataIndex === lastIdx && hasSurplusTax ? '#b45309' : undefined
+            }
+        });
     }
 
     wealthChart = new Chart(ctx1, {
         type: 'line',
         data: {
-            labels: l,
+            labels: labelsExt,
             datasets: datasets
         },
         options: {
@@ -1210,12 +1545,30 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
                 tooltip: {
                     callbacks: {
                         label: c => {
-                            let idx = c.dataIndex;
-                            let val = 0, pct = 0;
-                            if (c.dataset.label === 'Real Estate') { val = rVal[idx]; pct = rPct[idx]; }
-                            else if (c.dataset.label === 'Reinvested Surplus') { val = surplusValSeries[idx]; pct = surplusPctSeries[idx]; }
-                            else { val = sVal[idx]; pct = sPct[idx]; }
-                            return `${c.dataset.label}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
+                            const idx = c.dataIndex;
+                            const lbl = c.dataset.label;
+                            const isLastPoint = idx === plotRWithTax.length - 1 && hasTax;
+                            
+                            if (lbl === t('chartRealEstate')) {
+                                if (isLastPoint && hasRETax) {
+                                    return `${lbl}: ${fmt(netRE)} ₪ (−${fmt(reTax)} ₪ ${t('taxPaid') || 'tax'})`;
+                                }
+                                return `${lbl}: ${fmt(rVal[idx] || netRE)} ₪`;
+                            }
+                            if (lbl === t('chartSP500')) {
+                                if (isLastPoint && hasSPTax) {
+                                    return `${lbl}: ${fmt(netSP)} ₪ (−${fmt(spTax)} ₪ ${t('taxPaid') || 'tax'})`;
+                                }
+                                return `${lbl}: ${fmt(sVal[idx] || netSP)} ₪`;
+                            }
+                            if (lbl === t('chartReinvested')) {
+                                if (isLastPoint && hasSurplusTax) {
+                                    const surplusNet = surplusGross - surplusTax;
+                                    return `${lbl}: ${fmt(surplusNet)} ₪ (−${fmt(surplusTax)} ₪ ${t('taxPaid') || 'tax'})`;
+                                }
+                                return `${lbl}: ${fmt(surplusValSeries[idx] || 0)} ₪`;
+                            }
+                            return `${lbl}: ${fmt(c.raw)} ₪`;
                         }
                     }
                 },
@@ -1223,9 +1576,49 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
             },
             scales: {
                 y: { title: { display: true, text: yTxt, color: textColor }, ticks: { color: textColor, callback: v => mode === 'percent' ? v + '%' : fmt(v) }, grid: { color: gridColor } },
-                x: { ticks: { color: textColor }, grid: { color: gridColor } }
+                x: { 
+                    ticks: { 
+                        color: textColor,
+                        maxRotation: 0,
+                        minRotation: 0,
+                        callback: (val, idx) => {
+                            if (idx === labelsExt.length - 1 && hasTax) return ''; // Hide tax label (drawn manually)
+                            return labelsExt[idx];
+                        }
+                    }, 
+                    grid: { color: gridColor } 
+                }
             }
-        }
+        },
+        plugins: hasTax ? [{
+            id: 'taxZone',
+            afterDraw: (chart) => {
+                const { ctx, chartArea, scales } = chart;
+                const xScale = scales.x;
+                const lastX = xScale.getPixelForValue(lastIdx);
+                const endX = chartArea.right;
+                ctx.save();
+                // Shaded background
+                ctx.fillStyle = isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)';
+                ctx.fillRect(lastX, chartArea.top, endX - lastX, chartArea.bottom - chartArea.top);
+                // Vertical separator line
+                ctx.strokeStyle = isDark ? 'rgba(239,68,68,0.6)' : 'rgba(239,68,68,0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(lastX, chartArea.top);
+                ctx.lineTo(lastX, chartArea.bottom);
+                ctx.stroke();
+                // Centered label inside chart (above x-axis)
+                const centerX = (lastX + endX) / 2;
+                const labelY = chartArea.bottom - 10;
+                ctx.fillStyle = '#dc2626';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(t('taxDeduction') || 'Tax', centerX, labelY);
+                ctx.restore();
+            }
+        }] : []
     });
 
     const ctx2 = document.getElementById('flowChart').getContext('2d');
@@ -1242,11 +1635,11 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
         data: {
             labels: l,
             datasets: [
-                { type: 'line', label: 'Net Cashflow', data: fNet, borderColor: isDark ? '#e2e8f0' : '#0f172a', borderWidth: 4, pointRadius: 3, tension: 0.3, order: 1, fill: false },
-                { type: 'line', label: 'Rent minus Interest', data: netRentAfterInt, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 0, tension: 0.2, order: 2, fill: false, borderDash: [6, 3] },
-                { type: 'bar', label: 'Revenue (Rent)', data: fRent, backgroundColor: '#22c55e', stack: 'Stack 0', order: 3, borderWidth: 0 },
-                { type: 'bar', label: 'Interest (Cost)', data: fInt, backgroundColor: '#ef4444', stack: 'Stack 0', order: 4, borderWidth: 0 },
-                { type: 'bar', label: 'Principal (Equity)', data: fPrinc, backgroundColor: '#fca5a5', stack: 'Stack 0', order: 5, borderWidth: 0 }
+                { type: 'line', label: t('chartNetCashflow'), data: fNet, borderColor: isDark ? '#e2e8f0' : '#0f172a', borderWidth: 4, pointRadius: 3, tension: 0.3, order: 1, fill: false },
+                { type: 'line', label: t('chartRentMinusInt'), data: netRentAfterInt, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 0, tension: 0.2, order: 2, fill: false, borderDash: [6, 3] },
+                { type: 'bar', label: t('chartRevenue'), data: fRent, backgroundColor: '#22c55e', stack: 'Stack 0', order: 3, borderWidth: 0 },
+                { type: 'bar', label: t('chartInterest'), data: fInt, backgroundColor: '#ef4444', stack: 'Stack 0', order: 4, borderWidth: 0 },
+                { type: 'bar', label: t('chartPrincipal'), data: fPrinc, backgroundColor: '#fca5a5', stack: 'Stack 0', order: 5, borderWidth: 0 }
             ]
         },
         options: {
@@ -1258,31 +1651,32 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
                         afterBody: (items) => {
                             if (items.length > 0) {
                                 const idx = items[0].dataIndex;
-                                return `Total Mortgage: ${fmtNum(totalMortgage[idx])} ₪`;
+                                return `${t('chartTotalMortgage')}: \u200E${fmtNum(totalMortgage[idx])} ₪`;
                             }
                         },
                         label: c => {
                             let v = Math.abs(c.raw);
                             let lbl = c.dataset.label;
-                            if (lbl.includes('Rent minus Interest')) return `Rent - Interest: ${fmtNum(c.raw)} ₪`;
-                            if (lbl.includes('Interest')) {
+                            const num = n => '\u200E' + fmtNum(n);
+                            if (lbl === t('chartRentMinusInt')) return `${t('tooltipRentMinusInt')}: ${num(c.raw)} ₪`;
+                            if (lbl === t('chartInterest')) {
                                 let idx = c.dataIndex;
                                 let iVal = Math.abs(c.chart.data.datasets[3].data[idx]);
                                 let pVal = Math.abs(c.chart.data.datasets[4].data[idx]);
                                 let total = iVal + pVal;
                                 let pct = total > 0 ? ((iVal / total) * 100).toFixed(0) : 0;
-                                return `Interest: ${fmtNum(iVal)} (${pct}%)`;
+                                return `${t('tooltipInterest')}: ${num(iVal)} (${pct}%)`;
                             }
-                            if (lbl.includes('Principal')) return `Principal: ${fmtNum(v)}`;
-                            if (lbl.includes('Revenue')) return `Rent: ${fmtNum(v)}`;
-                            return `Net: ${fmtNum(c.raw)}`;
+                            if (lbl === t('chartPrincipal')) return `${t('tooltipPrincipal')}: ${num(v)}`;
+                            if (lbl === t('chartRevenue')) return `${t('tooltipRent')}: ${num(v)}`;
+                            return `${t('tooltipNet')}: ${num(c.raw)}`;
                         }
                     }
                 },
                 legend: { labels: { color: textColor } }
             },
             scales: {
-                y: { title: { display: true, text: 'Monthly ₪', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } },
+                y: { title: { display: true, text: t('chartYAxisMonthly'), color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } },
                 x: { stacked: true, ticks: { color: textColor }, grid: { color: gridColor } }
             }
         }
@@ -1334,7 +1728,9 @@ function saveState() {
         // State
         horMode, surplusMode, repayMethod, creditScore, taxMode, exMode,
         lockDown, lockTerm, lockHor, buyerType, mode,
-        prepayments
+        prepayments,
+        usePurchaseTax: document.getElementById('cPurchaseTax')?.checked ?? true,
+        useMasShevach: document.getElementById('cMasShevach')?.checked ?? false
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
@@ -1344,7 +1740,7 @@ function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return false;
         const s = JSON.parse(saved);
-        
+
         // Restore inputs
         const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
         setVal('inpEquity', s.equity);
@@ -1377,7 +1773,7 @@ function loadState() {
         setVal('rMer', s.rMer);
         setVal('rMaint', s.rMaint);
         setVal('rDiscount', s.rDiscount);
-        
+
         // Restore state vars
         if (s.horMode) horMode = s.horMode;
         if (s.surplusMode) surplusMode = s.surplusMode;
@@ -1392,7 +1788,15 @@ function loadState() {
         if (s.advancedTermMode != null) advancedTermMode = s.advancedTermMode;
         if (s.buyerType) buyerType = s.buyerType;
         if (s.mode) mode = s.mode;
-        
+        if (s.usePurchaseTax != null) {
+            const el = document.getElementById('cPurchaseTax');
+            if (el) el.checked = s.usePurchaseTax;
+        }
+        if (s.useMasShevach != null) {
+            const el = document.getElementById('cMasShevach');
+            if (el) el.checked = s.useMasShevach;
+        }
+
         return true;
     } catch(e) { return false; }
 }
@@ -1407,6 +1811,7 @@ function bootstrap() {
     if (lang === 'he') {
         document.documentElement.lang = 'he';
         document.documentElement.dir = 'rtl';
+        document.body.classList.add('rtl');
     }
     applyTranslations();
     const hadSaved = loadState();
@@ -1420,6 +1825,12 @@ function bootstrap() {
     setGlobalMode(false, { skipSim: true });
     if (!hadSaved) applyScenario('base', { skipSim: true });
     setMode(hadSaved && mode ? mode : 'currency', { skipSim: true });
+    // Restore horMode UI
+    if (horMode === 'custom') {
+        document.getElementById('pHor').children[0].classList.remove('active');
+        document.getElementById('pHor').children[1].classList.add('active');
+        document.getElementById('bHor').classList.add('show');
+    }
     checkMix();
     renderPrepayments();
     if (advancedTermMode) {
@@ -1441,11 +1852,11 @@ function bootstrap() {
 
 function updateRateLabels() {
     const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
-    tracks.forEach(t => {
-        const lbl = document.getElementById('lblRate' + t);
-        const inp = document.getElementById('rate' + t);
+    tracks.forEach(track => {
+        const lbl = document.getElementById('lblRate' + track);
+        const inp = document.getElementById('rate' + track);
         if (lbl && inp) {
-            let suffix = (t === 'Katz' || t === 'Matz') ? '% + CPI' : '%';
+            let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
             lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
         }
     });
