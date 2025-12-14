@@ -4,20 +4,43 @@
 
 | Phase | Description | Status | Notes |
 |-------|-------------|--------|-------|
-| 1 | Extract Translations | ✅ Complete | ~300 lines moved to src/i18n/ |
-| 2 | Extract Constants | ✅ Complete | ~50 lines moved to src/config/ |
+| 1 | Extract Translations | ✅ Complete | ~300 lines → src/i18n/ |
+| 2 | Extract Constants | ✅ Complete | ~50 lines → src/config/ |
 | 3 | Dead Code Removal | ✅ Complete | Removed unused recommendMix() |
 | 4 | ES Modules Migration | ✅ Complete | Babel transpilation for Jest |
-| 5-10 | Further Extraction | 🔓 Unblocked | Can now proceed |
+| 5 | Extract Charts | ✅ Complete | ~250 lines → src/charts/ |
+| 6 | Extract Prepayments | ⏸️ Deferred | ~236 lines, needs state refactor |
+| 7 | Extract Persistence | ⏸️ Deferred | ~115 lines, needs state refactor |
+| 8 | Centralize State | ⏸️ Deferred | Major undertaking |
 
-**app.js: 1928 → 1535 lines (20% reduction)**
+**app.js: 1928 → 1300 lines (33% reduction)**
 **All 276 tests passing**
 
-### ES Modules Setup
-- Source files use `import`/`export` syntax
-- Browser loads via `<script type="module">`
-- Jest uses Babel to transpile ESM → CommonJS
-- Window globals maintained for inline HTML handlers
+### Module Structure
+```
+src/
+├── index.html          # Entry point
+├── app.js              # Main app logic (1300 lines)
+├── logic.js            # Simulation engine (774 lines)
+├── styles.css          # Styling
+├── i18n/
+│   └── index.js        # Translation system
+├── config/
+│   └── index.js        # Constants & scenarios
+└── charts/
+    └── index.js        # Chart rendering
+```
+
+### Remaining Work
+Phases 6-8 require centralizing state management:
+- `prepayments` array used by 8+ functions
+- `mode`, `surplusMode`, `horMode` etc. used throughout
+- DOM element references scattered across functions
+
+Options:
+1. Create a state object passed to all functions
+2. Use a simple pub/sub pattern
+3. Keep as-is (functional, just not ideal)
 
 ---
 
