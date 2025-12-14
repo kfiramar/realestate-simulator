@@ -13,17 +13,17 @@
 | 7 | State Management | ✅ Complete | 83 lines → src/state/ |
 | 8 | Extract Persistence | ✅ Complete | 132 lines → src/persistence/ |
 | 9 | Alpine.js Adoption | ✅ Complete | 20+ reactive UI bindings |
-| 10 | DOM Helper Refactor | ✅ Complete | $() helper, cleaner code |
+| 10 | DOM Helpers | ✅ Complete | $(), $pct(), $int() helpers |
 
-**app.js: 1928 → 1047 lines (46% reduction)**
-**Total source: 2843 lines across 8 modules**
+**app.js: 1928 → 1038 lines (46% reduction)**
+**Total source: 2834 lines across 8 modules**
 **All 276 tests passing**
 
 ## Module Structure
 ```
 src/
 ├── index.html              # Entry point with Alpine.js bindings
-├── app.js                  # Main app logic (1047 lines)
+├── app.js                  # Main app logic (1038 lines)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
@@ -46,13 +46,14 @@ src/
 - `x-model` for two-way binding
 - Alpine store syncs with AppState
 
-### 3. Code Quality
-- `$()` DOM helper replaces verbose getElementById
-- Centralized state management with 22 state variables
-- IIFE pattern for file:// protocol compatibility
-- All tests maintained and passing
+### 3. DOM Helpers
+```javascript
+const $ = id => document.getElementById(id);
+const $pct = id => parseFloat($(id)?.value || 0) / 100;
+const $int = id => parseInt($(id)?.value || 0);
+```
 
-## State Variables (22 total)
+### 4. State Variables (22 total)
 ```javascript
 {
     mode, exMode, taxMode, horMode,
@@ -64,16 +65,10 @@ src/
 }
 ```
 
-## What Remains in app.js (1047 lines)
-- **~40 DOM handler functions**: Mix validation, rate management
-- **runSim**: Core simulation orchestration (~240 lines)
-- **updateSweetSpots**: Optimization logic (~90 lines)
-- **bootstrap**: Initialization sequence (~50 lines)
-
 ## Architecture Benefits
 1. **Declarative UI** - State drives UI via Alpine bindings
 2. **Single source of truth** - AppState syncs with Alpine store
 3. **Test compatibility** - JS fallbacks for non-Alpine environments
 4. **Minimal overhead** - Alpine.js is ~7kB gzipped
 5. **No build step** - Works with file:// protocol
-6. **Cleaner code** - $() helper reduces verbosity
+6. **Cleaner code** - DOM helpers reduce verbosity
