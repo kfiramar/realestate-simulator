@@ -8,7 +8,7 @@ describe('Uncertain Areas - Deep Verification', () => {
         rates: { prime: 0.06, kalats: 0.05, katz: 0.04, malatz: 0.055, matz: 0.045 },
         market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.04, rentYield: 0.03 },
         fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 }, maintPct: 0,
-        tax: { use: false, useRent: false, mode: 'real' },
+        tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
         config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged', repayMethod: 'spitzer',
             history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
         },
@@ -179,12 +179,12 @@ describe('Uncertain Areas - Deep Verification', () => {
             const paramsNoCpi = {
                 ...baseParams,
                 market: { ...baseParams.market, cpi: 0, rentYield: 0.05 },
-                tax: { use: true, useRent: true, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: true, mode: 'real' },
             };
             const paramsWithCpi = {
                 ...baseParams,
                 market: { ...baseParams.market, cpi: 0.03, rentYield: 0.05 },
-                tax: { use: true, useRent: true, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: true, mode: 'real' },
             };
             
             const resultNoCpi = Logic.simulate(paramsNoCpi);
@@ -202,12 +202,12 @@ describe('Uncertain Areas - Deep Verification', () => {
             const paramsLowRent = {
                 ...baseParams,
                 market: { ...baseParams.market, rentYield: 0.005 }, // 0.5% yield
-                tax: { use: true, useRent: true, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: true, mode: 'real' },
             };
             const paramsNoRentTax = {
                 ...baseParams,
                 market: { ...baseParams.market, rentYield: 0.005 },
-                tax: { use: true, useRent: false, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' },
             };
             
             const resultWithTax = Logic.simulate(paramsLowRent);
@@ -222,12 +222,12 @@ describe('Uncertain Areas - Deep Verification', () => {
             const paramsHighRent = {
                 ...baseParams,
                 market: { ...baseParams.market, rentYield: 0.10, cpi: 0 },
-                tax: { use: true, useRent: true, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: true, mode: 'real' },
             };
             const paramsNoRentTax = {
                 ...baseParams,
                 market: { ...baseParams.market, rentYield: 0.10, cpi: 0 },
-                tax: { use: true, useRent: false, mode: 'real' },
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' },
             };
             
             const resultWithTax = Logic.simulate(paramsHighRent);

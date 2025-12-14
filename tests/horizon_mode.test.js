@@ -260,7 +260,7 @@ describe('Horizon Mode: CAGR Calculation Consistency', () => {
             rates: { prime: 0.0515, kalats: 0.0471, katz: 0.0315, malatz: 0.0466, matz: 0.0339 },
             market: { sp: 0.10, reApp: 0.05, cpi: 0.025, boi: 0.0425, rentYield: 0.03 },
             fees: { buy: 0.02, sell: 0.02, trade: 0.001, mgmt: 0.0005 },
-            tax: { use: true, useRent: false, mode: 'real' },
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'real' },
             config: { exMode: 'hedged', surplusMode: 'match', drift: 0 },
             maintPct: 0.08,
             returnSeries: false
@@ -288,7 +288,7 @@ describe('Horizon Mode: CAGR Calculation Consistency', () => {
             rates: { prime: 0.0515, kalats: 0.0471, katz: 0.0315, malatz: 0.0466, matz: 0.0339 },
             market: { sp: 0.10, reApp: 0.05, cpi: 0.025, boi: 0.0425, rentYield: 0.03 },
             fees: { buy: 0.02, sell: 0.02, trade: 0.001, mgmt: 0.0005 },
-            tax: { use: true, useRent: false, mode: 'real' },
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'real' },
             config: { exMode: 'hedged', surplusMode: 'match', drift: 0 },
             maintPct: 0.08,
             returnSeries: false

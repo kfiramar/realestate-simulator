@@ -26,7 +26,7 @@ describe('S&P Taxation', () => {
             const params = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.03, cpi: 0.03 }, // SP = inflation
-                tax: { use: true, useRent: false, mode: 'real' }
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
             };
             
             const result = AppLogic.simulate(params);
@@ -47,7 +47,7 @@ describe('S&P Taxation', () => {
             const params = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.10, cpi: 0.03 },
-                tax: { use: true, useRent: false, mode: 'real' }
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
             };
             
             const result = AppLogic.simulate(params);
@@ -75,7 +75,7 @@ describe('S&P Taxation', () => {
             const params = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.01, cpi: 0.03 },
-                tax: { use: true, useRent: false, mode: 'real' }
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
             };
             
             const result = AppLogic.simulate(params);
@@ -92,7 +92,7 @@ describe('S&P Taxation', () => {
             const params = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.10, cpi: 0.03 },
-                tax: { use: true, useRent: false, mode: 'nominal' }
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' }
             };
             
             const result = AppLogic.simulate(params);
@@ -115,12 +115,12 @@ describe('S&P Taxation', () => {
             const paramsReal = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.10, cpi: 0.03 },
-                tax: { use: true, useRent: false, mode: 'real' }
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
             };
             const paramsNominal = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.10, cpi: 0.03 },
-                tax: { use: true, useRent: false, mode: 'nominal' }
+                tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' }
             };
             
             const resultReal = AppLogic.simulate(paramsReal);
@@ -142,7 +142,7 @@ describe('S&P Taxation', () => {
             const params = {
                 ...baseParams,
                 market: { ...baseParams.market, sp: 0.10, cpi: 0.03 },
-                tax: { use: false, useRent: false, mode: 'real' }
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' }
             };
             
             const result = AppLogic.simulate(params);
@@ -177,7 +177,7 @@ describe('RE Side Stock Taxation', () => {
     test('RE side stock has value when surplus is invested', () => {
         const params = {
             ...baseParams,
-            tax: { use: false, useRent: false, mode: 'real' }
+            tax: { useSP: false, useRE: false, useRent: false, mode: 'real' }
         };
         
         const result = AppLogic.simulate(params);
@@ -190,11 +190,11 @@ describe('RE Side Stock Taxation', () => {
     test('Real mode: RE side stock taxed on inflation-adjusted gains', () => {
         const paramsReal = {
             ...baseParams,
-            tax: { use: true, useRent: false, mode: 'real' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
         };
         const paramsNoTax = {
             ...baseParams,
-            tax: { use: false, useRent: false, mode: 'real' }
+            tax: { useSP: false, useRE: false, useRent: false, mode: 'real' }
         };
         
         const resultReal = AppLogic.simulate(paramsReal);
@@ -210,11 +210,11 @@ describe('RE Side Stock Taxation', () => {
     test('Nominal mode: RE side stock taxed on full nominal gains', () => {
         const paramsNominal = {
             ...baseParams,
-            tax: { use: true, useRent: false, mode: 'nominal' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' }
         };
         const paramsNoTax = {
             ...baseParams,
-            tax: { use: false, useRent: false, mode: 'nominal' }
+            tax: { useSP: false, useRE: false, useRent: false, mode: 'nominal' }
         };
         
         const resultNominal = AppLogic.simulate(paramsNominal);
@@ -230,11 +230,11 @@ describe('RE Side Stock Taxation', () => {
     test('Real mode pays less tax than nominal mode on RE side stock', () => {
         const paramsReal = {
             ...baseParams,
-            tax: { use: true, useRent: false, mode: 'real' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
         };
         const paramsNominal = {
             ...baseParams,
-            tax: { use: true, useRent: false, mode: 'nominal' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' }
         };
         
         const resultReal = AppLogic.simulate(paramsReal);
@@ -273,12 +273,12 @@ describe('Inflation Impact on Real Taxation', () => {
         const result0 = AppLogic.simulate({
             ...baseParams, 
             market: {...baseParams.market, cpi: 0}, 
-            tax: { use: true, useRent: false, mode: 'real' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
         });
         const result6 = AppLogic.simulate({
             ...baseParams, 
             market: {...baseParams.market, cpi: 0.06}, 
-            tax: { use: true, useRent: false, mode: 'real' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'real' }
         });
         
         // Same gross value (S&P doesn't depend on inflation)
@@ -303,12 +303,12 @@ describe('Inflation Impact on Real Taxation', () => {
         const result0 = AppLogic.simulate({
             ...baseParams, 
             market: {...baseParams.market, cpi: 0}, 
-            tax: { use: true, useRent: false, mode: 'nominal' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' }
         });
         const result6 = AppLogic.simulate({
             ...baseParams, 
             market: {...baseParams.market, cpi: 0.06}, 
-            tax: { use: true, useRent: false, mode: 'nominal' }
+            tax: { useSP: true, useRE: true, useRent: false, mode: 'nominal' }
         });
         
         // Same net value regardless of inflation (nominal doesn't adjust for inflation)

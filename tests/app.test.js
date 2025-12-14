@@ -46,18 +46,21 @@ describe('App Logic: UI Interaction', () => {
             <input id="pctPrime" value="33">
             <input id="ratePrime" value="5.75">
             <input id="termPrime" value="20">
+            <span id="termPrimeVal">20y</span>
             <input id="sliderPrime" type="range" value="33">
             <div id="dispPrime">33%</div>
             
             <input id="pctKalats" value="33">
             <input id="rateKalats" value="4.8">
             <input id="termKalats" value="20">
+            <span id="termKalatsVal">20y</span>
             <input id="sliderKalats" type="range" value="33">
             <div id="dispKalats">33%</div>
             
             <input id="pctKatz" value="34">
             <input id="rateKatz" value="3.2">
             <input id="termKatz" value="20">
+            <span id="termKatzVal">20y</span>
             <input id="sliderKatz" type="range" value="34">
             <div id="dispKatz">34%</div>
 
@@ -65,12 +68,14 @@ describe('App Logic: UI Interaction', () => {
             <input id="pctMalatz" value="0">
             <input id="rateMalatz" value="4.5">
             <input id="termMalatz" value="20">
+            <span id="termMalatzVal">20y</span>
             <input id="sliderMalatz" type="range" value="0">
             <div id="dispMalatz">0%</div>
 
             <input id="pctMatz" value="0">
             <input id="rateMatz" value="2.15">
             <input id="termMatz" value="20">
+            <span id="termMatzVal">20y</span>
             <input id="sliderMatz" type="range" value="0">
             <div id="dispMatz">0%</div>
             
@@ -89,8 +94,13 @@ describe('App Logic: UI Interaction', () => {
             </div>
             <div id="surplusDescText"></div>
             
-            <input type="checkbox" id="cTax">
+            <input type="checkbox" id="cTaxSP">
             <input type="checkbox" id="cRentTax">
+            
+            <!-- Advanced Term Mode -->
+            <div id="advancedTermBox" style="display:none"></div>
+            <div id="basicTermBox"></div>
+            <div id="btnAdvancedTerm"></div>
             
             <!-- Credit Inputs -->
             <input id="creditScore" value="750">
@@ -178,12 +188,13 @@ describe('App Logic: UI Interaction', () => {
     });
 
     test('applyTamheel updates inputs correctly', () => {
-        // Apply 'arbitrage' (P:45, K:55, Z:0)
+        // Apply 'arbitrage' (P:37, K:33, Z:0, M:30, MT:0)
         window.applyTamheel('arbitrage');
         
-        expect(document.getElementById('pctPrime').value).toBe("45");
-        expect(document.getElementById('pctKalats').value).toBe("55");
+        expect(document.getElementById('pctPrime').value).toBe("37");
+        expect(document.getElementById('pctKalats').value).toBe("33");
         expect(document.getElementById('pctKatz').value).toBe("0");
+        expect(document.getElementById('pctMalatz').value).toBe("30");
         
         // Check if it triggered mix sum update
         expect(document.getElementById('valMixSum').innerText).toBe("100%");

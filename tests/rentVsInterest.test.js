@@ -12,7 +12,7 @@ describe('Rent vs Interest Line', () => {
             market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.03 },
             fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 },
             maintPct: 0,
-            tax: { use: false, useRent: false, mode: 'real' },
+            tax: { useSP: false, useRE: false, useRent: false, mode: 'real' },
             config: { 
                 drift: 0, 
                 surplusMode: 'pocket', 

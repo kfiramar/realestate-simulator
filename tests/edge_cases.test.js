@@ -9,7 +9,7 @@ describe('Edge Cases and Integration Tests', () => {
         market: { sp: 0.10, reApp: 0.05, cpi: 0.02, boi: 0.05, rentYield: 0.03 },
         fees: { buy: 0.05, sell: 0.02, trade: 0.005, mgmt: 0.005 },
         maintPct: 0.01,
-        tax: { use: true, useRent: true, mode: 'real' },
+        tax: { useSP: true, useRE: true, useRent: true, mode: 'real' },
         config: { drift: 0, surplusMode: 'pocket', exMode: 'hedged',
             history: { SP: { is: false }, App: { is: false }, Int: { is: false }, Inf: { is: false }, Yld: { is: false } }
         },
@@ -81,8 +81,8 @@ describe('Edge Cases and Integration Tests', () => {
 
     describe('Rent Tax', () => {
         test('Rent tax applies when rent exceeds threshold', () => {
-            const paramsNoRentTax = { ...baseParams, tax: { use: true, useRent: false, mode: 'real' } };
-            const paramsWithRentTax = { ...baseParams, tax: { use: true, useRent: true, mode: 'real' } };
+            const paramsNoRentTax = { ...baseParams, tax: { useSP: true, useRE: true, useRent: false, mode: 'real' } };
+            const paramsWithRentTax = { ...baseParams, tax: { useSP: true, useRE: true, useRent: true, mode: 'real' } };
             
             const resultNoTax = Logic.simulate(paramsNoRentTax);
             const resultWithTax = Logic.simulate(paramsWithRentTax);
@@ -238,7 +238,7 @@ describe('Edge Cases and Integration Tests', () => {
                 ...baseParams, 
                 simHorizon: 10,
                 market: { ...baseParams.market, sp: 0.10, reApp: 0.05 },
-                tax: { use: false, useRent: false, mode: 'real' }
+                tax: { useSP: false, useRE: false, useRent: false, mode: 'real' }
             };
             const result = Logic.simulate(params);
             
