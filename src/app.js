@@ -782,11 +782,19 @@ function runSim(opts = {}) {
 
     if (!opts.skipSweetSpots) updateSweetSpots();
 
-    let activeDrift = -0.5;
-    if ($('scenBear').classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
-    if ($('scenBull').classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
+    const params = buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM, termMT, purchaseTax, !skipCharts);
+    const res = AppLogic.simulate(params);
+    updateKPIs(res, assetPriceStart, skipCharts, params);
+    saveState();
+    document.body.classList.remove('loading');
+}
 
-    const params = {
+function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM, termMT, purchaseTax, returnSeries) {
+    let activeDrift = -0.5;
+    if ($('scenBear')?.classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
+    if ($('scenBull')?.classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
+
+    return {
         equity: eq,
         downPct: downPct,
         loanTerm: mortDur,
@@ -800,28 +808,17 @@ function runSim(opts = {}) {
             matz: parseFloat($('pctMatz').value) || 0
         },
         rates: {
-            prime: parseFloat($('ratePrime').value) / 100,
-            kalats: parseFloat($('rateKalats').value) / 100,
-            katz: parseFloat($('rateKatz').value) / 100,
-            malatz: parseFloat($('rateMalatz').value) / 100,
-            matz: parseFloat($('rateMatz').value) / 100
+            prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'),
+            malatz: $pct('rateMalatz'), matz: $pct('rateMatz')
         },
         market: {
-            sp: parseFloat($('sSP').value) / 100,
-            reApp: parseFloat($('sApp').value) / 100,
-            cpi: parseFloat($('sInf').value) / 100,
-            boi: parseFloat($('sInt').value) / 100,
-            rentYield: parseFloat($('sYld').value) / 100
+            sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld')
         },
         fees: {
-            buy: parseFloat($('rBuyCost').value) / 100,
-            sell: parseFloat($('rSellCost').value) / 100,
-            trade: parseFloat($('rTrade').value) / 100,
-            mgmt: parseFloat($('rMer').value) / 100,
-            purchaseTax: purchaseTax
+            buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax
         },
-        maintPct: parseFloat($('rMaint').value) / 100,
-        purchaseDiscount: parseFloat($('rDiscount').value) / 100,
+        maintPct: $pct('rMaint'),
+        purchaseDiscount: $pct('rDiscount'),
         tax: {
             useSP: $('cTaxSP')?.checked ?? true,
             useRE: $('cTaxSP')?.checked ?? true,
@@ -830,21 +827,10 @@ function runSim(opts = {}) {
             masShevachType: buyerType === 'investor' ? 'none' : 'single',
             mode: taxMode
         },
-        config: {
-            drift: activeDrift,
-            surplusMode: surplusMode,
-            exMode: exMode,
-            history: cfg,
-            repayMethod: repayMethod
-        },
+        config: { drift: activeDrift, surplusMode, exMode, history: cfg, repayMethod },
         prepay: getPrepayments(),
-        returnSeries: !skipCharts
+        returnSeries
     };
-
-    const res = AppLogic.simulate(params);
-    updateKPIs(res, assetPriceStart, skipCharts, params);
-    saveState();
-    document.body.classList.remove('loading');
 }
 
 function updateKPIs(res, assetPriceStart, skipCharts, params) {
