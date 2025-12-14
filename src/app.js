@@ -93,8 +93,7 @@ const cfg = {
 // --- UI FUNCTIONS ---
 function setMode(m, opts = {}) {
     setState('mode', m);
-    document.getElementById('btnCurr').classList.toggle('active', m === 'currency');
-    document.getElementById('btnPct').classList.toggle('active', m === 'percent');
+    // Alpine handles btnCurr/btnPct class toggling via :class binding
     document.getElementById('equityBox').classList.toggle('show', m === 'currency');
     if (!opts.skipSim) runSim();
 }
@@ -523,9 +522,10 @@ function syncPrime() {
 
 function setSurplusMode(m, opts = {}) {
     setState('surplusMode', m);
-    document.getElementById('surplusConsume').classList.toggle('active', m === 'consume');
-    document.getElementById('surplusMatch').classList.toggle('active', m === 'match');
-    document.getElementById('surplusInvest').classList.toggle('active', m === 'invest');
+    // Class toggling for non-Alpine environments (tests)
+    document.getElementById('surplusConsume')?.classList.toggle('active', m === 'consume');
+    document.getElementById('surplusMatch')?.classList.toggle('active', m === 'match');
+    document.getElementById('surplusInvest')?.classList.toggle('active', m === 'invest');
     const descEl = document.getElementById('surplusDescText') || document.getElementById('surplusDesc');
     if (descEl) {
         if (m === 'invest') descEl.innerText = t('surplusDescInvest');
@@ -537,8 +537,7 @@ function setSurplusMode(m, opts = {}) {
 
 function setRepayMethod(m) {
     setState('repayMethod', m);
-    document.getElementById('repaySpitzer').classList.toggle('active', m === 'spitzer');
-    document.getElementById('repayEqualPrincipal').classList.toggle('active', m === 'equalPrincipal');
+    // Alpine handles pill class toggling via :class binding
     runSim();
 }
 

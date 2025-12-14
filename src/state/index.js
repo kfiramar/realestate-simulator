@@ -1,4 +1,4 @@
-// Centralized State Management
+// Centralized State Management with Alpine.js integration
 (function() {
     const state = {
         mode: 'percent',
@@ -50,5 +50,26 @@
         listeners.forEach(fn => fn(key, value));
     }
 
-    window.AppState = { get, set, getAll, setAll, subscribe };
+    // Alpine.js store registration (called after Alpine loads)
+    function registerAlpineStore() {
+        if (typeof Alpine === 'undefined') return;
+        Alpine.store('app', {
+            ...state,
+            set(key, value) {
+                this[key] = value;
+                set(key, value);
+            }
+        });
+        // Sync AppState changes to Alpine store
+        subscribe((key, value) => {
+            if (Alpine.store('app')) {
+                Alpine.store('app')[key] = value;
+            }
+        });
+    }
+
+    // Register when Alpine is ready
+    document.addEventListener('alpine:init', registerAlpineStore);
+
+    window.AppState = { get, set, getAll, setAll, subscribe, registerAlpineStore };
 })();

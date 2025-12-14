@@ -7,6 +7,7 @@
     <title>Brickfolio</title>
     <link rel="icon" type="image/png" href="./favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="./i18n/index.js"></script>
     <script src="./config/index.js"></script>
     <script src="./state/index.js"></script>
@@ -18,12 +19,16 @@
 
 <body class="loading">
 
-    <header>
+    <header x-data>
         <h1>Brickfolio <span class="version-badge">BETA</span></h1>
         <div class="header-controls">
             <div class="view-toggles">
-                <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')" data-t="value">₪ Value</div>
-                <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')" data-t="roi">% ROI</div>
+                <div class="toggle-btn" id="btnCurr" 
+                     :class="{ active: $store.app.mode === 'currency' }"
+                     @click="setMode('currency')" data-t="value">₪ Value</div>
+                <div class="toggle-btn" id="btnPct"
+                     :class="{ active: $store.app.mode === 'percent' }"
+                     @click="setMode('percent')" data-t="roi">% ROI</div>
             </div>
             <div class="util-btns">
                 <button class="util-btn" onclick="toggleLang()" title="עברית / English">🌐</button>
@@ -181,9 +186,11 @@
                     <div class="card-divider"></div>
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
                         <span class="card-lbl" data-t="repayMethod">Repayment Method</span>
-                        <div class="pills" id="pRepayMethod">
-                            <div class="pill active" id="repaySpitzer" onclick="setRepayMethod('spitzer')"><span data-t="spitzer">Spitzer</span> <span class="opt-star" id="starSpitzer">★</span></div>
-                            <div class="pill" id="repayEqualPrincipal" onclick="setRepayMethod('equalPrincipal')"><span data-t="equalPrincipal">Equal Principal</span> <span class="opt-star" id="starEqual">★</span></div>
+                        <div class="pills" id="pRepayMethod" x-data>
+                            <div class="pill" id="repaySpitzer" @click="setRepayMethod('spitzer')"
+                                :class="{ active: $store.app.repayMethod === 'spitzer' }"><span data-t="spitzer">Spitzer</span> <span class="opt-star" id="starSpitzer">★</span></div>
+                            <div class="pill" id="repayEqualPrincipal" @click="setRepayMethod('equalPrincipal')"
+                                :class="{ active: $store.app.repayMethod === 'equalPrincipal' }"><span data-t="equalPrincipal">Equal Principal</span> <span class="opt-star" id="starEqual">★</span></div>
                         </div>
                     </div>
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
@@ -338,13 +345,16 @@
                         <input type="range" id="rTrade" min="0" max="1.0" step="0.05" value="0.1" oninput="runSim()">
                         <div class="card-row" style="margin-top:12px;">
                             <span class="card-lbl" data-t="rentSurplus">Rent Surplus</span>
-                            <div style="display:flex; flex-direction:column; width:60%;">
+                            <div style="display:flex; flex-direction:column; width:60%;" x-data>
                                 <div class="pills" id="surplusPills" style="width:100%;">
-                                    <div class="pill" id="surplusInvest" onclick="setSurplusMode('invest')"
+                                    <div class="pill" id="surplusInvest" @click="setSurplusMode('invest')"
+                                        :class="{ active: $store.app.surplusMode === 'invest' }"
                                         style="flex:1; text-align:center;" data-t="reinvest">Reinvest</div>
-                                    <div class="pill" id="surplusConsume" onclick="setSurplusMode('consume')"
+                                    <div class="pill" id="surplusConsume" @click="setSurplusMode('consume')"
+                                        :class="{ active: $store.app.surplusMode === 'consume' }"
                                         style="flex:1; text-align:center;" data-t="pocket">Pocket</div>
-                                    <div class="pill active" id="surplusMatch" onclick="setSurplusMode('match')"
+                                    <div class="pill" id="surplusMatch" @click="setSurplusMode('match')"
+                                        :class="{ active: $store.app.surplusMode === 'match' }"
                                         style="flex:1; text-align:center;" data-t="match">Match</div>
                                 </div>
                                 <div id="surplusDescText" class="card-sub" data-t="surplusDescMatch"
