@@ -477,38 +477,33 @@ function updateVisualBar(p, k, m, z, mt) {
 }
 
 function checkMix() {
-    let p = $int('pctPrime'), k = $int('pctKalats'), z = $int('pctKatz'), m = $int('pctMalatz'), mt = $int('pctMatz');
+    const tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
+    const vals = tracks.map(t => $int('pct' + t));
+    const [p, k, z, m, mt] = vals;
 
-    // Sync sliders if called externally (e.g. presets)
-    $('sliderPrime').value = p;
-    $('dispPrime').innerText = p + '%';
-    $('sliderKalats').value = k;
-    $('dispKalats').innerText = k + '%';
-    $('sliderKatz').value = z;
-    $('dispKatz').innerText = z + '%';
-    $('sliderMalatz').value = m;
-    $('dispMalatz').innerText = m + '%';
-    $('sliderMatz').value = mt;
-    $('dispMatz').innerText = mt + '%';
+    // Sync sliders
+    tracks.forEach((t, i) => {
+        $('slider' + t).value = vals[i];
+        $('disp' + t).innerText = vals[i] + '%';
+    });
 
     updateVisualBar(p, k, m, z, mt);
 
-    let sum = p + k + z + m + mt;
-    const fixedPct = k + z; // Kalatz + Katz = fixed rate tracks
+    const sum = vals.reduce((a, b) => a + b, 0);
+    const fixedPct = k + z;
     const fixedOk = fixedPct >= 33;
 
-    let el = $('valMixSum');
+    const el = $('valMixSum');
     el.innerText = sum + "%";
     el.style.display = sum === 100 ? 'none' : 'block';
     el.style.color = sum === 100 ? '#16a34a' : '#ef4444';
-    const warnEl = $('mixWarn');
-    if (warnEl) {
-        warnEl.style.display = sum === 100 ? 'none' : 'block';
-    }
-    const charts = $('chartsContainer');
-    const chartsWarn = $('chartsWarn');
+    
+    $('mixWarn')?.style && ($('mixWarn').style.display = sum === 100 ? 'none' : 'block');
+    
     const dimCharts = sum !== 100 || !fixedOk;
-    if (charts) charts.classList.toggle('charts-dim', dimCharts);
+    $('chartsContainer')?.classList.toggle('charts-dim', dimCharts);
+    
+    const chartsWarn = $('chartsWarn');
     if (chartsWarn) {
         if (sum !== 100) {
             chartsWarn.textContent = 'Mix must total 100% of mortgage to view charts';
