@@ -275,6 +275,13 @@
                         <div class="scen-btn base active" id="scenBase" onclick="applyScenario('base')" data-t="base">😐 Base</div>
                         <div class="scen-btn bull" id="scenBull" onclick="applyScenario('bull')" data-t="optimistic">🚀 Bull</div>
                     </div>
+                    <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.7rem; font-weight:600; color:#64748b;" data-t="sweetSpotOptimize">Sweet Spot:</span>
+                        <div class="pills">
+                            <div class="pill active" id="optOutperf" onclick="setOptimizeMode('outperform')" data-t="optOutperform">Outperform</div>
+                            <div class="pill" id="optRoi" onclick="setOptimizeMode('roi')" data-t="optRoi">ROI</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="control-card">
@@ -413,7 +420,7 @@
                             onchange="runSim()"> <span data-t="applyTaxSP">S&P Path: 25% Capital Gains</span></label>
                     <label class="chk-row"><input type="checkbox" id="cPurchaseTax" checked
                             onchange="runSim()"> <span data-t="includePurchaseTax">Include Purchase Tax</span></label>
-                    <label class="chk-row"><input type="checkbox" id="cMasShevach"
+                    <label class="chk-row"><input type="checkbox" id="cMasShevach" checked
                             onchange="runSim()"> <span data-t="applyMasShevach">Apply Mas Shevach</span></label>
                 </div>
                 <br><br>

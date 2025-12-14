@@ -570,10 +570,35 @@ function searchSweetSpots(params) {
         eq, curDown, curDur, simDur, useTaxSP, useTaxRE, useRentTax, tradeFee, merFee,
         buyCostPct, maintPct, sellCostPct, overrides, mix, drift,
         lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode, calcOverride,
-        surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount
+        surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount,
+        optimizeMode
     } = params;
 
-    const cagrFn = calcOverride || calcCAGR;
+    // Scoring function based on mode
+    const scoreFn = (d, t, h) => {
+        const simParams = {
+            equity: eq,
+            downPct: d / 100,
+            loanTerm: t,
+            simHorizon: h,
+            termMix: termMix || { p: t, k: t, z: t, m: t, mt: t },
+            mix,
+            rates: { prime: overrides.RateP, kalats: overrides.RateK, katz: overrides.RateZ, malatz: overrides.RateM || 0, matz: overrides.RateMT || 0 },
+            market: { sp: overrides.SP, reApp: overrides.App, cpi: overrides.Inf, boi: overrides.Int, rentYield: overrides.Yld },
+            fees: { buy: buyCostPct, sell: sellCostPct, trade: tradeFee, mgmt: merFee, purchaseTax: purchaseTax || 0 },
+            maintPct,
+            purchaseDiscount: purchaseDiscount || 0,
+            tax: { useSP: useTaxSP ?? true, useRE: useTaxRE ?? useTaxSP ?? true, useRent: useRentTax, useMasShevach: useMasShevach || false, masShevachType: masShevachType || 'single', mode: taxMode },
+            config: { drift, surplusMode, exMode, history: cfg },
+            returnSeries: false
+        };
+        const res = simulate(simParams);
+        if (optimizeMode === 'outperform') {
+            return res.netSP > 0 ? ((res.netRE - res.netSP) / res.netSP) * 100 : res.netRE;
+        }
+        return res.cagrRE;
+    };
+
     const downMin = 25, downMax = 100;
     const downVals = [];
     const termVals = [];
@@ -588,7 +613,7 @@ function searchSweetSpots(params) {
         for (let t of termVals) {
             for (let h of horVals) {
                 const simH = (horMode === 'auto' && !lockHor) ? t : h;
-                let c = cagrFn(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount);
+                let c = calcOverride ? calcOverride(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) : scoreFn(d, t, simH);
                 const isBetter = c > best.c;
                 const isNearTie = Math.abs(c - best.c) < 0.05 && t > best.t;
                 if (isBetter || isNearTie) best = { d, t, h: simH, c };

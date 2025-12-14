@@ -77,7 +77,7 @@ const T = {
         match: 'Match',
         reAnnualRoi: 'RE Annual ROI',
         spAnnualRoi: 'S&P Annual ROI',
-        roiDiff: 'ROI Difference',
+        roiDiff: 'Outperformance',
         reNet: 'Real Estate Net',
         spNet: 'S&P 500 Net',
         rentIncome: 'Rent Income',
@@ -95,6 +95,9 @@ const T = {
         hist: 'Hist',
         fixed: 'Fixed',
         quickScenarios: 'QUICK SCENARIOS',
+        sweetSpotOptimize: 'Sweet Spot:',
+        optRoi: 'ROI',
+        optOutperform: 'Outperform',
         rentTax: 'Rent Tax (10% > 5.6k)',
         annualMgmtFee: 'Annual Mgmt Fee',
         depositFee: 'Deposit Fee',
@@ -226,7 +229,7 @@ const T = {
         match: 'התאמה',
         reAnnualRoi: 'תשואה שנתית נדל"ן',
         spAnnualRoi: 'תשואה שנתית S&P',
-        roiDiff: 'הפרש תשואות',
+        roiDiff: 'ביצועי יתר',
         reNet: 'נדל"ן נטו',
         spNet: 'S&P 500 נטו',
         rentIncome: 'הכנסה משכירות',
@@ -244,6 +247,9 @@ const T = {
         hist: 'היסטורי',
         fixed: 'קבוע',
         quickScenarios: 'תרחישים מהירים',
+        sweetSpotOptimize: 'נקודה מתוקה:',
+        optRoi: 'תשואה',
+        optOutperform: 'ביצועי יתר',
         rentTax: 'מס שכירות (10% > 5.6k)',
         annualMgmtFee: 'דמי ניהול שנתיים',
         depositFee: 'עמלת הפקדה',
@@ -415,6 +421,7 @@ let bootstrapping = false;
 let creditScore = 900;
 let surplusMode = 'match';
 let repayMethod = 'spitzer';
+let optimizeMode = 'outperform';
 
 const TERM_MIN = 1;
 const TERM_MAX = 30;
@@ -682,6 +689,7 @@ function toggleAdvancedTerms() {
         btn.classList.remove('active');
         syncTrackTermsToMain();
     }
+    runSim();
 }
 function updMeter() {
     let v = parseFloat(document.getElementById('sInf').value);
@@ -1085,6 +1093,13 @@ function setRepayMethod(m) {
     runSim();
 }
 
+function setOptimizeMode(m) {
+    optimizeMode = m;
+    document.getElementById('optRoi').classList.toggle('active', m === 'roi');
+    document.getElementById('optOutperf').classList.toggle('active', m === 'outperform');
+    updateSweetSpots();
+}
+
 function updateOptimalRepayMethod(baseParams, currentCagr) {
     const altMethod = repayMethod === 'spitzer' ? 'equalPrincipal' : 'spitzer';
     const altParams = { ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false };
@@ -1160,7 +1175,8 @@ function updateSweetSpots() {
         lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride || undefined,
         surplusMode,
-        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100
+        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100,
+        optimizeMode
     };
 
     const best = AppLogic.searchSweetSpots(params);
