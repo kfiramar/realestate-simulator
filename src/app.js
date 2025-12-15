@@ -79,13 +79,12 @@ const cfg = {
 // --- UI FUNCTIONS ---
 function setMode(m, opts = {}) {
     setState('mode', m);
-    // Alpine handles visibility and class toggling
     $('equityBox')?.classList.toggle('show', m === 'currency');
     if (!opts.skipSim) runSim();
 }
 function tgl(k, h, opts = {}) {
     cfg[k].is = h;
-    setState('hist' + k, h); // Sync to Alpine store
+    setState('hist' + k, h);
     $pill(cfg[k].p, h);
     $(cfg[k].b)?.classList.toggle('show', !h);
     if (k === 'Inf') updMeter();
@@ -379,9 +378,7 @@ function toggleRateEdit() {
 }
 
 function togglePrepaySection() {
-    // Alpine handles visibility via x-show, keep for non-Alpine environments
-    const container = $('prepayContainer');
-    const arrow = $('prepayArrow');
+    const container = $('prepayContainer'), arrow = $('prepayArrow');
     const isOpen = container?.style.display !== 'none';
     if (container) container.style.display = isOpen ? 'none' : 'block';
     if (arrow) arrow.textContent = isOpen ? '+' : '−';
@@ -406,7 +403,6 @@ function setSurplusMode(m, opts = {}) {
 
 function setRepayMethod(m) {
     setState('repayMethod', m);
-    // Alpine handles pill class toggling via :class binding
     runSim();
 }
 
