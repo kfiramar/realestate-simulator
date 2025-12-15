@@ -100,13 +100,8 @@ function applyScenario(type, opts = {}) {
 }
 
 function applyTamheel(type) {
-    const p = TAMHEEL_PROFILES[type];
-    const map = {Prime: ['p','tP'], Kalats: ['k','tK'], Katz: ['z','tZ'], Malatz: ['m','tM'], Matz: ['mt','tMt']};
-    Object.entries(map).forEach(([track, [pctKey, termKey]]) => {
-        $('pct' + track).value = p[pctKey] || 0;
-        $('term' + track).value = p[termKey];
-        $('term' + track + 'Val').textContent = p[termKey] + 'y';
-    });
+    const p = TAMHEEL_PROFILES[type], map = {Prime: ['p','tP'], Kalats: ['k','tK'], Katz: ['z','tZ'], Malatz: ['m','tM'], Matz: ['mt','tMt']};
+    Object.entries(map).forEach(([track, [pctKey, termKey]]) => { $('pct' + track).value = p[pctKey] || 0; $('term' + track).value = p[termKey]; $('term' + track + 'Val').textContent = p[termKey] + 'y'; });
     if (!advancedTermMode) toggleAdvancedTerms();
     checkMix();
 }
