@@ -170,15 +170,9 @@ function setTaxMode(m) {
 }
 function updateLockUI() {
     const locks = {Down: lockDown, Term: lockTerm, Hor: lockHor};
-    Object.entries(locks).forEach(([k, v]) => {
-        const el = $('lock' + k + 'Btn');
-        if (el) { el.classList.toggle('locked', v); el.innerText = v ? t('locked') : t('free'); }
-    });
+    Object.entries(locks).forEach(([k, v]) => { const el = $('lock' + k + 'Btn'); if (el) { el.classList.toggle('locked', v); el.innerText = v ? t('locked') : t('free'); } });
     const summaryEl = $('optModeLabel');
-    if (summaryEl) {
-        const active = Object.entries(locks).filter(([,v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k);
-        summaryEl.innerText = active.length ? active.join(' & ') : t('free');
-    }
+    if (summaryEl) summaryEl.innerText = Object.entries(locks).filter(([,v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k).join(' & ') || t('free');
 }
 function toggleLock(target) {
     if (target === 'down') setState('lockDown', !lockDown);
