@@ -229,29 +229,21 @@ function simulate(params) {
         let yrRent = 0, yrNet = 0, yrInt = 0, yrPrinc = 0;
         let firstMonthRent = 0, firstMonthInt = 0, firstMonthPrinc = 0, firstMonthNet = 0;
 
-        // Apply prepayments at start of specified year (array format)
+        // Apply prepayments at start of specified year
         if (prepay && Array.isArray(prepay)) {
+            const bals = { p: balP, k: balK, m: balM, z: balZ, mt: balMT };
             prepay.filter(p => p.yr - 1 === y && p.amt > 0).forEach(p => {
-                let amt = 0;
-                if (p.track === 'p') { amt = Math.min(p.amt, balP); balP -= amt; }
-                else if (p.track === 'k') { amt = Math.min(p.amt, balK); balK -= amt; }
-                else if (p.track === 'm') { amt = Math.min(p.amt, balM); balM -= amt; }
-                else if (p.track === 'z') { amt = Math.min(p.amt, balZ); balZ -= amt; }
-                else if (p.track === 'mt') { amt = Math.min(p.amt, balMT); balMT -= amt; }
+                const amt = Math.min(p.amt, bals[p.track] || 0);
                 if (amt > 0) {
+                    bals[p.track] -= amt;
                     totalCashInvested += amt;
                     spCashFlows.push({ month: y * 12, amount: amt });
                     reCashFlows.push({ month: y * 12, amount: amt });
-                    // Also invest same amount in S&P for fair comparison
-                    spValueHedged += amt;
-                    spInvestedILS += amt;
-                    spBasisLinked += amt;
-                    if (config.exMode !== 'hedged') {
-                        spUnits += amt / currentEx;
-                        spBasisUSD += amt / currentEx;
-                    }
+                    spValueHedged += amt; spInvestedILS += amt; spBasisLinked += amt;
+                    if (config.exMode !== 'hedged') { spUnits += amt / currentEx; spBasisUSD += amt / currentEx; }
                 }
             });
+            balP = bals.p; balK = bals.k; balM = bals.m; balZ = bals.z; balMT = bals.mt;
         }
 
         for (let m = 0; m < 12; m++) {
@@ -267,65 +259,35 @@ function simulate(params) {
 
             // Payments
             let pmtTotal = 0, intTotal = 0, princTotal = 0;
-            const mlP = terms.p - globalM;
-            const mlK = terms.k - globalM;
-            const mlZ = terms.z - globalM;
-            const mlM = terms.m - globalM;
-            const mlMT = terms.mt - globalM;
 
-            // Prime
-            if (balP > 10 && mlP > 0) {
-                let i = balP * (ratePrime / 12);
-                let pr = repayMethod === 'equalPrincipal' ? initPrinc.p / terms.p : calcPmt(balP, ratePrime, mlP) - i;
-                if (pr > balP) pr = balP;
-                let p = pr + i;
-                balP -= pr;
-                pmtTotal += p; intTotal += i; princTotal += pr;
-            }
-            // Kalats (Fixed, Non-Linked)
-            if (balK > 10 && mlK > 0) {
-                let i = balK * (rateKalats / 12);
-                let pr = repayMethod === 'equalPrincipal' ? initPrinc.k / terms.k : calcPmt(balK, rateKalats, mlK) - i;
-                if (pr > balK) pr = balK;
-                let p = pr + i;
-                balK -= pr;
-                pmtTotal += p; intTotal += i; princTotal += pr;
-            }
-            // Katz (Fixed, CPI-Linked) - calculate in real terms, then scale by CPI
-            if (balZ > 10 && mlZ > 0) {
-                // Real-terms calculation (balance already in real shekels)
-                let realI = balZ * (rateKatz / 12);
-                let realPr = repayMethod === 'equalPrincipal' ? initPrinc.z / terms.z : calcPmt(balZ, rateKatz, mlZ) - realI;
-                if (realPr > balZ) realPr = balZ;
-                balZ -= realPr;
-                // Convert to nominal for cash flow
-                let nomI = realI * cpiIndex;
-                let nomPr = realPr * cpiIndex;
-                let p = nomI + nomPr;
-                pmtTotal += p; intTotal += nomI; princTotal += nomPr;
-            }
-            // Malatz (Var 5, Non-Linked)
-            if (balM > 10 && mlM > 0) {
-                let i = balM * (rateMalatz / 12);
-                let pr = repayMethod === 'equalPrincipal' ? initPrinc.m / terms.m : calcPmt(balM, rateMalatz, mlM) - i;
-                if (pr > balM) pr = balM;
-                let p = pr + i;
-                balM -= pr;
-                pmtTotal += p; intTotal += i; princTotal += pr;
-            }
-            // Matz (Var 5, CPI-Linked) - calculate in real terms, then scale by CPI
-            if (balMT > 10 && mlMT > 0) {
-                // Real-terms calculation (balance already in real shekels)
-                let realI = balMT * (rateMatz / 12);
-                let realPr = repayMethod === 'equalPrincipal' ? initPrinc.mt / terms.mt : calcPmt(balMT, rateMatz, mlMT) - realI;
-                if (realPr > balMT) realPr = balMT;
-                balMT -= realPr;
-                // Convert to nominal for cash flow
-                let nomI = realI * cpiIndex;
-                let nomPr = realPr * cpiIndex;
-                let p = nomI + nomPr;
-                pmtTotal += p; intTotal += nomI; princTotal += nomPr;
-            }
+            // Track payment helper
+            const processTrack = (bal, rate, ml, initP, term, cpiLinked) => {
+                if (bal <= 10 || ml <= 0) return { bal, pmt: 0, int: 0, princ: 0 };
+                const realI = bal * (rate / 12);
+                const realPr = Math.min(bal, repayMethod === 'equalPrincipal' ? initP / term : calcPmt(bal, rate, ml) - realI);
+                const newBal = bal - realPr;
+                if (cpiLinked) {
+                    return { bal: newBal, pmt: (realI + realPr) * cpiIndex, int: realI * cpiIndex, princ: realPr * cpiIndex };
+                }
+                return { bal: newBal, pmt: realI + realPr, int: realI, princ: realPr };
+            };
+
+            // Process all tracks
+            let r;
+            r = processTrack(balP, ratePrime, terms.p - globalM, initPrinc.p, terms.p, false);
+            balP = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balK, rateKalats, terms.k - globalM, initPrinc.k, terms.k, false);
+            balK = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balZ, rateKatz, terms.z - globalM, initPrinc.z, terms.z, true);
+            balZ = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balM, rateMalatz, terms.m - globalM, initPrinc.m, terms.m, false);
+            balM = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balMT, rateMatz, terms.mt - globalM, initPrinc.mt, terms.mt, true);
+            balMT = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
 
             totalInterestWasted += intTotal;
 
@@ -356,52 +318,29 @@ function simulate(params) {
             if (oop < 0) {
                 const surplus = Math.abs(oop);
                 const mode = config.surplusMode;
-
                 if (mode === 'invest' || mode === true) {
-                    const netInvest = surplus * (1 - fees.trade);
-                    reSideStockValue += netInvest;
-                    reSideStockBasis += netInvest;
-                    reSideStockBasisLinked += netInvest;
-                } else {
-                    reSideCash += surplus;
-                }
+                    const net = surplus * (1 - fees.trade);
+                    reSideStockValue += net; reSideStockBasis += net; reSideStockBasisLinked += net;
+                } else reSideCash += surplus;
 
                 if (mode === 'match') {
                     const grossTarget = surplus / (1 - fees.trade);
-                    let withdrawn = 0;
-                    if (config.exMode === 'hedged') {
-                        const used = Math.min(spValueHedged, grossTarget);
-                        spValueHedged -= used;
-                        spBasisLinked = Math.max(0, spBasisLinked - used);
-                        spInvestedILS = Math.max(0, spInvestedILS - used);
-                        withdrawn = used;
-                    } else {
-                        const availableILS = spUnits * currentEx;
-                        const usedILS = Math.min(availableILS, grossTarget);
-                        const unitsSold = usedILS / currentEx;
-                        spUnits -= unitsSold;
-                        spBasisUSD = Math.max(0, spBasisUSD - unitsSold);
-                        spBasisLinked = Math.max(0, spBasisLinked - usedILS);
-                        withdrawn = usedILS;
-                    }
-                    spSideCash += withdrawn * (1 - fees.trade);
+                    const isHedged = config.exMode === 'hedged';
+                    const used = isHedged ? Math.min(spValueHedged, grossTarget) : Math.min(spUnits * currentEx, grossTarget);
+                    if (isHedged) { spValueHedged -= used; spInvestedILS = Math.max(0, spInvestedILS - used); }
+                    else { spUnits -= used / currentEx; spBasisUSD = Math.max(0, spBasisUSD - used / currentEx); }
+                    spBasisLinked = Math.max(0, spBasisLinked - used);
+                    spSideCash += used * (1 - fees.trade);
                 }
             } else {
-                // Deficit
+                // Deficit - inject into S&P
                 totalCashInvested += oop;
                 spCashFlows.push({ month: globalM, amount: oop });
                 reCashFlows.push({ month: globalM, amount: oop });
                 spBasisLinked += oop;
-
-                // S&P Injection
-                let netInject = oop * (1 - fees.trade);
-                if (config.exMode !== 'hedged') spBasisUSD += (oop / currentEx);
-                if (config.exMode === 'hedged') {
-                    spValueHedged += netInject;
-                    spInvestedILS += oop;
-                } else {
-                    spUnits += (netInject / currentEx);
-                }
+                const net = oop * (1 - fees.trade);
+                if (config.exMode === 'hedged') { spValueHedged += net; spInvestedILS += oop; }
+                else { spUnits += net / currentEx; spBasisUSD += oop / currentEx; }
             }
 
             spBasisLinked *= (1 + mInf);
@@ -420,22 +359,17 @@ function simulate(params) {
 
             // Chart Data (End of Year)
             if (m === 11 && returnSeries) {
-                series.labels.push(y + 1);
-                series.flowRent.push(firstMonthRent);
-                series.flowInt.push(firstMonthInt * -1);
-                series.flowPrinc.push(firstMonthPrinc * -1);
-                series.flowNet.push(firstMonthNet);
-
-                // Net Worth Calc at Snapshot (PRE-TAX for chart - tax only at exit)
+                const remainingLoan = balP + balK + balZ + balM + balMT;
                 const exitVal = assetVal * (1 - fees.sell);
-                const netRE = (exitVal - (balP + balK + balZ + balM + balMT)) + reSideStockValue + reSideCash;
-
-                let spValILS = 0;
-                if (config.exMode === 'hedged') spValILS = spValueHedged;
-                else spValILS = spUnits * currentEx;
-
+                const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
+                const netRE = exitVal - remainingLoan + reSideStockValue + reSideCash;
                 const netSP = spValILS + spSideCash;
 
+                series.labels.push(y + 1);
+                series.flowRent.push(firstMonthRent);
+                series.flowInt.push(-firstMonthInt);
+                series.flowPrinc.push(-firstMonthPrinc);
+                series.flowNet.push(firstMonthNet);
                 series.reDataVal.push(netRE);
                 series.spDataVal.push(netSP);
                 series.reDataPct.push(((netRE - spInvestedILS) / spInvestedILS) * 100);
@@ -447,43 +381,25 @@ function simulate(params) {
     }
 
     // Final Calculation
+    const remainingLoan = balP + balK + balZ + balM + balMT;
     const exitValue = assetVal * (1 - fees.sell);
+    const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
+
     let reSideTax = 0;
     if (tax.useRE) {
         const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
-        if (reSideStockValue > reBasis) {
-            reSideTax = (reSideStockValue - reBasis) * 0.25;
-        }
+        if (reSideStockValue > reBasis) reSideTax = (reSideStockValue - reBasis) * 0.25;
     }
     
-    // Mas Shevach on real estate appreciation
-    let masShevach = 0;
-    if (tax.useMasShevach) {
-        const costBasisIndexed = assetPrice * cpiIndex; // CPI-adjusted cost basis
-        const shevachResult = calcMasShevach(assetVal, costBasisIndexed, tax.masShevachType || 'single');
-        masShevach = shevachResult.tax;
-    }
-    
-    const netRE = (exitValue - masShevach - (balP + balK + balZ + balM + balMT)) + (reSideStockValue - reSideTax) + reSideCash;
-
-    let spValILS = 0;
-    if (config.exMode === 'hedged') spValILS = spValueHedged;
-    else spValILS = spUnits * currentEx;
+    const masShevach = tax.useMasShevach ? calcMasShevach(assetVal, assetPrice * cpiIndex, tax.masShevachType || 'single').tax : 0;
+    const netRE = exitValue - masShevach - remainingLoan + (reSideStockValue - reSideTax) + reSideCash;
 
     let spTax = 0;
     if (tax.useSP) {
-        if (tax.mode === 'real') {
-            let profit = spValILS - spBasisLinked;
-            if (profit > 0) spTax = profit * 0.25;
-        } else {
-            if (config.exMode === 'hedged') {
-                let prof = spValILS - spInvestedILS;
-                if (prof > 0) spTax = prof * 0.25;
-            } else {
-                let profUSD = spUnits - spBasisUSD;
-                if (profUSD > 0) spTax = (profUSD * currentEx) * 0.25;
-            }
-        }
+        const profit = tax.mode === 'real' ? spValILS - spBasisLinked
+            : config.exMode === 'hedged' ? spValILS - spInvestedILS
+            : (spUnits - spBasisUSD) * currentEx;
+        if (profit > 0) spTax = profit * 0.25;
     }
     const netSP = spValILS - spTax + spSideCash;
 
@@ -492,7 +408,7 @@ function simulate(params) {
     const cagrSP = calcIRR(spCashFlows, netSP, totalMonths);
 
     // Pre-tax values for chart visualization
-    const grossRE = (exitValue - (balP + balK + balZ + balM + balMT)) + reSideStockValue + reSideCash;
+    const grossRE = exitValue - remainingLoan + reSideStockValue + reSideCash;
     const grossSP = spValILS + spSideCash;
     const totalRETax = masShevach + reSideTax;
 
@@ -500,12 +416,9 @@ function simulate(params) {
         netRE, netSP, cagrRE, cagrSP,
         grossRE, grossSP, totalRETax, reSideTax,
         totalCashInvested, totalInterestWasted, totalRentCollected,
-        firstPosMonth,
-        remainingLoan: balP + balK + balZ + balM + balMT,
-        reSideStockValue,
+        firstPosMonth, remainingLoan, reSideStockValue,
         spValueHedged, spUnits, spBasisLinked, spBasisUSD,
-        masShevach, spTax,
-        series
+        masShevach, spTax, series
     };
 }
 
