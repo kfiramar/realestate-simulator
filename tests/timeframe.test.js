@@ -14,7 +14,7 @@ describe('Simulation timeframe sync', () => {
         term.dispatchEvent(new Event('input'));
 
         expect(hor.value).toBe('15');
-        expect(document.getElementById('dHor').innerText).toContain('15');
+        expect(document.getElementById('dHor').textContent).toContain('15');
         // Verify simulation ran successfully
         expect(window.__lastSim).toBeDefined();
         expect(window.__lastSim.netRE).toBeDefined();

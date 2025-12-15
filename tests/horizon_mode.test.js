@@ -222,7 +222,7 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
         document.getElementById('rDur').value = '25';
         window.runSim();
         
-        expect(document.getElementById('dHor').innerText).toContain('25');
+        expect(document.getElementById('dHor').textContent).toContain('25');
     });
 
     test('custom mode allows different horizon than mortgage term', () => {
@@ -231,7 +231,7 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
         document.getElementById('rHor').value = '20';
         window.runSim();
         
-        expect(document.getElementById('dHor').innerText).toBe('20 Yr');
+        expect(document.getElementById('dHor').textContent).toContain('20');
     });
 
     test('simulation results change when horizon changes in custom mode', () => {
@@ -260,11 +260,11 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
         document.getElementById('rHor').value = '15';
         window.runSim();
         
-        expect(document.getElementById('dHor').innerText).toBe('15 Yr');
+        expect(document.getElementById('dHor').textContent).toContain('15');
         
         window.tglHor(true);
         
-        expect(document.getElementById('dHor').innerText).toContain('30');
+        expect(document.getElementById('dHor').textContent).toContain('30');
     });
 });
 

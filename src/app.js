@@ -13,13 +13,8 @@ let lang = window.i18n?.getLang() || 'en';
 function t(key) { return (T[lang] && T[lang][key]) || (T['en'] && T['en'][key]) || key; }
 
 function toggleLang() {
-    lang = lang === 'en' ? 'he' : 'en';
-    window.i18n?.setLang(lang);
-    localStorage.setItem('lang', lang);
-    const isHe = lang === 'he';
-    document.documentElement.lang = lang;
-    document.documentElement.dir = isHe ? 'rtl' : 'ltr';
-    document.body.classList.toggle('rtl', isHe);
+    lang = lang === 'en' ? 'he' : 'en'; window.i18n?.setLang(lang); localStorage.setItem('lang', lang);
+    const isHe = lang === 'he'; document.documentElement.lang = lang; document.documentElement.dir = isHe ? 'rtl' : 'ltr'; document.body.classList.toggle('rtl', isHe);
     applyTranslations();
 }
 
@@ -299,7 +294,8 @@ function syncPrime() {
 function setSurplusMode(m, opts = {}) {
     setState('surplusMode', m);
     ['consume', 'match', 'invest'].forEach(mode => $('surplus' + mode.charAt(0).toUpperCase() + mode.slice(1))?.classList.toggle('active', m === mode));
-    ($('surplusDescText') || $('surplusDesc'))?.innerText && (($('surplusDescText') || $('surplusDesc')).innerText = t('surplusDesc' + m.charAt(0).toUpperCase() + m.slice(1)));
+    const descEl = $('surplusDescText') || $('surplusDesc');
+    if (descEl) descEl.innerText = t('surplusDesc' + m.charAt(0).toUpperCase() + m.slice(1));
     if (!opts.skipSim) runSim();
 }
 
@@ -318,13 +314,10 @@ function setOptimizeMode(m) {
 function updateOptimalRepayMethod(baseParams, currentCagr) {
     const altMethod = repayMethod === 'spitzer' ? 'equalPrincipal' : 'spitzer';
     const altRes = AppLogic.simulate({ ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false });
-
     const starSpitzer = $('starSpitzer'), starEqual = $('starEqual');
     if (!starSpitzer || !starEqual) return;
-
     const [spitzerCagr, equalCagr] = repayMethod === 'spitzer' ? [currentCagr, altRes.cagrRE] : [altRes.cagrRE, currentCagr];
-    starSpitzer.classList.toggle('show', spitzerCagr > equalCagr);
-    starEqual.classList.toggle('show', equalCagr > spitzerCagr);
+    starSpitzer.classList.toggle('show', spitzerCagr > equalCagr); starEqual.classList.toggle('show', equalCagr > spitzerCagr);
 }
 
 function updateSweetSpots() {
