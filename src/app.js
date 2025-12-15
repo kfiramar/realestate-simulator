@@ -261,11 +261,7 @@ function updateDealDisplay(eq, downPct, initialLoan) {
 }
 
 function updateTrackTermEnabled() {
-    const tracks = {Prime: 'pctPrime', Kalats: 'pctKalats', Katz: 'pctKatz', Malatz: 'pctMalatz', Matz: 'pctMatz'};
-    Object.entries(tracks).forEach(([t, pctId]) => {
-        const el = $('term' + t);
-        if (el) el.disabled = (parseFloat($(pctId).value) || 0) <= 0;
-    });
+    Object.entries({Prime: 'pctPrime', Kalats: 'pctKalats', Katz: 'pctKatz', Malatz: 'pctMalatz', Matz: 'pctMatz'}).forEach(([t, pctId]) => { const el = $('term' + t); if (el) el.disabled = (parseFloat($(pctId).value) || 0) <= 0; });
 }
 
 function syncMixInput(track) {
