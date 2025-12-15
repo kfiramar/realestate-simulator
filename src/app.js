@@ -175,16 +175,11 @@ function updateLockUI() {
     if (summaryEl) summaryEl.innerText = Object.entries(locks).filter(([,v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k).join(' & ') || t('free');
 }
 function toggleLock(target) {
-    if (target === 'down') setState('lockDown', !lockDown);
-    if (target === 'term') setState('lockTerm', !lockTerm);
-    if (target === 'hor') {
-        if (horMode === 'auto' && lockHor) {
-            setState('horMode', 'custom');
-            $pill('pHor', false);
-            $('bHor').classList.add('show');
-        }
-        setState('lockHor', !lockHor);
-    }
+    const map = { down: ['lockDown', lockDown], term: ['lockTerm', lockTerm], hor: ['lockHor', lockHor] };
+    const [key, val] = map[target] || [];
+    if (!key) return;
+    if (target === 'hor' && horMode === 'auto' && lockHor) { setState('horMode', 'custom'); $pill('pHor', false); $('bHor').classList.add('show'); }
+    setState(key, !val);
     updateLockUI();
     runSim({ skipCharts: true });
 }
@@ -302,13 +297,8 @@ function checkMix() {
     
     $('mixWarn')?.style && ($('mixWarn').style.display = sum === 100 ? 'none' : 'block');
     $('chartsContainer')?.classList.toggle('charts-dim', sum !== 100 || !fixedOk);
-    
-    const chartsWarn = $('chartsWarn');
-    if (chartsWarn) {
-        const msg = sum !== 100 ? 'Mix must total 100% of mortgage to view charts' : !fixedOk ? 'Min 33% fixed rate required (Kalatz/ Katz)' : '';
-        chartsWarn.textContent = msg;
-        chartsWarn.style.display = msg ? 'block' : 'none';
-    }
+    const chartsWarn = $('chartsWarn'), msg = sum !== 100 ? 'Mix must total 100% of mortgage to view charts' : !fixedOk ? 'Min 33% fixed rate required (Kalatz/ Katz)' : '';
+    if (chartsWarn) { chartsWarn.textContent = msg; chartsWarn.style.display = msg ? 'block' : 'none'; }
     updateTrackTermEnabled();
     runSim();
 }
@@ -500,10 +490,7 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
     $('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${((res.totalInterestWasted / assetPriceStart) * 100).toFixed(0)}%)`;
     $('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
     $('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
-    
-    const setKPI = (id, val) => { const el = $(id); if (el) el.innerText = fmt(val || 0) + ' ₪'; };
-    setKPI('kMasShevach', res.masShevach);
-    setKPI('kCapGains', res.spTax);
+    [['kMasShevach', res.masShevach], ['kCapGains', res.spTax]].forEach(([id, val]) => { const el = $(id); if (el) el.innerText = fmt(val || 0) + ' ₪'; });
 
     const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
     $('valPosCF')?.innerText && ($('valPosCF').innerText = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y');
