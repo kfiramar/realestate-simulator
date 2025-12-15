@@ -17,16 +17,15 @@
 | 11 | Function Extraction | ✅ Complete | runSim decomposition |
 | 12 | Code Simplification | ✅ Complete | Iteration patterns, destructuring |
 
-**app.js: 1928 → 588 lines (69% reduction)**
-**Total source: 2384 lines across 8 modules**
-**55 functions in app.js**
+**app.js: 1928 → 508 lines (73% reduction)**
+**Total source: 2304 lines across 8 modules**
 **All 276 tests passing**
 
 ## Module Structure
 ```
 src/
 ├── index.html              # Entry point with Alpine.js bindings
-├── app.js                  # Main app logic (588 lines, 55 functions)
+├── app.js                  # Main app logic (508 lines)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
