@@ -1,81 +1,51 @@
-// Pure logic module: constants, calcPmt, calcCAGR, searchSweetSpots, and simulate.
+// Pure logic module
 
-// Purchase Tax (מס רכישה) brackets - valid 16.01.2024 to 15.01.2028
-const PURCHASE_TAX_FIRST_HOME = [
-    { limit: 1978745, rate: 0 },
-    { limit: 2347040, rate: 0.035 },
-    { limit: 6055070, rate: 0.05 },
-    { limit: 20183565, rate: 0.08 },
-    { limit: Infinity, rate: 0.10 }
-];
+// Purchase Tax brackets (valid 16.01.2024 to 15.01.2028)
+const PURCHASE_TAX_FIRST = [[1978745, 0], [2347040, 0.035], [6055070, 0.05], [20183565, 0.08], [Infinity, 0.10]];
+const PURCHASE_TAX_ADD = [[6055070, 0.08], [Infinity, 0.10]];
 
-const PURCHASE_TAX_ADDITIONAL = [
-    { limit: 6055070, rate: 0.08 },
-    { limit: Infinity, rate: 0.10 }
-];
-
-function calcPurchaseTax(propertyValue, isFirstHome = true) {
-    const brackets = isFirstHome ? PURCHASE_TAX_FIRST_HOME : PURCHASE_TAX_ADDITIONAL;
-    let tax = 0;
-    let prevLimit = 0;
-    
-    for (const bracket of brackets) {
-        if (propertyValue <= prevLimit) break;
-        const taxableInBracket = Math.min(propertyValue, bracket.limit) - prevLimit;
-        if (taxableInBracket > 0) {
-            tax += taxableInBracket * bracket.rate;
-        }
-        prevLimit = bracket.limit;
+function calcPurchaseTax(value, isFirst = true) {
+    const brackets = isFirst ? PURCHASE_TAX_FIRST : PURCHASE_TAX_ADD;
+    let tax = 0, prev = 0;
+    for (const [limit, rate] of brackets) {
+        if (value <= prev) break;
+        tax += (Math.min(value, limit) - prev) * rate;
+        prev = limit;
     }
-    
     return Math.round(tax);
 }
 
-// --- MAS SHEVACH (Capital Gains Tax) ---
-const MAS_SHEVACH_EXEMPTION_CAP = 5008000; // 2024-2027
+// Mas Shevach (Capital Gains Tax)
+const MAS_SHEVACH_CAP = 5008000;
 
-function calcMasShevach(salePrice, costBasis, exemptionType = 'single') {
-    const realGain = salePrice - costBasis;
-    if (realGain <= 0) return { tax: 0, exemptGain: 0, taxableGain: 0 };
-    
-    // 'none' = investment property, no exemption
-    if (exemptionType === 'none') {
-        return { tax: Math.round(realGain * 0.25), exemptGain: 0, taxableGain: realGain };
-    }
-    
-    // 'single' = single apartment exemption with cap
-    if (salePrice <= MAS_SHEVACH_EXEMPTION_CAP) {
-        return { tax: 0, exemptGain: realGain, taxableGain: 0 };
-    }
-    
-    // Luxury apartment: pro-rata split
-    const exemptFraction = MAS_SHEVACH_EXEMPTION_CAP / salePrice;
-    const exemptGain = realGain * exemptFraction;
-    const taxableGain = realGain * (1 - exemptFraction);
-    return { tax: Math.round(taxableGain * 0.25), exemptGain, taxableGain };
+function calcMasShevach(salePrice, costBasis, type = 'single') {
+    const gain = salePrice - costBasis;
+    if (gain <= 0) return { tax: 0, exemptGain: 0, taxableGain: 0 };
+    if (type === 'none') return { tax: Math.round(gain * 0.25), exemptGain: 0, taxableGain: gain };
+    if (salePrice <= MAS_SHEVACH_CAP) return { tax: 0, exemptGain: gain, taxableGain: 0 };
+    const exemptFrac = MAS_SHEVACH_CAP / salePrice;
+    return { tax: Math.round(gain * (1 - exemptFrac) * 0.25), exemptGain: gain * exemptFrac, taxableGain: gain * (1 - exemptFrac) };
 }
 
+// Historical data
 const H_SP = [0.1088, 0.0491, 0.1579, 0.0549, -0.3700, 0.2646, 0.1506, 0.0211, 0.1600, 0.3239, 0.1369, 0.0138, 0.1196, 0.2183, -0.0438, 0.3149, 0.1840, 0.2871, -0.1811, 0.2629, 0.2400];
 const H_RE = [-0.02, 0.04, 0.00, 0.03, 0.06, 0.19, 0.15, 0.04, 0.05, 0.08, 0.06, 0.07, 0.05, 0.04, 0.01, 0.03, 0.04, 0.12, 0.18, 0.02, 0.05];
 const H_EX = [4.48, 4.49, 4.45, 4.11, 3.59, 3.93, 3.73, 3.58, 3.85, 3.61, 3.58, 3.88, 3.84, 3.60, 3.59, 3.56, 3.44, 3.23, 3.36, 3.68, 3.75];
 const H_CPI = [0.012, 0.024, -0.001, 0.034, 0.038, 0.039, 0.027, 0.022, 0.016, 0.018, -0.002, -0.010, -0.002, 0.004, 0.008, 0.006, -0.007, 0.028, 0.053, 0.030, 0.032];
 const H_BOI = [0.041, 0.035, 0.050, 0.040, 0.035, 0.010, 0.015, 0.030, 0.025, 0.015, 0.0075, 0.001, 0.001, 0.001, 0.0025, 0.001, 0.001, 0.035, 0.045, 0.045];
+const getH = (arr, i) => i < arr.length ? arr[i] : arr[arr.length - 1];
 
-function getH(arr, i) { return i < arr.length ? arr[i] : arr[arr.length - 1]; }
-
+// Core calculations
 function calcPmt(p, rAnn, m) {
     if (p <= 0.01) return 0;
     if (rAnn === 0) return p / m;
-    let r = rAnn / 12;
+    const r = rAnn / 12;
     return p * (r * Math.pow(1 + r, m)) / (Math.pow(1 + r, m) - 1);
 }
 
-// Calculate IRR (annualized) given cash flows and final value
-// cashFlows: [{ month, amount }], finalValue: number, totalMonths: number
+// IRR calculation (Newton-Raphson)
 function calcIRR(cashFlows, finalValue, totalMonths) {
-    // Newton-Raphson to find monthly rate r where:
-    // sum(cf.amount * (1+r)^(totalMonths - cf.month)) = finalValue
-    let r = 0.007; // Initial guess ~8.7% annual
+    let r = 0.007;
     for (let i = 0; i < 50; i++) {
         let fv = 0, dfv = 0;
         for (const cf of cashFlows) {
@@ -83,17 +53,13 @@ function calcIRR(cashFlows, finalValue, totalMonths) {
             fv += cf.amount * Math.pow(1 + r, n);
             dfv += cf.amount * n * Math.pow(1 + r, n - 1);
         }
-        const err = fv - finalValue;
-        if (Math.abs(err) < 0.01) break;
-        r -= err / dfv;
+        if (Math.abs(fv - finalValue) < 0.01) break;
+        r -= (fv - finalValue) / dfv;
     }
-    return (Math.pow(1 + r, 12) - 1) * 100; // Convert monthly to annual %
+    return (Math.pow(1 + r, 12) - 1) * 100;
 }
 
-/**
- * Core Simulation Engine
- * Handles both optimizing (single value return) and charting (time series return).
- */
+// Core Simulation Engine
 function simulate(params) {
     const {
         equity, downPct,
@@ -471,57 +437,24 @@ function searchSweetSpots(params) {
     return best;
 }
 
-/**
- * Calculate balance after k payments (closed-form)
- * @param {number} P - Principal
- * @param {number} rAnn - Annual interest rate (decimal)
- * @param {number} n - Total months
- * @param {number} k - Payments made
- * @param {string} method - 'spitzer' or 'equalPrincipal'
- */
+// Balance after k payments (closed-form)
 function calcBalanceAfterK(P, rAnn, n, k, method = 'spitzer') {
     if (k >= n) return 0;
     if (k <= 0) return P;
-    if (method === 'equalPrincipal') {
-        return P * (1 - k / n);
-    }
-    // Spitzer closed-form: B_k = P(1+r)^k - A * ((1+r)^k - 1) / r
+    if (method === 'equalPrincipal') return P * (1 - k / n);
     const r = rAnn / 12;
     if (r === 0) return P * (1 - k / n);
-    const A = calcPmt(P, rAnn, n);
-    const factor = Math.pow(1 + r, k);
+    const A = calcPmt(P, rAnn, n), factor = Math.pow(1 + r, k);
     return P * factor - A * (factor - 1) / r;
 }
 
-/**
- * Calculate total interest over loan life (closed-form)
- * @param {number} P - Principal
- * @param {number} rAnn - Annual interest rate (decimal)
- * @param {number} n - Total months
- * @param {string} method - 'spitzer' or 'equalPrincipal'
- */
+// Total interest over loan life (closed-form)
 function calcTotalInterest(P, rAnn, n, method = 'spitzer') {
-    if (method === 'equalPrincipal') {
-        const r = rAnn / 12;
-        return r * P * (n + 1) / 2;
-    }
-    // Spitzer: Total Interest = A * n - P
-    const A = calcPmt(P, rAnn, n);
-    return A * n - P;
+    if (method === 'equalPrincipal') return (rAnn / 12) * P * (n + 1) / 2;
+    return calcPmt(P, rAnn, n) * n - P;
 }
 
-/**
- * Generate full amortization schedule
- * @param {Object} params
- * @param {number} params.principal - Loan amount
- * @param {number} params.annualRate - Annual interest rate (decimal, e.g., 0.047 for 4.7%)
- * @param {number} params.termMonths - Loan term in months
- * @param {string} params.method - 'spitzer' or 'equalPrincipal'
- * @param {boolean} params.cpiLinked - Whether loan is CPI-linked
- * @param {number|number[]} params.cpiRate - Annual CPI rate(s) (decimal). Single value or array per year.
- * @param {Object[]} params.rateResets - Array of {month, newRate} for variable rate resets
- * @returns {Object} { schedule: [...], totalInterest, totalPayments }
- */
+// Generate full amortization schedule
 function generateSchedule(params) {
     const { principal: P, annualRate, termMonths: n, method = 'spitzer', cpiLinked = false, cpiRate = 0, rateResets = [] } = params;
     const schedule = [], resets = [...rateResets].sort((a, b) => a.month - b.month);
