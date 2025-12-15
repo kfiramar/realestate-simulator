@@ -14,11 +14,11 @@
 | 8 | Extract Persistence | ✅ Complete | 132 lines → src/persistence/ |
 | 9 | Alpine.js Adoption | ✅ Complete | 20+ reactive UI bindings |
 | 10 | DOM Helpers | ✅ Complete | $(), $pct(), $int(), $pill(), $ltr() |
-| 11 | Function Extraction | ✅ Complete | runSim: 242 → ~60 lines |
+| 11 | Function Extraction | ✅ Complete | runSim decomposition |
 | 12 | Code Simplification | ✅ Complete | Iteration patterns, destructuring |
 
-**app.js: 1928 → 694 lines (64% reduction)**
-**Total source: 2490 lines across 8 modules**
+**app.js: 1928 → 675 lines (65% reduction)**
+**Total source: 2471 lines across 8 modules**
 **55 functions in app.js**
 **All 276 tests passing**
 
@@ -26,7 +26,7 @@
 ```
 src/
 ├── index.html              # Entry point with Alpine.js bindings
-├── app.js                  # Main app logic (694 lines, 55 functions)
+├── app.js                  # Main app logic (675 lines, 55 functions)
 ├── logic.js                # Simulation engine (771 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
@@ -39,7 +39,7 @@ src/
 
 ## Key Improvements
 
-### 1. Module Extraction (~1200 lines moved out)
+### 1. Module Extraction (~1250 lines moved out)
 - Translations, constants, charts, prepayments, persistence, state
 
 ### 2. Alpine.js Integration (20+ bindings)
