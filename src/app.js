@@ -140,13 +140,8 @@ function updateCreditUI() {
 }
 
 function refreshRatesForProfile() {
-    const tier = getCreditTier(parseInt(creditScore, 10));
-    const base = parseFloat($('sInt').value) || 4.25;
-    const rateMap = {Prime: ['prime', 'riskP'], Kalats: ['kalats', 'riskK'], Malatz: ['malatz', 'riskK'], Katz: ['katz', 'riskZ'], Matz: ['matz', 'riskZ']};
-    Object.entries(rateMap).forEach(([track, [anchor, risk]]) => {
-        const el = $('rate' + track);
-        if (el && tier[risk] !== null) el.value = Math.max(0.1, base + ANCHORS[anchor] + tier[risk]).toFixed(2);
-    });
+    const tier = getCreditTier(parseInt(creditScore, 10)), base = parseFloat($('sInt').value) || 4.25;
+    Object.entries({Prime: ['prime', 'riskP'], Kalats: ['kalats', 'riskK'], Malatz: ['malatz', 'riskK'], Katz: ['katz', 'riskZ'], Matz: ['matz', 'riskZ']}).forEach(([track, [anchor, risk]]) => { const el = $('rate' + track); if (el && tier[risk] !== null) el.value = Math.max(0.1, base + ANCHORS[anchor] + tier[risk]).toFixed(2); });
 }
 
 function setCreditScore(v) {
