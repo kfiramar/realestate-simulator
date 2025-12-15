@@ -20,7 +20,7 @@
 
 **app.js: 1928 → 508 lines (74% reduction)**
 **logic.js: 771 → 493 lines (36% reduction)**
-**Total source: 1875 lines across 8 modules (31% reduction from 2699)**
+**Total source: 1819 lines across 8 modules (33% reduction from 2699)**
 **All 276 tests passing**
 
 ## Module Structure
@@ -32,7 +32,7 @@ src/
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
 ├── config/index.js         # Constants (35 lines)
-├── state/index.js          # State management + Alpine store (83 lines)
+├── state/index.js          # State management + Alpine store (27 lines)
 ├── charts/index.js         # Chart rendering (250 lines)
 ├── prepayments/index.js    # Prepayment logic (150 lines)
 └── persistence/index.js    # localStorage save/load (38 lines)
