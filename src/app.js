@@ -403,18 +403,10 @@ function runSim(opts = {}) {
     if (activeTerms.length === 0) activeTerms.push(mortDur);
 
     const maxTrackYears = Math.max(...activeTerms);
-    if (advancedTermMode) {
-        mortDur = maxTrackYears;
-        mainTermSlider.value = mortDur;
-        $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix'));
-    }
+    if (advancedTermMode) { mortDur = maxTrackYears; mainTermSlider.value = mortDur; $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix')); }
 
     const effectiveMax = Math.max(maxTrackYears, mortDur);
-    if (horMode === 'auto') {
-        $('rHor').value = effectiveMax;
-        $('dHor').innerHTML = t('auto') + ' ' + $ltr('(' + effectiveMax + t('ySuffix') + ')');
-        simDur = effectiveMax;
-    }
+    if (horMode === 'auto') { $('rHor').value = effectiveMax; $('dHor').innerHTML = t('auto') + ' ' + $ltr('(' + effectiveMax + t('ySuffix') + ')'); simDur = effectiveMax; }
 
     if (!opts.skipSweetSpots) updateSweetSpots();
 
@@ -522,21 +514,9 @@ function updateRateLabels() {
     ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
-function resetAll() {
-    if (!confirm('Reset all settings to defaults?')) return;
-    P.clear();
-    location.reload();
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-    runSim();
-}
-
-function printResults() {
-    window.print();
-}
+function resetAll() { if (confirm('Reset all settings to defaults?')) { P.clear(); location.reload(); } }
+function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); runSim(); }
+function printResults() { window.print(); }
 
 Object.assign(window, {
     setMode, tgl, setGlobalMode, applyScenario, applyTamheel, tglHor, setTaxMode, updMeter, checkMix, syncPrime,
