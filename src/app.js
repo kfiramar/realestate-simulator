@@ -2,6 +2,7 @@ const AppLogic = window.Logic || {};
 const T = window.i18n?.T || { en: {}, he: {} };
 const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig || {};
 
+const TRACKS = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
 const $ = id => document.getElementById(id);
 const $pct = id => parseFloat($(id)?.value || 0) / 100;
 const $int = id => parseInt($(id)?.value || 0);
@@ -43,24 +44,15 @@ function syncStateFromModule() {
     ({ mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode } = s);
 }
 
-const stateVars = { mode: v => mode = v, exMode: v => exMode = v, taxMode: v => taxMode = v, horMode: v => horMode = v,
+const stateSetters = { mode: v => mode = v, exMode: v => exMode = v, taxMode: v => taxMode = v, horMode: v => horMode = v,
     lockDown: v => lockDown = v, lockTerm: v => lockTerm = v, lockHor: v => lockHor = v, buyerType: v => buyerType = v,
     advancedTermMode: v => advancedTermMode = v, bootstrapping: v => bootstrapping = v, creditScore: v => creditScore = v,
     surplusMode: v => surplusMode = v, repayMethod: v => repayMethod = v, optimizeMode: v => optimizeMode = v, rateEditMode: v => rateEditMode = v };
 
-function setState(key, value) {
-    S.set(key, value);
-    stateVars[key]?.(value);
-}
+function setState(key, value) { S.set(key, value); stateSetters[key]?.(value); }
 syncStateFromModule();
 
-const cfg = {
-    SP: { is: false, b: 'bSP', s: 'sSP', v: 'vSP', p: 'pSP' },
-    App: { is: false, b: 'bApp', s: 'sApp', v: 'vApp', p: 'pApp' },
-    Int: { is: false, b: 'bInt', s: 'sInt', v: 'vInt', p: 'pInt' },
-    Yld: { is: false, b: 'bYld', s: 'sYld', v: 'vYld', p: 'pYld' },
-    Inf: { is: false, b: 'bInf', s: 'sInf', v: 'vInf', p: 'pInf' }
-};
+const cfg = Object.fromEntries(['SP','App','Int','Yld','Inf'].map(k => [k, { is: false, b: 'b'+k, s: 's'+k, v: 'v'+k, p: 'p'+k }]));
 
 function setMode(m, opts = {}) {
     setState('mode', m);
@@ -179,7 +171,7 @@ function showTermVal(elId, v) {
 
 function syncTrackTermsToMain() {
     const dur = $('rDur').value;
-    ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => { $('term' + t).value = dur; showTermVal('term' + t + 'Val', dur); });
+    TRACKS.forEach(t => { $('term' + t).value = dur; showTermVal('term' + t + 'Val', dur); });
 }
 
 function toggleAdvancedTerms() {
@@ -212,17 +204,17 @@ function updateDealDisplay(eq, downPct, initialLoan) {
 
     const purchaseTax = ($('cPurchaseTax')?.checked ?? true) ? AppLogic.calcPurchaseTax(assetPriceStart, buyerType === 'first') : 0;
     $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
-    ['Prime','Kalats','Malatz','Katz','Matz'].forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track); if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(initialLoan * pct / 100000)}K</span>`; });
+    TRACKS.forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track); if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(initialLoan * pct / 100000)}K</span>`; });
     return { assetPriceStart, purchaseTax };
 }
 
 function updateTrackTermEnabled() {
-    Object.entries({Prime: 'pctPrime', Kalats: 'pctKalats', Katz: 'pctKatz', Malatz: 'pctMalatz', Matz: 'pctMatz'}).forEach(([t, pctId]) => { const el = $('term' + t); if (el) el.disabled = (parseFloat($(pctId).value) || 0) <= 0; });
+    TRACKS.forEach(t => { const el = $('term' + t); if (el) el.disabled = ($int('pct' + t) || 0) <= 0; });
 }
 
 function syncMixInput(track) {
-    const slider = $('slider' + track), tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
-    const othersSum = tracks.filter(t => t !== track).reduce((sum, t) => sum + $int('pct' + t), 0);
+    const slider = $('slider' + track);
+    const othersSum = TRACKS.filter(t => t !== track).reduce((sum, t) => sum + $int('pct' + t), 0);
     const maxAllowed = 100 - othersSum, newVal = Math.min(parseInt(slider.value) || 0, maxAllowed);
 
     if (parseInt(slider.value) > maxAllowed) showMaxTooltip(slider, maxAllowed);
@@ -250,11 +242,10 @@ function updateVisualBar(p, k, m, z, mt) {
 }
 
 function checkMix() {
-    const tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
-    const vals = tracks.map(t => $int('pct' + t));
+    const vals = TRACKS.map(t => $int('pct' + t));
     const [p, k, z, m, mt] = vals;
 
-    tracks.forEach((t, i) => { $('slider' + t).value = vals[i]; $('disp' + t).innerText = vals[i] + '%'; });
+    TRACKS.forEach((t, i) => { $('slider' + t).value = vals[i]; $('disp' + t).innerText = vals[i] + '%'; });
     updateVisualBar(p, k, m, z, mt);
 
     const sum = vals.reduce((a, b) => a + b, 0), fixedOk = (k + z) >= 33;
@@ -273,7 +264,7 @@ function checkMix() {
 
 function toggleRateEdit() {
     setState('rateEditMode', !rateEditMode);
-    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block'; if (inp) inp.classList.toggle('show', rateEditMode); if (!rateEditMode && lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
+    TRACKS.forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block'; if (inp) inp.classList.toggle('show', rateEditMode); if (!rateEditMode && lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
 function togglePrepaySection() {
@@ -371,11 +362,11 @@ function runSim(opts = {}) {
     for (let k in cfg) { const el = $(cfg[k].v); if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%'; }
 
     const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
-    let [termP, termK, termZ, termM, termMT] = ['Prime','Kalats','Katz','Malatz','Matz'].map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
+    let [termP, termK, termZ, termM, termMT] = TRACKS.map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
 
     if (!advancedTermMode) {
         termP = termK = termZ = termM = termMT = clampTerm(mortDur);
-        ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => { $('term' + t).value = termP; showTermVal('term' + t + 'Val', termP); });
+        TRACKS.forEach(t => { $('term' + t).value = termP; showTermVal('term' + t + 'Val', termP); });
     }
 
     const termMap = {Prime: termP, Kalats: termK, Katz: termZ, Malatz: termM, Matz: termMT};
@@ -485,13 +476,13 @@ function bootstrap() {
     if (horMode === 'custom') { $pill('pHor', false); $('bHor').classList.add('show'); }
     checkMix();
     window.Prepayments?.renderPrepayments();
-    if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
+    if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); TRACKS.forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
     bootstrapping = false;
     runSim();
 }
 
 function updateRateLabels() {
-    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
+    TRACKS.forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
 function resetAll() { if (confirm('Reset all settings to defaults?')) { P.clear(); location.reload(); } }
