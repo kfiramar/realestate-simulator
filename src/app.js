@@ -8,6 +8,8 @@ const $pct = id => parseFloat($(id)?.value || 0) / 100;
 const $int = id => parseInt($(id)?.value || 0);
 const $pill = (id, isFirst) => { const p = $(id); if (p) { p.children[0]?.classList.toggle('active', isFirst); p.children[1]?.classList.toggle('active', !isFirst); } };
 const $ltr = txt => lang === 'he' ? `<span style="direction:ltr;display:inline-block">${txt}</span>` : txt;
+const getMix = () => ({ prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') });
+const getRates = () => ({ prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'), malatz: $pct('rateMalatz'), matz: $pct('rateMatz') });
 
 let lang = window.i18n?.getLang() || 'en';
 
@@ -325,7 +327,7 @@ function updateSweetSpots() {
         tradeFee: $pct('rTrade'), merFee: $pct('rMer'), buyCostPct: $pct('rBuyCost'), maintPct: $pct('rMaint'), sellCostPct: $pct('rSellCost'),
         overrides: { SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
             RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'), RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz') },
-        mix: { prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') },
+        mix: getMix(),
         termMix: { p: $int('termPrime') || curDur, k: $int('termKalats') || curDur, z: $int('termKatz') || curDur, m: $int('termMalatz') || curDur, mt: $int('termMatz') || curDur },
         drift: -0.5, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride, surplusMode, purchaseDiscount: $pct('rDiscount'), optimizeMode
@@ -393,8 +395,7 @@ function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM
     return {
         equity: eq, downPct, loanTerm: mortDur, simHorizon: simDur,
         termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
-        mix: { prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') },
-        rates: { prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'), malatz: $pct('rateMalatz'), matz: $pct('rateMatz') },
+        mix: getMix(), rates: getRates(),
         market: { sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld') },
         fees: { buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax },
         maintPct: $pct('rMaint'), purchaseDiscount: $pct('rDiscount'),
