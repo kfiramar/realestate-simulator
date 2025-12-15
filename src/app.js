@@ -574,16 +574,11 @@ function saveState() {
 }
 
 function loadState() {
-    const saved = P.load();
-    if (!saved) return false;
-    const s = P.restore(saved);
+    const saved = P.load(), s = saved && P.restore(saved);
     if (!s) return false;
-
-    // Restore state vars
     ['horMode','surplusMode','repayMethod','creditScore','taxMode','exMode','lockDown','lockTerm','lockHor','advancedTermMode','buyerType','mode']
         .forEach(k => { if (s[k] != null) setState(k, s[k]); });
     if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
-
     return true;
 }
 
