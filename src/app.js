@@ -2,14 +2,12 @@ const AppLogic = window.Logic || {};
 const T = window.i18n?.T || { en: {}, he: {} };
 const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig || {};
 
-// --- DOM HELPERS ---
 const $ = id => document.getElementById(id);
 const $pct = id => parseFloat($(id)?.value || 0) / 100;
 const $int = id => parseInt($(id)?.value || 0);
 const $pill = (id, isFirst) => { const p = $(id); if (p) { p.children[0]?.classList.toggle('active', isFirst); p.children[1]?.classList.toggle('active', !isFirst); } };
 const $ltr = txt => lang === 'he' ? `<span style="direction:ltr;display:inline-block">${txt}</span>` : txt;
 
-// --- TRANSLATIONS ---
 let lang = window.i18n?.getLang() || 'en';
 
 function t(key) { return (T[lang] && T[lang][key]) || (T['en'] && T['en'][key]) || key; }
@@ -41,10 +39,8 @@ function applyTranslations() {
     runSim();
 }
 
-// --- STATE (using AppState module) ---
 const S = window.AppState || { get: () => null, set: () => {}, getAll: () => ({}), setAll: () => {} };
 
-// Convenience getters/setters for backward compatibility
 let mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode;
 
 function syncStateFromModule() {
@@ -71,7 +67,6 @@ const cfg = {
     Inf: { is: false, b: 'bInf', s: 'sInf', v: 'vInf', p: 'pInf' }
 };
 
-// --- UI FUNCTIONS ---
 function setMode(m, opts = {}) {
     setState('mode', m);
     $('equityBox')?.classList.toggle('show', m === 'currency');
@@ -361,7 +356,6 @@ function togglePrepaySection() {
     if (arrow) arrow.textContent = isOpen ? '+' : '−';
 }
 
-// Prepayments - delegated to module
 function getPrepayments() { return window.Prepayments?.getPrepayments() || []; }
 
 function syncPrime() {
@@ -555,7 +549,6 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
     }
 }
 
-// --- PERSISTENCE ---
 const STORAGE_KEY = window.Persistence?.STORAGE_KEY || 'mortgageCalcState';
 const P = window.Persistence || { save: () => {}, load: () => null, restore: () => null, clear: () => {} };
 
@@ -609,7 +602,6 @@ function updateRateLabels() {
     });
 }
 
-// --- UTILITY FUNCTIONS ---
 function resetAll() {
     if (!confirm('Reset all settings to defaults?')) return;
     P.clear();
@@ -626,7 +618,6 @@ function printResults() {
     window.print();
 }
 
-// Expose functions for inline handlers and tests
 Object.assign(window, {
     setMode, tgl, setGlobalMode, applyScenario, applyTamheel, tglHor, setTaxMode, updMeter, checkMix, syncPrime,
     calcPmt: AppLogic.calcPmt, calcCAGR: AppLogic.calcCAGR, updateSweetSpots, runSim, setCreditScore, toggleLock,
