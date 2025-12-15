@@ -186,9 +186,7 @@ function setTaxMode(m) {
     setState('taxMode', m);
     $('txReal').classList.toggle('active', m === 'real');
     $('txForex').classList.toggle('active', m === 'forex');
-    const label = m === 'real' ? 'Real' : 'Nominal';
-    const vTaxMode = $('vTaxMode');
-    if (vTaxMode) vTaxMode.innerText = label;
+    $('vTaxMode')?.innerText && ($('vTaxMode').innerText = m === 'real' ? 'Real' : 'Nominal');
     runSim();
 }
 function updateLockUI() {
@@ -266,27 +264,18 @@ function updateSliderLabels() {
 
 // Update deal structure display (asset, leverage, mortgage, tax)
 function updateDealDisplay(eq, downPct, initialLoan) {
-    const assetPriceStart = eq / downPct;
-    const lev = 1 / downPct;
+    const assetPriceStart = eq / downPct, lev = 1 / downPct;
     $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
     $('valLev').innerText = 'x' + lev.toFixed(1);
     $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
     $('valMortgage').innerText = fmt(initialLoan) + ' ₪';
 
-    const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = $('cPurchaseTax')?.checked ?? true;
-    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPriceStart, isFirstHome) : 0;
-    const taxEl = $('valPurchaseTax');
-    if (taxEl) taxEl.innerText = fmt(purchaseTax) + ' ₪';
+    const purchaseTax = ($('cPurchaseTax')?.checked ?? true) ? AppLogic.calcPurchaseTax(assetPriceStart, buyerType === 'first') : 0;
+    $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
 
-    // Update track percentage displays with amounts
     ['Prime','Kalats','Malatz','Katz','Matz'].forEach(track => {
-        const pct = parseFloat($('pct'+track)?.value) || 0;
-        const el = $('disp'+track);
-        if (el) {
-            const amt = initialLoan * pct / 100;
-            el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(amt/1000)}K</span>`;
-        }
+        const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track);
+        if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(initialLoan * pct / 100000)}K</span>`;
     });
 
     return { assetPriceStart, purchaseTax };
