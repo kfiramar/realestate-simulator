@@ -90,12 +90,7 @@ function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
     ['SP','App','Int','Inf','Yld'].forEach(k => $('s' + k).value = s[k.toLowerCase()]);
     ['bear','base','bull'].forEach(t => $('scen' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', type === t));
-
-    refreshRatesForProfile();
-    updateRateLabels();
-    updateCreditUI();
-    applyLtvCaps();
-    updMeter();
+    refreshRatesForProfile(); updateRateLabels(); updateCreditUI(); applyLtvCaps(); updMeter();
     if (!opts.skipSim) runSim();
 }
 
@@ -142,11 +137,7 @@ function refreshRatesForProfile() {
 
 function setCreditScore(v) {
     setState('creditScore', parseInt(v, 10) || creditScore);
-    updateCreditUI();
-    applyLtvCaps();
-    refreshRatesForProfile();
-    updateRateLabels();
-    runSim();
+    updateCreditUI(); applyLtvCaps(); refreshRatesForProfile(); updateRateLabels(); runSim();
 }
 
 function tglHor(isAuto) {
@@ -209,11 +200,7 @@ function updMeter() {
     [v < 2, v >= 2 && v < 4, v >= 4].forEach((active, i) => s[i].style.opacity = active ? 1 : 0.2);
 }
 
-function fmt(v) {
-    if (Math.abs(v) >= 1000000) return (v / 1000000).toFixed(2) + 'M';
-    if (Math.abs(v) >= 1000) return (v / 1000).toFixed(0) + 'k';
-    return v.toFixed(0);
-}
+function fmt(v) { return Math.abs(v) >= 1000000 ? (v / 1000000).toFixed(2) + 'M' : Math.abs(v) >= 1000 ? (v / 1000).toFixed(0) + 'k' : v.toFixed(0); }
 function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
