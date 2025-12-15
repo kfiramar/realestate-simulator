@@ -336,8 +336,7 @@ function syncPrime() {
 function setSurplusMode(m, opts = {}) {
     setState('surplusMode', m);
     ['consume', 'match', 'invest'].forEach(mode => $('surplus' + mode.charAt(0).toUpperCase() + mode.slice(1))?.classList.toggle('active', m === mode));
-    const descEl = $('surplusDescText') || $('surplusDesc');
-    if (descEl) descEl.innerText = t('surplusDesc' + m.charAt(0).toUpperCase() + m.slice(1));
+    ($('surplusDescText') || $('surplusDesc'))?.innerText && (($('surplusDescText') || $('surplusDesc')).innerText = t('surplusDesc' + m.charAt(0).toUpperCase() + m.slice(1)));
     if (!opts.skipSim) runSim();
 }
 
