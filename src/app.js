@@ -238,8 +238,7 @@ function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
 function updateSliderLabels() {
-    const sliders = {Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1};
-    Object.entries(sliders).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
+    Object.entries({Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1}).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
 }
 
 function updateDealDisplay(eq, downPct, initialLoan) {
