@@ -511,22 +511,15 @@ function runSim(opts = {}) {
 }
 
 function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM, termMT, purchaseTax, returnSeries) {
-    let activeDrift = -0.5;
-    if ($('scenBear')?.classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
-    if ($('scenBull')?.classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
-
+    const activeDrift = $('scenBear')?.classList.contains('active') ? SCENARIOS.bear.drift : $('scenBull')?.classList.contains('active') ? SCENARIOS.bull.drift : -0.5;
     return {
-        equity: eq,
-        downPct: downPct,
-        loanTerm: mortDur,
-        simHorizon: simDur,
+        equity: eq, downPct, loanTerm: mortDur, simHorizon: simDur,
         termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
         mix: { prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') },
         rates: { prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'), malatz: $pct('rateMalatz'), matz: $pct('rateMatz') },
         market: { sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld') },
         fees: { buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax },
-        maintPct: $pct('rMaint'),
-        purchaseDiscount: $pct('rDiscount'),
+        maintPct: $pct('rMaint'), purchaseDiscount: $pct('rDiscount'),
         tax: {
             useSP: $('cTaxSP')?.checked ?? true, useRE: $('cTaxSP')?.checked ?? true,
             useRent: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
