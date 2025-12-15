@@ -8,10 +8,10 @@
 | 2 | Extract Constants | ✅ Complete | 35 lines → src/config/ |
 | 3 | Dead Code Removal | ✅ Complete | Removed unused recommendMix() |
 | 4 | Extract Charts | ✅ Complete | 250 lines → src/charts/ |
-| 5 | Extract Prepayments | ✅ Complete | 207 lines → src/prepayments/ |
+| 5 | Extract Prepayments | ✅ Complete | 150 lines → src/prepayments/ |
 | 6 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
 | 7 | State Management | ✅ Complete | 83 lines → src/state/ |
-| 8 | Extract Persistence | ✅ Complete | 132 lines → src/persistence/ |
+| 8 | Extract Persistence | ✅ Complete | 38 lines → src/persistence/ |
 | 9 | Alpine.js Adoption | ✅ Complete | 20+ reactive UI bindings |
 | 10 | DOM Helpers | ✅ Complete | $(), $pct(), $int(), $pill(), $ltr() |
 | 11 | Function Extraction | ✅ Complete | runSim decomposition |
@@ -20,7 +20,7 @@
 
 **app.js: 1928 → 508 lines (74% reduction)**
 **logic.js: 771 → 493 lines (36% reduction)**
-**Total source: 2026 lines across 8 modules**
+**Total source: 1875 lines across 8 modules (31% reduction from 2699)**
 **All 276 tests passing**
 
 ## Module Structure
@@ -34,8 +34,8 @@ src/
 ├── config/index.js         # Constants (35 lines)
 ├── state/index.js          # State management + Alpine store (83 lines)
 ├── charts/index.js         # Chart rendering (250 lines)
-├── prepayments/index.js    # Prepayment logic (207 lines)
-└── persistence/index.js    # localStorage save/load (132 lines)
+├── prepayments/index.js    # Prepayment logic (150 lines)
+└── persistence/index.js    # localStorage save/load (38 lines)
 ```
 
 ## Key Improvements
