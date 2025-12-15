@@ -335,27 +335,17 @@ function checkMix() {
     const vals = tracks.map(t => $int('pct' + t));
     const [p, k, z, m, mt] = vals;
 
-    // Sync sliders
-    tracks.forEach((t, i) => {
-        $('slider' + t).value = vals[i];
-        $('disp' + t).innerText = vals[i] + '%';
-    });
-
+    tracks.forEach((t, i) => { $('slider' + t).value = vals[i]; $('disp' + t).innerText = vals[i] + '%'; });
     updateVisualBar(p, k, m, z, mt);
 
-    const sum = vals.reduce((a, b) => a + b, 0);
-    const fixedPct = k + z;
-    const fixedOk = fixedPct >= 33;
-
+    const sum = vals.reduce((a, b) => a + b, 0), fixedOk = (k + z) >= 33;
     const el = $('valMixSum');
     el.innerText = sum + "%";
     el.style.display = sum === 100 ? 'none' : 'block';
     el.style.color = sum === 100 ? '#16a34a' : '#ef4444';
     
     $('mixWarn')?.style && ($('mixWarn').style.display = sum === 100 ? 'none' : 'block');
-    
-    const dimCharts = sum !== 100 || !fixedOk;
-    $('chartsContainer')?.classList.toggle('charts-dim', dimCharts);
+    $('chartsContainer')?.classList.toggle('charts-dim', sum !== 100 || !fixedOk);
     
     const chartsWarn = $('chartsWarn');
     if (chartsWarn) {
