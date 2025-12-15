@@ -1,3 +1,4 @@
+// English translations
 const en = {
     title: 'Brickfolio',
     startingCash: 'Starting Cash',
@@ -150,4 +151,5 @@ const en = {
     applyMasShevach: 'Apply Mas Shevach (CPI-adjusted)'
 };
 
-export default en;
+if (typeof module !== 'undefined' && module.exports) module.exports = en;
+if (typeof window !== 'undefined') window.i18n_en = en;

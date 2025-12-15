@@ -1,3 +1,4 @@
+// Hebrew translations
 const he = {
     title: 'בריקפוליו',
     startingCash: 'הון עצמי',
@@ -150,4 +151,5 @@ const he = {
     applyMasShevach: 'החל מס שבח (צמוד מדד)'
 };
 
-export default he;
+if (typeof module !== 'undefined' && module.exports) module.exports = he;
+if (typeof window !== 'undefined') window.i18n_he = he;
