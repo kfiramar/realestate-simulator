@@ -424,112 +424,47 @@ function simulate(params) {
 
 // Adapter for legacy calcCAGR callers (Optimizer & Tests)
 function calcCAGR(eq, downPct, mortDur, simDur, useTaxSP, tradeFee, merFee, exModeCalc, taxModeCalc, cfgCalc, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) {
-    // Backward compat: if useTaxRE not provided, use same as useTaxSP
-    const taxSP = useTaxSP ?? true;
-    const taxRE = useTaxRE ?? taxSP;
-    const params = {
-        equity: eq,
-        downPct: downPct,
-        loanTerm: mortDur,
-        simHorizon: simDur,
+    const taxSP = useTaxSP ?? true, taxRE = useTaxRE ?? taxSP;
+    return simulate({
+        equity: eq, downPct, loanTerm: mortDur, simHorizon: simDur, mix, maintPct, purchaseDiscount: purchaseDiscount || 0,
         termMix: termMix || { p: mortDur, k: mortDur, z: mortDur, m: mortDur, mt: mortDur },
-        mix: mix,
-        rates: {
-            prime: overrides.RateP,
-            kalats: overrides.RateK,
-            katz: overrides.RateZ,
-            malatz: overrides.RateM || 0,
-            matz: overrides.RateMT || 0
-        },
-        market: {
-            sp: overrides.SP,
-            reApp: overrides.App,
-            cpi: overrides.Inf,
-            boi: overrides.Int,
-            rentYield: overrides.Yld
-        },
-        fees: {
-            buy: buyCostPct,
-            sell: sellCostPct,
-            trade: tradeFee,
-            mgmt: merFee,
-            purchaseTax: purchaseTax || 0
-        },
-        maintPct: maintPct,
-        purchaseDiscount: purchaseDiscount || 0,
-        tax: {
-            useSP: taxSP,
-            useRE: taxRE,
-            useRent: useRentTax,
-            useMasShevach: useMasShevach || false,
-            masShevachType: masShevachType || 'single',
-            mode: taxModeCalc
-        },
-        config: {
-            drift: drift,
-            surplusMode: surplusMode,
-            exMode: exModeCalc,
-            history: cfgCalc
-        },
+        rates: { prime: overrides.RateP, kalats: overrides.RateK, katz: overrides.RateZ, malatz: overrides.RateM || 0, matz: overrides.RateMT || 0 },
+        market: { sp: overrides.SP, reApp: overrides.App, cpi: overrides.Inf, boi: overrides.Int, rentYield: overrides.Yld },
+        fees: { buy: buyCostPct, sell: sellCostPct, trade: tradeFee, mgmt: merFee, purchaseTax: purchaseTax || 0 },
+        tax: { useSP: taxSP, useRE: taxRE, useRent: useRentTax, useMasShevach: useMasShevach || false, masShevachType: masShevachType || 'single', mode: taxModeCalc },
+        config: { drift, surplusMode, exMode: exModeCalc, history: cfgCalc },
         returnSeries: false
-    };
-
-    const res = simulate(params);
-    return res.cagrRE;
+    }).cagrRE;
 }
 
 function searchSweetSpots(params) {
-    const {
-        eq, curDown, curDur, simDur, useTaxSP, useTaxRE, useRentTax, tradeFee, merFee,
-        buyCostPct, maintPct, sellCostPct, overrides, mix, drift,
-        lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode, calcOverride,
-        surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount,
-        optimizeMode
-    } = params;
+    const { eq, curDown, curDur, simDur, useTaxSP, useTaxRE, useRentTax, tradeFee, merFee, buyCostPct, maintPct, sellCostPct, overrides, mix, drift, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode, calcOverride, surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount, optimizeMode } = params;
 
-    // Scoring function based on mode
     const scoreFn = (d, t, h) => {
-        const simParams = {
-            equity: eq,
-            downPct: d / 100,
-            loanTerm: t,
-            simHorizon: h,
+        const res = simulate({
+            equity: eq, downPct: d / 100, loanTerm: t, simHorizon: h, mix, maintPct, purchaseDiscount: purchaseDiscount || 0,
             termMix: termMix || { p: t, k: t, z: t, m: t, mt: t },
-            mix,
             rates: { prime: overrides.RateP, kalats: overrides.RateK, katz: overrides.RateZ, malatz: overrides.RateM || 0, matz: overrides.RateMT || 0 },
             market: { sp: overrides.SP, reApp: overrides.App, cpi: overrides.Inf, boi: overrides.Int, rentYield: overrides.Yld },
             fees: { buy: buyCostPct, sell: sellCostPct, trade: tradeFee, mgmt: merFee, purchaseTax: purchaseTax || 0 },
-            maintPct,
-            purchaseDiscount: purchaseDiscount || 0,
             tax: { useSP: useTaxSP ?? true, useRE: useTaxRE ?? useTaxSP ?? true, useRent: useRentTax, useMasShevach: useMasShevach || false, masShevachType: masShevachType || 'single', mode: taxMode },
-            config: { drift, surplusMode, exMode, history: cfg },
-            returnSeries: false
-        };
-        const res = simulate(simParams);
-        if (optimizeMode === 'outperform') {
-            return res.netSP > 0 ? ((res.netRE - res.netSP) / res.netSP) * 100 : res.netRE;
-        }
-        return res.cagrRE;
+            config: { drift, surplusMode, exMode, history: cfg }, returnSeries: false
+        });
+        return optimizeMode === 'outperform' ? (res.netSP > 0 ? ((res.netRE - res.netSP) / res.netSP) * 100 : res.netRE) : res.cagrRE;
     };
 
-    const downMin = 25, downMax = 100;
-    const downVals = [];
-    const termVals = [];
-    const horVals = [];
-
-    if (lockDown) downVals.push(curDown * 100); else for (let d = downMin; d <= downMax; d += 5) downVals.push(d);
-    if (lockTerm) termVals.push(curDur); else for (let t = 10; t <= 30; t += 1) termVals.push(t);
-    if (lockHor || horMode === 'auto') horVals.push(simDur); else for (let h = 5; h <= 50; h += 2) horVals.push(h);
+    const range = (start, end, step) => { const r = []; for (let i = start; i <= end; i += step) r.push(i); return r; };
+    const downVals = lockDown ? [curDown * 100] : range(25, 100, 5);
+    const termVals = lockTerm ? [curDur] : range(10, 30, 1);
+    const horVals = lockHor || horMode === 'auto' ? [simDur] : range(5, 50, 2);
 
     let best = { d: downVals[0], t: termVals[0], h: horVals[0], c: -Infinity };
-    for (let d of downVals) {
-        for (let t of termVals) {
-            for (let h of horVals) {
+    for (const d of downVals) {
+        for (const t of termVals) {
+            for (const h of horVals) {
                 const simH = (horMode === 'auto' && !lockHor) ? t : h;
-                let c = calcOverride ? calcOverride(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) : scoreFn(d, t, simH);
-                const isBetter = c > best.c;
-                const isNearTie = Math.abs(c - best.c) < 0.05 && t > best.t;
-                if (isBetter || isNearTie) best = { d, t, h: simH, c };
+                const c = calcOverride ? calcOverride(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) : scoreFn(d, t, simH);
+                if (c > best.c || (Math.abs(c - best.c) < 0.05 && t > best.t)) best = { d, t, h: simH, c };
             }
         }
     }
@@ -588,95 +523,36 @@ function calcTotalInterest(P, rAnn, n, method = 'spitzer') {
  * @returns {Object} { schedule: [...], totalInterest, totalPayments }
  */
 function generateSchedule(params) {
-    const {
-        principal: P,
-        annualRate,
-        termMonths: n,
-        method = 'spitzer',
-        cpiLinked = false,
-        cpiRate = 0,
-        rateResets = []
-    } = params;
-
-    const schedule = [];
-    let balance = P;
-    let currentRate = annualRate;
-    let remainingMonths = n;
-    let totalInterest = 0;
-    let totalPayments = 0;
-
-    // Sort resets by month
-    const resets = [...rateResets].sort((a, b) => a.month - b.month);
-    let resetIdx = 0;
-
-    // For Spitzer, calculate initial payment
+    const { principal: P, annualRate, termMonths: n, method = 'spitzer', cpiLinked = false, cpiRate = 0, rateResets = [] } = params;
+    const schedule = [], resets = [...rateResets].sort((a, b) => a.month - b.month);
+    let balance = P, currentRate = annualRate, totalInterest = 0, totalPayments = 0, resetIdx = 0;
     let payment = method === 'spitzer' ? calcPmt(P, currentRate, n) : 0;
+    const round = v => Math.round(v * 100) / 100;
 
     for (let t = 1; t <= n; t++) {
-        // Check for rate reset
         while (resetIdx < resets.length && resets[resetIdx].month === t) {
-            currentRate = resets[resetIdx].newRate;
-            remainingMonths = n - t + 1;
-            if (method === 'spitzer') {
-                payment = calcPmt(balance, currentRate, remainingMonths);
-            }
-            resetIdx++;
+            currentRate = resets[resetIdx++].newRate;
+            if (method === 'spitzer') payment = calcPmt(balance, currentRate, n - t + 1);
         }
 
-        // CPI indexation (apply at start of month)
         let cpiFactor = 1;
         if (cpiLinked) {
-            const yearIdx = Math.floor((t - 1) / 12);
-            const annualCpi = Array.isArray(cpiRate) ? (cpiRate[yearIdx] ?? cpiRate[cpiRate.length - 1]) : cpiRate;
+            const annualCpi = Array.isArray(cpiRate) ? (cpiRate[Math.floor((t - 1) / 12)] ?? cpiRate[cpiRate.length - 1]) : cpiRate;
             cpiFactor = Math.pow(1 + annualCpi, 1 / 12);
             balance *= cpiFactor;
         }
 
-        const r = currentRate / 12;
-        const interest = balance * r;
-        let principalPaid;
+        const interest = balance * (currentRate / 12);
+        let principalPaid = method === 'equalPrincipal' ? Math.min(P / n, balance) : (cpiLinked ? calcPmt(balance, currentRate, n - t + 1) : payment) - interest;
+        if (principalPaid > balance) principalPaid = balance;
+        payment = principalPaid + interest;
+        balance = Math.max(0, balance - principalPaid);
+        totalInterest += interest; totalPayments += payment;
 
-        if (method === 'equalPrincipal') {
-            principalPaid = P / n;
-            if (principalPaid > balance) principalPaid = balance;
-            payment = principalPaid + interest;
-        } else {
-            // Spitzer - recalc payment if CPI-linked (payment grows with CPI)
-            if (cpiLinked) {
-                payment = calcPmt(balance, currentRate, n - t + 1);
-            }
-            principalPaid = payment - interest;
-            if (principalPaid > balance) {
-                principalPaid = balance;
-                payment = principalPaid + interest;
-            }
-        }
-
-        balance -= principalPaid;
-        if (balance < 0.01) balance = 0;
-
-        totalInterest += interest;
-        totalPayments += payment;
-
-        schedule.push({
-            month: t,
-            payment: Math.round(payment * 100) / 100,
-            interest: Math.round(interest * 100) / 100,
-            principal: Math.round(principalPaid * 100) / 100,
-            balance: Math.round(balance * 100) / 100,
-            cpiAdjustment: cpiLinked ? Math.round((cpiFactor - 1) * balance * 100) / 100 : 0
-        });
+        schedule.push({ month: t, payment: round(payment), interest: round(interest), principal: round(principalPaid), balance: round(balance), cpiAdjustment: cpiLinked ? round((cpiFactor - 1) * balance) : 0 });
     }
 
-    return {
-        schedule,
-        totalInterest: Math.round(totalInterest * 100) / 100,
-        totalPayments: Math.round(totalPayments * 100) / 100,
-        method,
-        principal: P,
-        annualRate,
-        termMonths: n
-    };
+    return { schedule, totalInterest: round(totalInterest), totalPayments: round(totalPayments), method, principal: P, annualRate, termMonths: n };
 }
 
 const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach };
