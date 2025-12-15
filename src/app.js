@@ -473,10 +473,7 @@ function runSim(opts = {}) {
     const assetPriceStart = eq / downPct, initialLoan = assetPriceStart - eq;
     const { purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
 
-    for (let k in cfg) {
-        const el = $(cfg[k].v);
-        if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%';
-    }
+    for (let k in cfg) { const el = $(cfg[k].v); if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%'; }
 
     const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
     let [termP, termK, termZ, termM, termMT] = ['Prime','Kalats','Katz','Malatz','Matz'].map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
