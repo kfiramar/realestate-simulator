@@ -17,6 +17,11 @@ global.Chart = class {
     update() {}
 };
 
+// Load language files first
+const enCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/en.js'), 'utf8');
+eval(enCode);
+const heCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/he.js'), 'utf8');
+eval(heCode);
 // Load i18n, config, charts
 const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
 eval(i18nCode);

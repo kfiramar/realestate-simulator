@@ -12,6 +12,11 @@ function loadDom() {
 function bootstrapApp() {
     loadDom();
     localStorage.clear();
+    // Load language files first (they set window.i18n_en, window.i18n_he)
+    const enCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/en.js'), 'utf-8');
+    eval(enCode);
+    const heCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/he.js'), 'utf-8');
+    eval(heCode);
     // Load modules in order
     const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf-8');
     eval(i18nCode);
