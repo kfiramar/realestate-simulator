@@ -18,93 +18,18 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
     const reinvestActive = (surplusMode === 'invest');
     let yTxt = mode === 'percent' ? t('chartYAxisROI') : t('chartYAxisWealth');
 
-    const { reTax = 0, spTax = 0, netRE = 0, netSP = 0, invested = 0, surplusTax = 0, surplusGross = 0 } = taxInfo;
-    const lastIdx = plotR.length - 1;
-    const hasRETax = reTax > 0;
-    const hasSPTax = spTax > 0;
-    const hasSurplusTax = surplusTax > 0;
-
-    let plotRWithTax = [...plotR];
-    let plotSWithTax = [...plotS];
-    
-    if (mode !== 'percent') {
-        if (hasRETax) plotRWithTax.push(netRE);
-        else plotRWithTax.push(plotR[lastIdx]);
-        if (hasSPTax) plotSWithTax.push(netSP);
-        else plotSWithTax.push(plotS[lastIdx]);
-    } else {
-        if (hasRETax) plotRWithTax.push(((netRE - invested) / invested) * 100);
-        else plotRWithTax.push(plotR[lastIdx]);
-        if (hasSPTax) plotSWithTax.push(((netSP - invested) / invested) * 100);
-        else plotSWithTax.push(plotS[lastIdx]);
-    }
-    
-    const hasTax = hasRETax || hasSPTax || hasSurplusTax;
-    const labelsExt = hasTax ? [...l, t('taxDeduction') || 'Tax'] : l;
-
     let datasets = [
-        { 
-            label: t('chartRealEstate'), 
-            data: plotRWithTax, 
-            borderColor: '#16a34a', 
-            backgroundColor: 'rgba(22,163,74,0.05)', 
-            borderWidth: 3, 
-            fill: true, 
-            pointRadius: plotRWithTax.map((_, i) => i === plotRWithTax.length - 1 && hasRETax ? 5 : 0),
-            pointBackgroundColor: '#0d5c2a',
-            pointHoverRadius: 6,
-            segment: {
-                borderDash: c => c.p0DataIndex === lastIdx ? [6, 4] : undefined,
-                borderColor: c => c.p0DataIndex === lastIdx && hasRETax ? '#0d5c2a' : undefined
-            }
-        },
-        { 
-            label: t('chartSP500'), 
-            data: plotSWithTax, 
-            borderColor: '#2563eb', 
-            backgroundColor: 'rgba(37,99,235,0.05)', 
-            borderWidth: 3, 
-            fill: true, 
-            pointRadius: plotSWithTax.map((_, i) => i === plotSWithTax.length - 1 && hasSPTax ? 5 : 0),
-            pointBackgroundColor: '#1e40af',
-            pointHoverRadius: 6,
-            segment: {
-                borderDash: c => c.p0DataIndex === lastIdx ? [6, 4] : undefined,
-                borderColor: c => c.p0DataIndex === lastIdx && hasSPTax ? '#1e40af' : undefined
-            }
-        }
+        { label: t('chartRealEstate'), data: plotR, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 },
+        { label: t('chartSP500'), data: plotS, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 }
     ];
 
     if (reinvestActive && plotSurp && plotSurp.some(v => v > 0)) {
-        const surplusNet = surplusGross - surplusTax;
-        let plotSurpWithTax = [...plotSurp];
-        if (hasTax) {
-            if (mode !== 'percent') {
-                plotSurpWithTax.push(hasSurplusTax ? surplusNet : plotSurp[lastIdx]);
-            } else {
-                plotSurpWithTax.push(hasSurplusTax ? (surplusNet / invested) * 100 : plotSurp[lastIdx]);
-            }
-        }
-        datasets.push({ 
-            label: t('chartReinvested'), 
-            data: plotSurpWithTax, 
-            borderColor: '#f59e0b', 
-            backgroundColor: 'rgba(245,158,11,0.12)', 
-            borderWidth: 2, 
-            fill: true, 
-            pointRadius: plotSurpWithTax.map((_, i) => i === plotSurpWithTax.length - 1 && hasSurplusTax ? 5 : 0),
-            pointBackgroundColor: '#b45309',
-            pointHoverRadius: 6, 
-            segment: {
-                borderDash: c => c.p0DataIndex === lastIdx && hasSurplusTax ? [4, 3] : [6, 4],
-                borderColor: c => c.p0DataIndex === lastIdx && hasSurplusTax ? '#b45309' : undefined
-            }
-        });
+        datasets.push({ label: t('chartReinvested'), data: plotSurp, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)', borderWidth: 2, fill: true, pointRadius: 0, pointHoverRadius: 6, borderDash: [6, 4] });
     }
 
     wealthChart = new Chart(ctx1, {
         type: 'line',
-        data: { labels: labelsExt, datasets },
+        data: { labels: l, datasets },
         options: {
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
@@ -112,26 +37,12 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
                 tooltip: {
                     callbacks: {
                         label: c => {
-                            const idx = c.dataIndex;
-                            const lbl = c.dataset.label;
-                            const isLastPoint = idx === plotRWithTax.length - 1 && hasTax;
-                            
-                            if (lbl === t('chartRealEstate')) {
-                                if (isLastPoint && hasRETax) return `${lbl}: ${fmt(netRE)} ₪ (−${fmt(reTax)} ₪ ${t('taxPaid') || 'tax'})`;
-                                return `${lbl}: ${fmt(rVal[idx] || netRE)} ₪`;
-                            }
-                            if (lbl === t('chartSP500')) {
-                                if (isLastPoint && hasSPTax) return `${lbl}: ${fmt(netSP)} ₪ (−${fmt(spTax)} ₪ ${t('taxPaid') || 'tax'})`;
-                                return `${lbl}: ${fmt(sVal[idx] || netSP)} ₪`;
-                            }
-                            if (lbl === t('chartReinvested')) {
-                                if (isLastPoint && hasSurplusTax) {
-                                    const sNet = surplusGross - surplusTax;
-                                    return `${lbl}: ${fmt(sNet)} ₪ (−${fmt(surplusTax)} ₪ ${t('taxPaid') || 'tax'})`;
-                                }
-                                return `${lbl}: ${fmt(surplusValSeries[idx] || 0)} ₪`;
-                            }
-                            return `${lbl}: ${fmt(c.raw)} ₪`;
+                            let idx = c.dataIndex;
+                            let val = 0, pct = 0;
+                            if (c.dataset.label === t('chartRealEstate')) { val = rVal[idx]; pct = rPct[idx]; }
+                            else if (c.dataset.label === t('chartReinvested')) { val = surplusValSeries[idx]; pct = surplusPctSeries[idx]; }
+                            else { val = sVal[idx]; pct = sPct[idx]; }
+                            return `${c.dataset.label}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
                         }
                     }
                 },
@@ -139,52 +50,14 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
             },
             scales: {
                 y: { title: { display: true, text: yTxt, color: textColor }, ticks: { color: textColor, callback: v => mode === 'percent' ? v + '%' : fmt(v) }, grid: { color: gridColor } },
-                x: { 
-                    ticks: { 
-                        color: textColor,
-                        maxRotation: 0,
-                        minRotation: 0,
-                        callback: (val, idx) => {
-                            if (idx === labelsExt.length - 1 && hasTax) return '';
-                            return labelsExt[idx];
-                        }
-                    }, 
-                    grid: { color: gridColor } 
-                }
+                x: { ticks: { color: textColor }, grid: { color: gridColor } }
             }
-        },
-        plugins: hasTax ? [{
-            id: 'taxZone',
-            afterDraw: (chart) => {
-                const { ctx: chartCtx, chartArea, scales } = chart;
-                const xScale = scales.x;
-                const lastX = xScale.getPixelForValue(lastIdx);
-                const endX = chartArea.right;
-                chartCtx.save();
-                chartCtx.fillStyle = isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)';
-                chartCtx.fillRect(lastX, chartArea.top, endX - lastX, chartArea.bottom - chartArea.top);
-                chartCtx.strokeStyle = isDark ? 'rgba(239,68,68,0.6)' : 'rgba(239,68,68,0.5)';
-                chartCtx.lineWidth = 2;
-                chartCtx.setLineDash([5, 3]);
-                chartCtx.beginPath();
-                chartCtx.moveTo(lastX, chartArea.top);
-                chartCtx.lineTo(lastX, chartArea.bottom);
-                chartCtx.stroke();
-                const centerX = (lastX + endX) / 2;
-                const labelY = chartArea.bottom - 10;
-                chartCtx.fillStyle = '#dc2626';
-                chartCtx.font = 'bold 12px sans-serif';
-                chartCtx.textAlign = 'center';
-                chartCtx.fillText(t('taxDeduction') || 'Tax', centerX, labelY);
-                chartCtx.restore();
-            }
-        }] : []
+        }
     });
 
     const ctx2 = document.getElementById('flowChart').getContext('2d');
     if (flowChart) flowChart.destroy();
 
-    const rentMinusInt = fRent.map((r, i) => r + fInt[i]);
     const netRentAfterInt = fRent.map((v, i) => v + (fInt[i] || 0));
     const totalMortgage = fInt.map((v, i) => v + (fPrinc[i] || 0));
 
