@@ -247,13 +247,11 @@ function fmt(v) {
 function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
-// Update slider value display labels
 function updateSliderLabels() {
     const sliders = {Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1};
     Object.entries(sliders).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
 }
 
-// Update deal structure display (asset, leverage, mortgage, tax)
 function updateDealDisplay(eq, downPct, initialLoan) {
     const assetPriceStart = eq / downPct, lev = 1 / downPct;
     $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
