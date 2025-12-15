@@ -231,8 +231,8 @@ function showMaxTooltip(el, maxVal) {
     let tip = $('maxTip');
     if (!tip) { tip = document.createElement('div'); tip.id = 'maxTip'; tip.innerHTML = '<span></span><div style="position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid #ef4444;"></div>'; tip.style.cssText = 'position:fixed;background:#ef4444;color:#fff;padding:3px 6px;border-radius:4px;font-size:0.65rem;font-weight:500;z-index:999;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,0.2);transform:translateX(-50%);transition:opacity 0.2s;'; document.body.appendChild(tip); }
     tip.querySelector('span').textContent = '⚠️ Max 100%';
-    const rect = el.getBoundingClientRect(), thumbPos = rect.left + (maxVal / 100) * rect.width;
-    Object.assign(tip.style, { left: thumbPos + 'px', top: (rect.top - 28) + 'px', opacity: '1', display: 'block' });
+    const rect = el.getBoundingClientRect();
+    Object.assign(tip.style, { left: (rect.left + (maxVal / 100) * rect.width) + 'px', top: (rect.top - 28) + 'px', opacity: '1', display: 'block' });
     clearTimeout(tip._timeout);
     tip._timeout = setTimeout(() => { tip.style.opacity = '0'; setTimeout(() => tip.style.display = 'none', 100); }, 150);
 }

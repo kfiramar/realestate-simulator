@@ -10,24 +10,25 @@
 | 4 | Extract Charts | ✅ Complete | 250 lines → src/charts/ |
 | 5 | Extract Prepayments | ✅ Complete | 150 lines → src/prepayments/ |
 | 6 | Browser Compatibility | ✅ Complete | IIFE pattern for file:// |
-| 7 | State Management | ✅ Complete | 83 lines → src/state/ |
+| 7 | State Management | ✅ Complete | 27 lines → src/state/ |
 | 8 | Extract Persistence | ✅ Complete | 38 lines → src/persistence/ |
 | 9 | Alpine.js Adoption | ✅ Complete | 20+ reactive UI bindings |
 | 10 | DOM Helpers | ✅ Complete | $(), $pct(), $int(), $pill(), $ltr() |
 | 11 | Function Extraction | ✅ Complete | runSim decomposition |
 | 12 | Code Simplification | ✅ Complete | Iteration patterns, destructuring |
 | 13 | Logic.js Refactoring | ✅ Complete | Unified track payments, simplified functions |
+| 14 | Constants & Helpers | ✅ Complete | TRACKS constant, getMix/getRates helpers |
 
-**app.js: 1928 → 508 lines (74% reduction)**
+**app.js: 1928 → 500 lines (74% reduction)**
 **logic.js: 771 → 493 lines (36% reduction)**
-**Total source: 1819 lines across 8 modules (33% reduction from 2699)**
+**Total source: 1811 lines across 8 modules (33% reduction from 2699)**
 **All 276 tests passing**
 
 ## Module Structure
 ```
 src/
 ├── index.html              # Entry point with Alpine.js bindings
-├── app.js                  # Main app logic (508 lines)
+├── app.js                  # Main app logic (500 lines)
 ├── logic.js                # Simulation engine (493 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
