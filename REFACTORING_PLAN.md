@@ -16,9 +16,11 @@
 | 10 | DOM Helpers | ✅ Complete | $(), $pct(), $int(), $pill(), $ltr() |
 | 11 | Function Extraction | ✅ Complete | runSim decomposition |
 | 12 | Code Simplification | ✅ Complete | Iteration patterns, destructuring |
+| 13 | Logic.js Refactoring | ✅ Complete | Unified track payments, simplified functions |
 
-**app.js: 1928 → 508 lines (73% reduction)**
-**Total source: 2304 lines across 8 modules**
+**app.js: 1928 → 508 lines (74% reduction)**
+**logic.js: 771 → 493 lines (36% reduction)**
+**Total source: 2026 lines across 8 modules**
 **All 276 tests passing**
 
 ## Module Structure
@@ -26,7 +28,7 @@
 src/
 ├── index.html              # Entry point with Alpine.js bindings
 ├── app.js                  # Main app logic (508 lines)
-├── logic.js                # Simulation engine (771 lines)
+├── logic.js                # Simulation engine (493 lines)
 ├── styles.css              # Styling
 ├── i18n/index.js           # Translations (318 lines)
 ├── config/index.js         # Constants (35 lines)
