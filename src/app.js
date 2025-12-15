@@ -41,18 +41,9 @@ const S = window.AppState || { get: () => null, set: () => {}, getAll: () => ({}
 
 let mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode;
 
-function syncStateFromModule() {
-    const s = S.getAll();
-    ({ mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode } = s);
-}
-
-const stateSetters = { mode: v => mode = v, exMode: v => exMode = v, taxMode: v => taxMode = v, horMode: v => horMode = v,
-    lockDown: v => lockDown = v, lockTerm: v => lockTerm = v, lockHor: v => lockHor = v, buyerType: v => buyerType = v,
-    advancedTermMode: v => advancedTermMode = v, bootstrapping: v => bootstrapping = v, creditScore: v => creditScore = v,
-    surplusMode: v => surplusMode = v, repayMethod: v => repayMethod = v, optimizeMode: v => optimizeMode = v, rateEditMode: v => rateEditMode = v };
-
-function setState(key, value) { S.set(key, value); stateSetters[key]?.(value); }
-syncStateFromModule();
+const syncState = () => ({ mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode } = S.getAll());
+const setState = (k, v) => { S.set(k, v); syncState(); };
+syncState();
 
 const cfg = Object.fromEntries(['SP','App','Int','Yld','Inf'].map(k => [k, { is: false, b: 'b'+k, s: 's'+k, v: 'v'+k, p: 'p'+k }]));
 

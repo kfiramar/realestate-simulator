@@ -79,109 +79,45 @@ function simulate(params) {
     const purchaseDiscount = params.purchaseDiscount || 0;
     const assetPrice = equity / downPct;
     const totalLoan = assetPrice - equity;
-    // If bought at discount, true market value is higher
     let assetVal = assetPrice / (1 - purchaseDiscount);
 
-    // Terms
-    const terms = {
-        p: (termMix?.p || loanTerm) * 12,
-        k: (termMix?.k || loanTerm) * 12,
-        z: (termMix?.z || loanTerm) * 12,
-        m: (termMix?.m || loanTerm) * 12,
-        mt: (termMix?.mt || loanTerm) * 12
-    };
+    const TRACK_KEYS = ['p', 'k', 'z', 'm', 'mt'];
+    const mixVals = [mix.prime, mix.kalats, mix.katz, mix.malatz || 0, mix.matz || 0];
+    const terms = Object.fromEntries(TRACK_KEYS.map((k, i) => [k, (termMix?.[k] || loanTerm) * 12]));
+    const initPrinc = Object.fromEntries(TRACK_KEYS.map((k, i) => [k, totalLoan * (mixVals[i] / 100)]));
+    let [balP, balK, balZ, balM, balMT] = TRACK_KEYS.map(k => initPrinc[k]);
 
-    // Initial principals for equal principal method
-    const initPrinc = {
-        p: totalLoan * (mix.prime / 100),
-        k: totalLoan * (mix.kalats / 100),
-        z: totalLoan * (mix.katz / 100),
-        m: totalLoan * ((mix.malatz || 0) / 100),
-        mt: totalLoan * ((mix.matz || 0) / 100)
-    };
-
-    // Initialize Tracks
-    let balP = initPrinc.p;
-    let balK = initPrinc.k;
-    let balZ = initPrinc.z;
-    let balM = initPrinc.m;
-    let balMT = initPrinc.mt;
-
-    // Initial Costs
     const entryCosts = assetPrice * fees.buy + (fees.purchaseTax || 0);
     let totalCashInvested = equity + entryCosts;
 
-    // Cash flow tracking for IRR: [{ month, amount }]
     const spCashFlows = [{ month: 0, amount: totalCashInvested }];
     const reCashFlows = [{ month: 0, amount: totalCashInvested }];
 
-    // S&P Setup
-    let spUnits = 0;
-    let spBasisLinked = totalCashInvested;
-    let spBasisUSD = 0;
-    let spInvestedILS = totalCashInvested;
-    let spValueHedged = totalCashInvested;
-
+    let spUnits = 0, spBasisLinked = totalCashInvested, spBasisUSD = 0, spInvestedILS = totalCashInvested, spValueHedged = totalCashInvested;
     const startEx = getH(H_EX, 0);
     let currentEx = startEx;
-    if (config.exMode !== 'hedged') {
-        spUnits = totalCashInvested / startEx;
-        spBasisUSD = spUnits;
-    }
+    if (config.exMode !== 'hedged') { spUnits = totalCashInvested / startEx; spBasisUSD = spUnits; }
 
-    // RE Side Portfolios
-    let reSideStockValue = 0;
-    let reSideStockBasis = 0;        // Nominal basis
-    let reSideStockBasisLinked = 0;  // Inflation-adjusted basis
-    let reSideCash = 0;
-    let spSideCash = 0;
+    let reSideStockValue = 0, reSideStockBasis = 0, reSideStockBasisLinked = 0, reSideCash = 0, spSideCash = 0;
+    let totalInterestWasted = 0, totalRentCollected = 0, firstPosMonth = null;
 
-    let totalInterestWasted = 0;
-    let totalRentCollected = 0;
-    let firstPosMonth = null;
+    const series = { labels: [], reDataPct: [], spDataPct: [], reDataVal: [], spDataVal: [], surplusVal: [], surplusPct: [], flowMort: [], flowRent: [], flowNet: [], flowInt: [], flowPrinc: [] };
 
-    // Series Storage
-    const series = {
-        labels: [],
-        reDataPct: [], spDataPct: [],
-        reDataVal: [], spDataVal: [],
-        surplusVal: [], surplusPct: [],
-        flowMort: [], flowRent: [], flowNet: [], flowInt: [], flowPrinc: []
-    };
-
-    // Constants
     const taxThresholdBase = 5654;
     let cpiIndex = 1.0;
+    const spreadPrime = rates.prime - market.boi, spreadMalatz = (rates.malatz || 0) - market.boi, spreadMatz = (rates.matz || 0) - market.boi;
+    let ratePrime = rates.prime, rateMalatz = rates.malatz || 0, rateMatz = rates.matz || 0;
+    const mDrift = Math.pow(1 + (config.drift / 100), 1 / 12) - 1;
 
-    // Spread Calculation (from Initial Rates vs Initial BoI)
-    const spreadPrime = rates.prime - market.boi;
-    const spreadMalatz = (rates.malatz || 0) - market.boi;
-    const spreadMatz = (rates.matz || 0) - market.boi;
-
-    // Dynamic Rates (Variable tracks)
-    let ratePrime = rates.prime;
-    let rateMalatz = rates.malatz || 0;
-    let rateMatz = rates.matz || 0;
-
-    const driftFactor = 1 + (config.drift / 100);
-    const mDrift = Math.pow(driftFactor, 1 / 12) - 1;
-
-    const simDur = params.simHorizon;
-
-    for (let y = 0; y < simDur; y++) {
-        // Determine Annual Rates (History vs Fixed)
+    for (let y = 0; y < params.simHorizon; y++) {
         const useHist = config.history || {};
-
         const rSP = useHist.SP?.is ? getH(H_SP, y) : market.sp;
         const rApp = useHist.App?.is ? getH(H_RE, y) : market.reApp;
         const rInf = useHist.Inf?.is ? getH(H_CPI, y) : market.cpi;
         const baseBoI = useHist.Int?.is ? getH(H_BOI, y) : market.boi;
 
-        // Update Floating Rate (Prime)
         ratePrime = baseBoI + spreadPrime;
-        // Kalats/Katz are Fixed
-        const rateKalats = rates.kalats;
-        const rateKatz = rates.katz;
+        const rateKalats = rates.kalats, rateKatz = rates.katz;
 
         let rYld = market.rentYield;
         if (useHist.Yld?.is) rYld = 0.042 - ((Math.min(y, 20) / 20) * (0.042 - 0.028));
@@ -369,7 +305,7 @@ function simulate(params) {
     }
     const netSP = spValILS - spTax + spSideCash;
 
-    const totalMonths = simDur * 12;
+    const totalMonths = params.simHorizon * 12;
     const cagrRE = calcIRR(reCashFlows, netRE, totalMonths);
     const cagrSP = calcIRR(spCashFlows, netSP, totalMonths);
 
