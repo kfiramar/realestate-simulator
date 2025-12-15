@@ -239,12 +239,7 @@ function updateDealDisplay(eq, downPct, initialLoan) {
 
     const purchaseTax = ($('cPurchaseTax')?.checked ?? true) ? AppLogic.calcPurchaseTax(assetPriceStart, buyerType === 'first') : 0;
     $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
-
-    ['Prime','Kalats','Malatz','Katz','Matz'].forEach(track => {
-        const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track);
-        if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(initialLoan * pct / 100000)}K</span>`;
-    });
-
+    ['Prime','Kalats','Malatz','Katz','Matz'].forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track); if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(initialLoan * pct / 100000)}K</span>`; });
     return { assetPriceStart, purchaseTax };
 }
 
