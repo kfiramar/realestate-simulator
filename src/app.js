@@ -289,17 +289,14 @@ function updateTrackTermEnabled() {
 }
 
 function syncMixInput(track) {
-    const slider = $('slider' + track);
-    const tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
+    const slider = $('slider' + track), tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
     const othersSum = tracks.filter(t => t !== track).reduce((sum, t) => sum + $int('pct' + t), 0);
-    const maxAllowed = 100 - othersSum;
-    const newVal = Math.min(parseInt(slider.value) || 0, maxAllowed);
+    const maxAllowed = 100 - othersSum, newVal = Math.min(parseInt(slider.value) || 0, maxAllowed);
 
     if (parseInt(slider.value) > maxAllowed) showMaxTooltip(slider, maxAllowed);
     slider.value = newVal;
     $('pct' + track).value = newVal;
     $('disp' + track).innerText = newVal + '%';
-
     checkMix();
     window.Prepayments?.renderPrepayments();
 }
