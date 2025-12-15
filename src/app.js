@@ -564,10 +564,7 @@ function bootstrap() {
 }
 
 function updateRateLabels() {
-    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => {
-        const lbl = $('lblRate' + track), inp = $('rate' + track);
-        if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%');
-    });
+    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
 function resetAll() {
