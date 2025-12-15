@@ -553,12 +553,7 @@ function bootstrap() {
     if (horMode === 'custom') { $pill('pHor', false); $('bHor').classList.add('show'); }
     checkMix();
     window.Prepayments?.renderPrepayments();
-    if (advancedTermMode) {
-        $('advancedTermBox').style.display = 'block';
-        $('basicTermBox').style.display = 'none';
-        $('btnAdvancedTerm')?.classList.add('active');
-        ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value));
-    }
+    if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
     bootstrapping = false;
     runSim();
 }
