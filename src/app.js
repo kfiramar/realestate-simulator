@@ -593,11 +593,7 @@ const STORAGE_KEY = window.Persistence?.STORAGE_KEY || 'mortgageCalcState';
 const P = window.Persistence || { save: () => {}, load: () => null, restore: () => null, clear: () => {} };
 
 function saveState() {
-    const stateVars = {
-        horMode, surplusMode, repayMethod, creditScore, taxMode, exMode,
-        lockDown, lockTerm, lockHor, buyerType, mode, advancedTermMode
-    };
-    P.save(stateVars, getPrepayments);
+    P.save({ horMode, surplusMode, repayMethod, creditScore, taxMode, exMode, lockDown, lockTerm, lockHor, buyerType, mode, advancedTermMode }, getPrepayments);
 }
 
 function loadState() {
@@ -661,7 +657,7 @@ function resetAll() {
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-    runSim(); // Redraw charts with new colors
+    runSim();
 }
 
 function printResults() {
