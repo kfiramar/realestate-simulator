@@ -49,12 +49,7 @@ let mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, adva
 
 function syncStateFromModule() {
     const s = S.getAll();
-    mode = s.mode; exMode = s.exMode; taxMode = s.taxMode; horMode = s.horMode;
-    lockDown = s.lockDown; lockTerm = s.lockTerm; lockHor = s.lockHor;
-    buyerType = s.buyerType; advancedTermMode = s.advancedTermMode;
-    bootstrapping = s.bootstrapping; creditScore = s.creditScore;
-    surplusMode = s.surplusMode; repayMethod = s.repayMethod;
-    optimizeMode = s.optimizeMode; rateEditMode = s.rateEditMode;
+    ({ mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode } = s);
 }
 
 const stateVars = { mode: v => mode = v, exMode: v => exMode = v, taxMode: v => taxMode = v, horMode: v => horMode = v,
