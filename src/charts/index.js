@@ -18,6 +18,9 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
     const reinvestActive = (surplusMode === 'invest');
     let yTxt = mode === 'percent' ? t('chartYAxisROI') : t('chartYAxisWealth');
 
+    const { reTax = 0, spTax = 0, netRE = 0, netSP = 0, surplusTax = 0 } = taxInfo;
+    const lastIdx = plotR.length - 1;
+
     let datasets = [
         { label: t('chartRealEstate'), data: plotR, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 },
         { label: t('chartSP500'), data: plotS, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', borderWidth: 3, fill: true, pointRadius: 0, pointHoverRadius: 6 }
@@ -37,12 +40,27 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
                 tooltip: {
                     callbacks: {
                         label: c => {
-                            let idx = c.dataIndex;
-                            let val = 0, pct = 0;
-                            if (c.dataset.label === t('chartRealEstate')) { val = rVal[idx]; pct = rPct[idx]; }
-                            else if (c.dataset.label === t('chartReinvested')) { val = surplusValSeries[idx]; pct = surplusPctSeries[idx]; }
-                            else { val = sVal[idx]; pct = sPct[idx]; }
-                            return `${c.dataset.label}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
+                            const idx = c.dataIndex;
+                            const lbl = c.dataset.label;
+                            const isLast = idx === lastIdx;
+                            
+                            if (lbl === t('chartRealEstate')) {
+                                const val = rVal[idx], pct = rPct[idx];
+                                let text = `${lbl}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
+                                if (isLast && reTax > 0) text += ` | After tax: ${fmt(netRE)} ₪ (−${fmt(reTax)} tax)`;
+                                return text;
+                            }
+                            if (lbl === t('chartReinvested')) {
+                                const val = surplusValSeries[idx], pct = surplusPctSeries[idx];
+                                let text = `${lbl}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
+                                if (isLast && surplusTax > 0) text += ` | After tax: ${fmt(val - surplusTax)} ₪`;
+                                return text;
+                            }
+                            // S&P 500
+                            const val = sVal[idx], pct = sPct[idx];
+                            let text = `${lbl}: ${fmt(val)} ₪ (${pct.toFixed(1)}%)`;
+                            if (isLast && spTax > 0) text += ` | After tax: ${fmt(netSP)} ₪ (−${fmt(spTax)} tax)`;
+                            return text;
                         }
                     }
                 },
