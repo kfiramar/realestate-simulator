@@ -315,12 +315,7 @@ function checkMix() {
 
 function toggleRateEdit() {
     setState('rateEditMode', !rateEditMode);
-    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => {
-        const lbl = $('lblRate' + track), inp = $('rate' + track);
-        if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block';
-        if (inp) inp.classList.toggle('show', rateEditMode);
-        if (!rateEditMode && lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%');
-    });
+    ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'].forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block'; if (inp) inp.classList.toggle('show', rateEditMode); if (!rateEditMode && lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
 function togglePrepaySection() {
