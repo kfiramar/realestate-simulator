@@ -223,10 +223,7 @@ function showTermVal(elId, v) {
 
 function syncTrackTermsToMain() {
     const dur = $('rDur').value;
-    ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => {
-        $('term' + t).value = dur;
-        showTermVal('term' + t + 'Val', dur);
-    });
+    ['Prime','Kalats','Katz','Malatz','Matz'].forEach(t => { $('term' + t).value = dur; showTermVal('term' + t + 'Val', dur); });
 }
 
 function toggleAdvancedTerms() {
