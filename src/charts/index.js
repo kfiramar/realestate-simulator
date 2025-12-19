@@ -206,8 +206,12 @@ function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplu
             }
         }
     });
+    window.wealthChartInstance = wealthChart;
+    window.flowChartInstance = flowChart;
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { drawCharts };
-if (typeof window !== 'undefined') window.Charts = { drawCharts };
+if (typeof window !== 'undefined') {
+    window.Charts = { drawCharts };
+}
 })();
