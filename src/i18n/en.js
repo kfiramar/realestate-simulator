@@ -147,10 +147,12 @@ const en = {
     tooltipRent: 'Rent',
     tooltipNet: 'Net',
     purchaseTax: 'Purchase Tax',
-    entryCosts: 'Entry Costs',
+    entryCosts: 'costs',
+    downPayment: 'down',
     includePurchaseTax: 'Apply Mas Rechisha',
     applyMasShevach: 'Apply Mas Shevach (CPI-adjusted)',
-    entryCostsFromEquity: 'Deduct entry costs from equity'
+    entryCostsFromEquity: 'Deduct entry costs from equity',
+    earlyRepayPenalty: 'Early Repay Penalty'
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = en;

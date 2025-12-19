@@ -147,10 +147,12 @@ const he = {
     tooltipRent: 'שכירות',
     tooltipNet: 'נטו',
     purchaseTax: 'מס רכישה',
-    entryCosts: 'עלויות כניסה',
+    entryCosts: 'עלויות',
+    downPayment: 'הון עצמי',
     includePurchaseTax: 'החל מס רכישה',
     applyMasShevach: 'החל מס שבח (צמוד מדד)',
-    entryCostsFromEquity: 'נכה עלויות כניסה מההון הראשוני'
+    entryCostsFromEquity: 'נכה עלויות כניסה מההון הראשוני',
+    earlyRepayPenalty: 'עמלת פירעון מוקדם'
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = he;

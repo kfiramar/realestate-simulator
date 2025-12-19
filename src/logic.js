@@ -373,7 +373,9 @@ function simulate(params) {
         totalCashInvested, totalInterestWasted, totalRentCollected,
         firstPosMonth, remainingLoan, reSideStockValue,
         spValueHedged, spUnits, spBasisLinked, spBasisUSD,
-        masShevach, spTax, series
+        masShevach, spTax, series,
+        balances: { p: balP, k: balK, z: balZ, m: balM, mt: balMT }, cpiIndex,
+        finalAssetValue: assetVal
     };
 }
 
@@ -477,7 +479,184 @@ function generateSchedule(params) {
     return { schedule, totalInterest: round(totalInterest), totalPayments: round(totalPayments), method, principal: P, annualRate, termMonths: n };
 }
 
-const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach };
+/**
+ * Early Repayment Penalty Calculator (עמלות פירעון מוקדם)
+ * Based on Banking (Early Repayment of Housing Loans) Order, 5762-2002
+ * 
+ * Fee components per track type:
+ * - Prime: No discounting fee (variable rate changes frequently) - only operational ₪60
+ * - Kalatz: Operational + discounting fee (fixed, unlinked)
+ * - Malatz: Operational + discounting fee until next 5-year reset (variable, unlinked)
+ * - Katz: Operational + discounting fee + CPI fee if days 1-15 (fixed, CPI-linked)
+ * - Matz: Operational + discounting fee until next reset + CPI fee if days 1-15 (variable, CPI-linked)
+ * 
+ * Simplifications:
+ * - Assumes 10+ days notice (no no-notice fee)
+ * - Assumes prepayment on days 16-31 (no CPI average fee)
+ * - Uses current BOI rate as the "average rate" reference
+ */
+function calcEarlyRepaymentFee(params) {
+    const {
+        track,           // 'prime' | 'kalatz' | 'malatz' | 'katz' | 'matz'
+        balance,         // Current outstanding balance (nominal for CPI tracks)
+        contractRate,    // Annual contractual interest rate (decimal)
+        boiAvgRate,      // BOI average mortgage rate for remaining term (decimal)
+        remainingMonths, // Months until maturity
+        originalTermMonths, // Original loan term in months (for Section 8 discount)
+        monthsToReset,   // For variable tracks: months until next rate reset (null for fixed)
+        cpiLinked,       // Is this a CPI-linked track?
+        prepayDay,       // Day of month (1-31) for CPI fee calculation
+        avgCpiChange12m, // Average monthly CPI change over last 12 months (decimal, e.g., 0.003)
+        isPartial,       // Partial prepayment?
+        partialAmount    // If partial, how much being prepaid
+    } = params;
+
+    // No penalty if loan term is complete
+    if (remainingMonths <= 0) {
+        return { operational: 0, discounting: 0, cpiAverage: 0, statutoryDiscount: 0, total: 0 };
+    }
+
+    const OPERATIONAL_FEE = 60; // ₪60 flat
+    const repaidAmount = isPartial ? partialAmount : balance;
+    
+    let fees = {
+        operational: OPERATIONAL_FEE,
+        discounting: 0,
+        cpiAverage: 0,
+        statutoryDiscount: 0,
+        total: OPERATIONAL_FEE
+    };
+
+    // Prime track: no discounting fee (rate changes too frequently)
+    if (track === 'prime') {
+        return fees;
+    }
+
+    // Determine effective term for discounting calculation
+    // For variable tracks (malatz/matz): only until next reset
+    // For fixed tracks (kalatz/katz): until maturity
+    const isVariable = track === 'malatz' || track === 'matz';
+    const effectiveMonths = isVariable && monthsToReset ? Math.min(monthsToReset, remainingMonths) : remainingMonths;
+
+    // If prepaying exactly on reset date for variable tracks, only operational fee
+    if (isVariable && monthsToReset === 0) {
+        return fees;
+    }
+
+    // Calculate discounting fee (Section 3(3) of the Order)
+    // Fee = max(0, PV_at_avg_rate - PV_at_contract_rate)
+    // Only applies when BOI avg rate < contract rate
+    if (boiAvgRate < contractRate && effectiveMonths > 0) {
+        const monthlyPmt = calcPmt(balance, contractRate, remainingMonths);
+        const rAvg = boiAvgRate / 12;
+        const rContract = contractRate / 12;
+
+        // For variable tracks, include remaining balance at reset as final "payment"
+        const balanceAtEnd = isVariable ? calcBalanceAfterK(balance, contractRate, remainingMonths, effectiveMonths) : 0;
+
+        // PV of payments at BOI average rate
+        let pvAvg = 0;
+        for (let i = 1; i <= effectiveMonths; i++) {
+            pvAvg += monthlyPmt / Math.pow(1 + rAvg, i);
+        }
+        if (balanceAtEnd > 0) {
+            pvAvg += balanceAtEnd / Math.pow(1 + rAvg, effectiveMonths);
+        }
+
+        // PV of payments at contractual rate
+        let pvContract = 0;
+        for (let i = 1; i <= effectiveMonths; i++) {
+            pvContract += monthlyPmt / Math.pow(1 + rContract, i);
+        }
+        if (balanceAtEnd > 0) {
+            pvContract += balanceAtEnd / Math.pow(1 + rContract, effectiveMonths);
+        }
+
+        let rawDiscounting = Math.max(0, pvAvg - pvContract);
+
+        // For partial prepayment, pro-rata the fee
+        if (isPartial && balance > 0) {
+            rawDiscounting *= (partialAmount / balance);
+        }
+
+        // Section 8 statutory discounts based on loan age
+        // Standard loans: 3-5 years = 20% off, 5+ years = 30% off
+        const loanAgeMonths = (originalTermMonths || remainingMonths * 2) - remainingMonths;
+        const loanAgeYears = loanAgeMonths / 12;
+        let discountPct = 0;
+        if (loanAgeYears >= 5) discountPct = 0.30;
+        else if (loanAgeYears >= 3) discountPct = 0.20;
+        
+        fees.statutoryDiscount = rawDiscounting * discountPct;
+        fees.discounting = rawDiscounting - fees.statutoryDiscount;
+    }
+
+    // CPI average fee (Section 5) - only for CPI-linked tracks, only days 1-15
+    if (cpiLinked && prepayDay >= 1 && prepayDay <= 15 && avgCpiChange12m > 0) {
+        fees.cpiAverage = repaidAmount * 0.5 * avgCpiChange12m;
+    }
+
+    fees.total = fees.operational + fees.discounting + fees.cpiAverage;
+    return fees;
+}
+
+/**
+ * Calculate fees for all tracks in a mortgage mix
+ */
+function calcTotalEarlyRepaymentFees(params) {
+    const {
+        balances,        // { prime, kalatz, malatz, katz, matz } - current balances
+        rates,           // { prime, kalatz, malatz, katz, matz } - contractual rates
+        boiAvgRate,      // BOI average rate
+        remainingMonths, // { prime, kalatz, malatz, katz, matz } - remaining months per track
+        originalTermMonths, // { prime, kalatz, malatz, katz, matz } - original term per track
+        monthsToReset,   // { malatz, matz } - months to next reset for variable tracks
+        cpiIndex,        // Current CPI index (for nominal balance calculation)
+        prepayDay,       // Day of month
+        avgCpiChange12m, // Average CPI change
+        isPartial,
+        partialAmounts   // { prime, kalatz, malatz, katz, matz } if partial
+    } = params;
+
+    const tracks = ['prime', 'kalatz', 'malatz', 'katz', 'matz'];
+    const cpiTracks = ['katz', 'matz'];
+    
+    let totalFees = { operational: 0, discounting: 0, cpiAverage: 0, statutoryDiscount: 0, total: 0, byTrack: {} };
+
+    for (const track of tracks) {
+        const bal = balances[track] || 0;
+        if (bal <= 0) continue;
+
+        // For CPI tracks, balance is stored in real terms - convert to nominal
+        const nominalBal = cpiTracks.includes(track) ? bal * cpiIndex : bal;
+
+        const trackFees = calcEarlyRepaymentFee({
+            track,
+            balance: nominalBal,
+            contractRate: rates[track],
+            boiAvgRate,
+            remainingMonths: remainingMonths[track],
+            originalTermMonths: originalTermMonths?.[track],
+            monthsToReset: monthsToReset?.[track],
+            cpiLinked: cpiTracks.includes(track),
+            prepayDay,
+            avgCpiChange12m,
+            isPartial,
+            partialAmount: partialAmounts?.[track]
+        });
+
+        totalFees.byTrack[track] = trackFees;
+        totalFees.operational += trackFees.operational;
+        totalFees.discounting += trackFees.discounting;
+        totalFees.cpiAverage += trackFees.cpiAverage;
+        totalFees.statutoryDiscount += (trackFees.statutoryDiscount || 0);
+        totalFees.total += trackFees.total;
+    }
+
+    return totalFees;
+}
+
+const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach, calcEarlyRepaymentFee, calcTotalEarlyRepaymentFees };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Logic;
 if (typeof window !== 'undefined') window.Logic = Logic;

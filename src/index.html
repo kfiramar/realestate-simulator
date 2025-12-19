@@ -47,6 +47,7 @@
                 <div class="equity-box" id="equityBox" x-show="$store.app.mode === 'currency'">
                     <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;" data-t="startingCash">Starting Cash</div>
                     <input type="number" id="inpEquity" value="400000" step="10000" oninput="runSim()">
+                    <div id="equitySplit" style="font-size:0.7rem; color:#64748b; margin-top:4px;"></div>
                 </div>
 
                 <div class="section-title" data-t="dealStructure">Deal Structure</div>
@@ -531,6 +532,10 @@
                 <div class="inline-spec">
                     <span class="inline-label" data-t="capGainsPaid">Capital Gains Tax</span>
                     <span class="inline-value" id="kCapGains">0</span>
+                </div>
+                <div class="inline-spec">
+                    <span class="inline-label" data-t="earlyRepayPenalty">Early Repay Penalty</span>
+                    <span class="inline-value" id="kEarlyRepay">0</span>
                 </div>
             </div>
 

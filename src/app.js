@@ -211,6 +211,7 @@ function updateDealDisplay(eq, downPct, initialLoan) {
     }
     
     const lev = assetPriceStart / eq;
+    $('valAsset').dataset.initial = assetPriceStart; // Store for later
     $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
     $('valLev').innerText = 'x' + lev.toFixed(1);
     $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
@@ -220,6 +221,14 @@ function updateDealDisplay(eq, downPct, initialLoan) {
     const entryCosts = purchaseTax + (assetPriceStart * buyCostPct);
     $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
     $('valEntryCosts')?.innerText && ($('valEntryCosts').innerText = fmt(entryCosts) + ' ₪');
+    
+    // Show equity split: down payment vs entry costs
+    const equitySplit = $('equitySplit');
+    if (equitySplit) {
+        const downPayment = entryCostsFromEquity ? (eq - entryCosts) : eq;
+        equitySplit.innerHTML = `↳ ${fmt(downPayment)} ₪ ${t('downPayment')} + ${fmt(entryCosts)} ₪ ${t('entryCosts')}`;
+    }
+    
     TRACKS.forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track), amt = effectiveLoan * pct / 100; if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${fmt(amt)}</span>`; });
     return { assetPriceStart, purchaseTax };
 }
@@ -376,8 +385,8 @@ function runSim(opts = {}) {
 
     updateSliderLabels();
 
-    const assetPriceStart = eq / downPct, initialLoan = assetPriceStart - eq;
-    const { purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
+    const initialAsset = eq / downPct, initialLoan = initialAsset - eq;
+    const { assetPriceStart, purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
 
     for (let k in cfg) { const el = $(cfg[k].v); if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%'; }
 
@@ -432,6 +441,11 @@ function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM
 
 function updateKPIs(res, assetPriceStart, skipCharts, params) {
     const { netRE: lRE, netSP: lSP, series } = res;
+    
+    // Update asset price to show initial → final
+    const valAsset = $('valAsset');
+    if (valAsset) valAsset.innerText = fmt(assetPriceStart) + ' → ' + fmt(res.finalAssetValue) + ' ₪';
+    
     $('kRE').innerText = fmtVal(mode === 'percent' ? (series?.reDataPct[series.reDataPct.length - 1] || 0) : lRE);
     $('kSP').innerText = fmtVal(mode === 'percent' ? (series?.spDataPct[series.spDataPct.length - 1] || 0) : lSP);
 
@@ -448,6 +462,43 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
     $('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
     $('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
     [['kMasShevach', res.masShevach], ['kCapGains', res.spTax]].forEach(([id, val]) => { const el = $(id); if (el) el.innerText = fmt(val || 0) + ' ₪'; });
+
+    // Early repayment penalty - only applies if selling BEFORE loan term ends
+    // Penalty = discounting fee when BOI avg rate < contract rate (locked into higher rate)
+    const simHorizon = params.simHorizon;
+    const tm = params.termMix;
+    const remainingMonthsAtExit = {
+        prime: Math.max(0, (tm.p - simHorizon) * 12),
+        kalatz: Math.max(0, (tm.k - simHorizon) * 12),
+        malatz: Math.max(0, (tm.m - simHorizon) * 12),
+        katz: Math.max(0, (tm.z - simHorizon) * 12),
+        matz: Math.max(0, (tm.mt - simHorizon) * 12)
+    };
+    const originalTermMonths = {
+        prime: tm.p * 12, kalatz: tm.k * 12, malatz: tm.m * 12, katz: tm.z * 12, matz: tm.mt * 12
+    };
+    // Months to next 5-year reset. If exactly on reset (0), keep as 0 for minimal fee
+    const monthsToReset = {
+        malatz: remainingMonthsAtExit.malatz > 0 ? (60 - (simHorizon * 12) % 60) % 60 : 0,
+        matz: remainingMonthsAtExit.matz > 0 ? (60 - (simHorizon * 12) % 60) % 60 : 0
+    };
+    // BOI avg rate is typically close to contract rates; use BOI base - 0.5% as approximation
+    const boiAvgRate = Math.max(0.02, params.market.boi - 0.005);
+    const bal = res.balances || { p: 0, k: 0, z: 0, m: 0, mt: 0 };
+    const r = params.rates;
+    const earlyRepayFees = AppLogic.calcTotalEarlyRepaymentFees({
+        balances: { prime: bal.p, kalatz: bal.k, malatz: bal.m, katz: bal.z, matz: bal.mt },
+        rates: { prime: r.prime, kalatz: r.kalats, malatz: r.malatz, katz: r.katz, matz: r.matz },
+        boiAvgRate,
+        remainingMonths: remainingMonthsAtExit,
+        originalTermMonths,
+        monthsToReset,
+        cpiIndex: res.cpiIndex || 1,
+        prepayDay: 20,
+        avgCpiChange12m: params.market.cpi / 12
+    });
+    const kEarlyRepay = $('kEarlyRepay');
+    if (kEarlyRepay) kEarlyRepay.innerText = fmt(earlyRepayFees.total) + ' ₪';
 
     const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
     $('valPosCF')?.innerText && ($('valPosCF').innerText = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y');
