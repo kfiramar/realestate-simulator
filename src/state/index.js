@@ -1,7 +1,7 @@
 // Centralized State Management with Alpine.js integration
 (function() {
     const state = {
-        mode: 'percent', exMode: 'hedged', taxMode: 'real', horMode: 'auto',
+        mode: 'currency', exMode: 'hedged', taxMode: 'real', horMode: 'auto',
         lockDown: false, lockTerm: false, lockHor: true, buyerType: 'first',
         advancedTermMode: false, bootstrapping: false, creditScore: 900,
         surplusMode: 'match', repayMethod: 'spitzer', optimizeMode: 'outperform',

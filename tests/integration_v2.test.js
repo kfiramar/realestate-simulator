@@ -41,8 +41,6 @@ const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.
 eval(chartsCode);
 const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf8');
 eval(prepayCode);
-const persistCode = fs.readFileSync(path.resolve(__dirname, "../src/persistence/index.js"), "utf8");
-eval(persistCode);
 
 describe('Integration V2: Tamheel & Friction', () => {
     

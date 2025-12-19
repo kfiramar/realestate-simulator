@@ -43,17 +43,19 @@ describe('Edge Cases and Integration Tests', () => {
     });
 
     describe('Fees Impact', () => {
-        test('Buy fees increase total cash invested', () => {
+        test('Buy fees reduce RE CAGR (paid from equity)', () => {
             const paramsNoFees = { ...baseParams, fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 } };
             const paramsWithFees = { ...baseParams, fees: { buy: 0.05, sell: 0, trade: 0, mgmt: 0 } };
             
             const resultNoFees = Logic.simulate(paramsNoFees);
             const resultWithFees = Logic.simulate(paramsWithFees);
             
-            // 5% buy fee on 1M asset = 50k extra
-            expect(resultWithFees.totalCashInvested).toBeGreaterThan(resultNoFees.totalCashInvested);
-            console.log('Without buy fees:', resultNoFees.totalCashInvested.toFixed(0));
-            console.log('With 5% buy fees:', resultWithFees.totalCashInvested.toFixed(0));
+            // Buy fees come from equity, so totalCashInvested stays same
+            // netRE stays same (asset value unchanged), but CAGR is lower (more cash invested)
+            expect(resultWithFees.totalCashInvested).toBe(resultNoFees.totalCashInvested);
+            expect(resultWithFees.cagrRE).toBeLessThan(resultNoFees.cagrRE);
+            console.log('CAGR without buy fees:', resultNoFees.cagrRE.toFixed(2));
+            console.log('CAGR with 5% buy fees:', resultWithFees.cagrRE.toFixed(2));
         });
 
         test('Sell fees reduce net RE value', () => {

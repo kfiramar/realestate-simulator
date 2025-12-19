@@ -15,7 +15,6 @@
     <script src="./state/index.js"></script>
     <script src="./charts/index.js"></script>
     <script src="./prepayments/index.js"></script>
-    <script src="./persistence/index.js"></script>
     <link rel="stylesheet" href="./styles.css">
 </head>
 
@@ -452,6 +451,8 @@
                             onchange="runSim()"> <span data-t="applyTaxSP">S&P Path: 25% Capital Gains</span></label>
                     <label class="chk-row"><input type="checkbox" id="cPurchaseTax" checked
                             onchange="runSim()"> <span data-t="includePurchaseTax">Include Purchase Tax</span></label>
+                    <label class="chk-row"><input type="checkbox" id="cEntryCostsFromEquity" checked
+                            onchange="runSim()"> <span data-t="entryCostsFromEquity">Deduct entry costs from equity</span></label>
                     <label class="chk-row"><input type="checkbox" id="cMasShevach" checked
                             onchange="runSim()"> <span data-t="applyMasShevach">Apply Mas Shevach</span></label>
                 </div>
@@ -503,6 +504,10 @@
                 <div class="inline-spec">
                     <span class="inline-label" data-t="purchaseTax">Purchase Tax</span>
                     <span class="inline-value" id="valPurchaseTax">0</span>
+                </div>
+                <div class="inline-spec">
+                    <span class="inline-label" data-t="entryCosts">Entry Costs</span>
+                    <span class="inline-value" id="valEntryCosts">0</span>
                 </div>
                 <div class="inline-spec">
                     <span class="inline-label" data-t="leverage">Leverage</span>

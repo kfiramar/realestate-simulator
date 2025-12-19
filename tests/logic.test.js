@@ -50,15 +50,26 @@ describe('Logic Module: Core Financial Math', () => {
         });
 
         test('Friction Impact: Buying Costs', () => {
-            // If you pay 10% buying friction, you invest 550k total for 500k equity.
-            // Your return should be NEGATIVE if asset stays flat.
-            const cagr = Logic.calcCAGR(
-                500000, 0.5, 20, 20,
-                false, 0, 0, 'hedged', 'real',
-                baseCfg, baseOverrides, false, baseMix,
-                0.10, 0, 0, 0 // 10% Buy Friction
-            );
-            expect(cagr).toBeLessThan(0);
+            // Buy costs reduce RE net value (paid from equity, not added to investment)
+            const paramsNoCosts = {
+                equity: 500000, downPct: 0.5, loanTerm: 20, simHorizon: 20,
+                mix: { prime: 0, kalats: 100, katz: 0, malatz: 0, matz: 0 }, maintPct: 0,
+                rates: { prime: 0.05, kalats: 0.05, katz: 0.035, malatz: 0, matz: 0 },
+                market: { sp: 0.07, reApp: 0.03, cpi: 0, boi: 0.04, rentYield: 0.03 },
+                fees: { buy: 0, sell: 0, trade: 0, mgmt: 0 },
+                tax: { useSP: false, useRE: false, useRent: false, useMasShevach: false },
+                config: { drift: 0, surplusMode: 'invest', exMode: 'hedged', history: {} },
+                returnSeries: false
+            };
+            const paramsWithCosts = { ...paramsNoCosts, fees: { ...paramsNoCosts.fees, buy: 0.05 } };
+            
+            const resNoCosts = Logic.simulate(paramsNoCosts);
+            const resWithCosts = Logic.simulate(paramsWithCosts);
+            
+            // Same starting equity, but buy costs reduce RE returns
+            expect(resWithCosts.totalCashInvested).toBe(resNoCosts.totalCashInvested);
+            // RE with buy costs should have lower CAGR
+            expect(resWithCosts.cagrRE).toBeLessThan(resNoCosts.cagrRE);
         });
 
         test('Drift Impact: S&P Unhedged', () => {

@@ -147,8 +147,10 @@ const en = {
     tooltipRent: 'Rent',
     tooltipNet: 'Net',
     purchaseTax: 'Purchase Tax',
+    entryCosts: 'Entry Costs',
     includePurchaseTax: 'Apply Mas Rechisha',
-    applyMasShevach: 'Apply Mas Shevach (CPI-adjusted)'
+    applyMasShevach: 'Apply Mas Shevach (CPI-adjusted)',
+    entryCostsFromEquity: 'Deduct entry costs from equity'
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = en;

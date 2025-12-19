@@ -8,7 +8,13 @@
 
     function init(runSim) { runSimCallback = runSim; }
     function getPrepayments() { return prepayments; }
-    function setPrepayments(arr) { prepayments = arr; }
+    function setPrepayments(arr) { 
+        prepayments = arr;
+        // Update counter to avoid ID collisions
+        if (arr.length > 0) {
+            prepayIdCounter = Math.max(...arr.map(p => p.id)) + 1;
+        }
+    }
 
     function getActiveTracksForPrepay() {
         return Object.entries(TRACKS).map(([id, name]) => ({ id, name, pct: $val('pct' + name) })).filter(t => t.pct > 0);

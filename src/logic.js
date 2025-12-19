@@ -54,9 +54,13 @@ function calcIRR(cashFlows, finalValue, totalMonths) {
             dfv += cf.amount * n * Math.pow(1 + r, n - 1);
         }
         if (Math.abs(fv - finalValue) < 0.01) break;
-        r -= (fv - finalValue) / dfv;
+        if (Math.abs(dfv) < 0.0001) break; // Prevent division by zero
+        const newR = r - (fv - finalValue) / dfv;
+        if (!isFinite(newR) || newR < -0.99) break; // Prevent invalid rates
+        r = newR;
     }
-    return (Math.pow(1 + r, 12) - 1) * 100;
+    const result = (Math.pow(1 + r, 12) - 1) * 100;
+    return isFinite(result) ? result : 0;
 }
 
 // Core Simulation Engine
@@ -77,8 +81,37 @@ function simulate(params) {
 
     const repayMethod = config.repayMethod || 'spitzer';
     const purchaseDiscount = params.purchaseDiscount || 0;
-    const assetPrice = equity / downPct;
-    const totalLoan = assetPrice - equity;
+    const entryCostsFromEquity = params.entryCostsFromEquity || false;
+    
+    // Calculate entry costs
+    const purchaseTax = fees.purchaseTax || 0;
+    
+    // If entry costs come from equity (before mortgage), we need to solve for asset price
+    // where: equity = assetPrice * downPct + entryCosts
+    // So: assetPrice = (equity - entryCosts) / downPct (approximately, since buyCosts depend on assetPrice)
+    let assetPrice, effectiveEquity, buyCosts, reEntryCosts;
+    
+    if (entryCostsFromEquity) {
+        // Entry costs come from equity first
+        // Solve: equity = effectiveDownPayment + purchaseTax + buyCosts
+        // where: effectiveDownPayment = assetPrice * downPct
+        // and: buyCosts = assetPrice * fees.buy
+        // So: equity = assetPrice * downPct + purchaseTax + assetPrice * fees.buy
+        // equity - purchaseTax = assetPrice * (downPct + fees.buy)
+        // assetPrice = (equity - purchaseTax) / (downPct + fees.buy)
+        assetPrice = (equity - purchaseTax) / (downPct + fees.buy);
+        buyCosts = assetPrice * fees.buy;
+        reEntryCosts = buyCosts + purchaseTax;
+        effectiveEquity = equity - reEntryCosts;  // What's left for down payment
+    } else {
+        // Entry costs are separate (after mortgage) - original behavior
+        assetPrice = equity / downPct;
+        buyCosts = assetPrice * fees.buy;
+        reEntryCosts = buyCosts + purchaseTax;
+        effectiveEquity = equity;
+    }
+    
+    const totalLoan = assetPrice - (entryCostsFromEquity ? effectiveEquity : equity);
     let assetVal = assetPrice / (1 - purchaseDiscount);
 
     const TRACK_KEYS = ['p', 'k', 'z', 'm', 'mt'];
@@ -87,16 +120,17 @@ function simulate(params) {
     const initPrinc = Object.fromEntries(TRACK_KEYS.map((k, i) => [k, totalLoan * (mixVals[i] / 100)]));
     let [balP, balK, balZ, balM, balMT] = TRACK_KEYS.map(k => initPrinc[k]);
 
-    const entryCosts = assetPrice * fees.buy + (fees.purchaseTax || 0);
-    let totalCashInvested = equity + entryCosts;
+    // Both paths start with same equity
+    // S&P path invests full equity
+    let totalCashInvested = equity;  // Starting cash is equity only
 
-    const spCashFlows = [{ month: 0, amount: totalCashInvested }];
-    const reCashFlows = [{ month: 0, amount: totalCashInvested }];
+    const spCashFlows = [{ month: 0, amount: equity }];
+    const reCashFlows = [{ month: 0, amount: equity + reEntryCosts }];  // RE includes entry costs
 
-    let spUnits = 0, spBasisLinked = totalCashInvested, spBasisUSD = 0, spInvestedILS = totalCashInvested, spValueHedged = totalCashInvested;
+    let spUnits = 0, spBasisLinked = equity, spBasisUSD = 0, spInvestedILS = equity, spValueHedged = equity;
     const startEx = getH(H_EX, 0);
     let currentEx = startEx;
-    if (config.exMode !== 'hedged') { spUnits = totalCashInvested / startEx; spBasisUSD = spUnits; }
+    if (config.exMode !== 'hedged') { spUnits = equity / startEx; spBasisUSD = spUnits; }
 
     let reSideStockValue = 0, reSideStockBasis = 0, reSideStockBasisLinked = 0, reSideCash = 0, spSideCash = 0;
     let totalInterestWasted = 0, totalRentCollected = 0, firstPosMonth = null;
@@ -128,7 +162,6 @@ function simulate(params) {
         const mInf = Math.pow(1 + rInf, 1 / 12) - 1;
 
         // Annual Aggregates for Charts
-        let yrRent = 0, yrNet = 0, yrInt = 0, yrPrinc = 0;
         let firstMonthRent = 0, firstMonthInt = 0, firstMonthPrinc = 0, firstMonthNet = 0;
 
         // Apply prepayments at start of specified year
@@ -181,7 +214,7 @@ function simulate(params) {
             const processTrack = (bal, rate, ml, initP, term, cpiLinked) => {
                 if (bal <= 10 || ml <= 0) return { bal, pmt: 0, int: 0, princ: 0 };
                 const realI = bal * (rate / 12);
-                const realPr = Math.min(bal, repayMethod === 'equalPrincipal' ? initP / term : calcPmt(bal, rate, ml) - realI);
+                const realPr = Math.max(0, Math.min(bal, repayMethod === 'equalPrincipal' ? initP / term : calcPmt(bal, rate, ml) - realI));
                 const newBal = bal - realPr;
                 if (cpiLinked) {
                     return { bal: newBal, pmt: (realI + realPr) * cpiIndex, int: realI * cpiIndex, princ: realPr * cpiIndex };
@@ -217,10 +250,6 @@ function simulate(params) {
             totalRentCollected += netRent;
             const oop = pmtTotal - netRent;
 
-            yrRent += netRent;
-            yrInt += intTotal;
-            yrPrinc += princTotal;
-            yrNet += (netRent - pmtTotal);
 
             if (m === 0) {
                 firstMonthRent = netRent;
@@ -276,43 +305,28 @@ function simulate(params) {
 
             // Chart Data (End of Year)
             if (m === 11 && returnSeries) {
+                // PRE-TAX for chart - tax only at exit (shown in tax zone)
                 const remainingLoan = balP + balK + (balZ * cpiIndex) + balM + (balMT * cpiIndex);
                 const exitVal = assetVal * (1 - fees.sell);
                 const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
-
-                // Calculate taxes for this snapshot (same as master)
-                let reSideTaxSnap = 0;
-                if (tax.useRE) {
-                    const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
-                    if (reSideStockValue > reBasis) reSideTaxSnap = (reSideStockValue - reBasis) * 0.25;
-                }
-                const masShevachSnap = tax.useMasShevach ? calcMasShevach(assetVal, assetPrice * cpiIndex, tax.masShevachType || 'single').tax : 0;
-                const netRE = (exitVal - remainingLoan) - masShevachSnap + (reSideStockValue - reSideTaxSnap) + reSideCash;
-
-                let spTaxSnap = 0;
-                if (tax.useSP) {
-                    const profit = tax.mode === 'real' ? spValILS - spBasisLinked
-                        : config.exMode === 'hedged' ? spValILS - spInvestedILS
-                        : (spUnits - spBasisUSD) * currentEx;
-                    if (profit > 0) spTaxSnap = profit * 0.25;
-                }
-                const netSP = spValILS - spTaxSnap + spSideCash;
-
-                const netSurplus = reSideStockValue - reSideTaxSnap;
+                // Only subtract entry costs if they weren't already deducted from equity (smaller asset)
+                const entryCostDeduction = entryCostsFromEquity ? 0 : reEntryCosts;
+                const grossRE = (exitVal - remainingLoan) + reSideStockValue + reSideCash - entryCostDeduction;
+                const grossSP = spValILS + spSideCash;
 
                 series.labels.push(y + 1);
                 series.flowRent.push(firstMonthRent);
                 series.flowInt.push(-firstMonthInt);
                 series.flowPrinc.push(-firstMonthPrinc);
                 series.flowNet.push(firstMonthNet);
-                series.reDataVal.push(netRE);
-                series.spDataVal.push(netSP);
+                series.reDataVal.push(grossRE);
+                series.spDataVal.push(grossSP);
                 
                 const div = totalCashInvested > 1 ? totalCashInvested : 1;
-                series.reDataPct.push(((netRE - div) / div) * 100);
-                series.spDataPct.push(((netSP - div) / div) * 100);
-                series.surplusVal.push(netSurplus);
-                series.surplusPct.push((netSurplus / div) * 100);
+                series.reDataPct.push(((grossRE - div) / div) * 100);
+                series.spDataPct.push(((grossSP - div) / div) * 100);
+                series.surplusVal.push(reSideStockValue);
+                series.surplusPct.push((reSideStockValue / div) * 100);
             }
         }
     }
@@ -463,3 +477,4 @@ const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX,
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Logic;
 if (typeof window !== 'undefined') window.Logic = Logic;
+if (typeof self !== 'undefined' && typeof window === 'undefined') self.Logic = Logic;

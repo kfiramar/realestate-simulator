@@ -147,8 +147,10 @@ const he = {
     tooltipRent: 'שכירות',
     tooltipNet: 'נטו',
     purchaseTax: 'מס רכישה',
+    entryCosts: 'עלויות כניסה',
     includePurchaseTax: 'החל מס רכישה',
-    applyMasShevach: 'החל מס שבח (צמוד מדד)'
+    applyMasShevach: 'החל מס שבח (צמוד מדד)',
+    entryCostsFromEquity: 'נכה עלויות כניסה מההון הראשוני'
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = he;

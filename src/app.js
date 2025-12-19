@@ -189,15 +189,38 @@ function updateSliderLabels() {
 }
 
 function updateDealDisplay(eq, downPct, initialLoan) {
-    const assetPriceStart = eq / downPct, lev = 1 / downPct;
+    const entryCostsFromEquity = $('cEntryCostsFromEquity')?.checked ?? false;
+    const buyCostPct = $pct('rBuyCost') || 0;
+    
+    let assetPriceStart, effectiveLoan;
+    const purchaseTaxEnabled = $('cPurchaseTax')?.checked ?? true;
+    
+    if (entryCostsFromEquity) {
+        // Entry costs come from equity - need to solve for asset price
+        // First estimate without purchase tax to get asset price
+        const estAsset = eq / (downPct + buyCostPct);
+        const purchaseTax = purchaseTaxEnabled ? AppLogic.calcPurchaseTax(estAsset, buyerType === 'first') : 0;
+        // Now solve: equity = assetPrice * downPct + purchaseTax + assetPrice * buyCostPct
+        // assetPrice = (equity - purchaseTax) / (downPct + buyCostPct)
+        assetPriceStart = (eq - purchaseTax) / (downPct + buyCostPct);
+        const effectiveDown = eq - purchaseTax - (assetPriceStart * buyCostPct);
+        effectiveLoan = assetPriceStart - effectiveDown;
+    } else {
+        assetPriceStart = eq / downPct;
+        effectiveLoan = initialLoan;
+    }
+    
+    const lev = assetPriceStart / eq;
     $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
     $('valLev').innerText = 'x' + lev.toFixed(1);
     $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
-    $('valMortgage').innerText = fmt(initialLoan) + ' ₪';
+    $('valMortgage').innerText = fmt(effectiveLoan) + ' ₪';
 
-    const purchaseTax = ($('cPurchaseTax')?.checked ?? true) ? AppLogic.calcPurchaseTax(assetPriceStart, buyerType === 'first') : 0;
+    const purchaseTax = purchaseTaxEnabled ? AppLogic.calcPurchaseTax(assetPriceStart, buyerType === 'first') : 0;
+    const entryCosts = purchaseTax + (assetPriceStart * buyCostPct);
     $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
-    TRACKS.forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track); if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(initialLoan * pct / 100000)}K</span>`; });
+    $('valEntryCosts')?.innerText && ($('valEntryCosts').innerText = fmt(entryCosts) + ' ₪');
+    TRACKS.forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track), amt = effectiveLoan * pct / 100; if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${fmt(amt)}</span>`; });
     return { assetPriceStart, purchaseTax };
 }
 
@@ -304,6 +327,9 @@ function updateOptimalRepayMethod(baseParams, currentCagr) {
     starSpitzer.classList.toggle('show', spitzerCagr > equalCagr); starEqual.classList.toggle('show', equalCagr > spitzerCagr);
 }
 
+let sweetSpotWorker = null;
+try { sweetSpotWorker = new Worker('sweetSpotWorker.js'); sweetSpotWorker.onmessage = (e) => updateSweetSpotMarkers(e.data); } catch (e) { /* fallback to sync */ }
+
 function updateSweetSpots() {
     const eq = parseFloat($('inpEquity').value) || 400000, curDown = $int('rDown') / 100, curDur = $int('rDur');
     const simDur = horMode === 'auto' ? curDur : $int('rHor');
@@ -323,12 +349,13 @@ function updateSweetSpots() {
         drift: -0.5, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
         calcOverride: window.__calcCagrOverride, surplusMode, purchaseDiscount: $pct('rDiscount'), optimizeMode
     };
-    updateSweetSpotMarkers(AppLogic.searchSweetSpots(params));
+    if (sweetSpotWorker) sweetSpotWorker.postMessage(params);
+    else updateSweetSpotMarkers(AppLogic.searchSweetSpots(params));
 }
 
 function updateSweetSpotMarkers(best) {
     const posCalc = (val, min, max) => { const pos = ((val - min) / (max - min)) * 100; return lang === 'he' ? 100 - pos : pos; };
-    const setSpot = (id, pos) => { const el = $(id); el.style.left = `calc(${pos}% + (8px - (0.16px * ${pos})))`; el.classList.add('visible'); };
+    const setSpot = (id, pos) => { const el = $(id); if (!el) return; el.style.left = `calc(${pos}% + (8px - (0.16px * ${pos})))`; el.classList.add('visible'); };
     setSpot('spotDown', posCalc(best.d, 25, 100));
     advancedTermMode ? $('spotDur').classList.remove('visible') : setSpot('spotDur', posCalc(best.t, 1, 30));
     if (horMode === 'custom' || lockHor) { setSpot('spotHor', posCalc(best.h, 1, 50)); $('spotHor').title = `Best CAGR at ${best.h} Years`; }
@@ -383,6 +410,7 @@ function runSim(opts = {}) {
 
 function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM, termMT, purchaseTax, returnSeries) {
     const activeDrift = $('scenBear')?.classList.contains('active') ? SCENARIOS.bear.drift : $('scenBull')?.classList.contains('active') ? SCENARIOS.bull.drift : -0.5;
+    const entryCostsFromEquity = $('cEntryCostsFromEquity')?.checked ?? false;
     return {
         equity: eq, downPct, loanTerm: mortDur, simHorizon: simDur,
         termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
@@ -390,6 +418,7 @@ function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM
         market: { sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld') },
         fees: { buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax },
         maintPct: $pct('rMaint'), purchaseDiscount: $pct('rDiscount'),
+        entryCostsFromEquity,
         tax: {
             useSP: $('cTaxSP')?.checked ?? true, useRE: $('cTaxSP')?.checked ?? true,
             useRent: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
@@ -424,37 +453,79 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
     $('valPosCF')?.innerText && ($('valPosCF').innerText = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y');
 
     if (!skipCharts && series) {
+        const entryCosts = (params.fees.purchaseTax || 0) + (assetPriceStart * (params.fees.buy || 0));
+        const equity = parseFloat($('inpEquity').value) || 400000;
         window.__lastSim = { ...res, finalNetRE: lRE, finalNetSP: lSP, flowNet: series.flowNet[series.flowNet.length - 1], posCFYears: posYears };
         window.Charts.drawCharts(series.labels, series.reDataVal, series.reDataPct, series.spDataVal, series.spDataPct,
             series.flowRent, series.flowInt, series.flowPrinc, series.flowNet, series.surplusVal, series.surplusPct,
-            { reTax: res.totalRETax, spTax: res.spTax, netRE: lRE, netSP: lSP, invested: res.totalCashInvested, surplusTax: res.reSideTax, surplusGross: res.reSideStockValue },
+            { reTax: res.totalRETax, spTax: res.spTax, netRE: lRE, netSP: lSP, invested: res.totalCashInvested, surplusTax: res.reSideTax, surplusGross: res.reSideStockValue, entryCosts, equity },
             { mode, surplusMode, t, fmt, fmtNum });
     }
 }
 
-const STORAGE_KEY = window.Persistence?.STORAGE_KEY || 'mortgageCalcState';
-const P = window.Persistence || { save: () => {}, load: () => null, restore: () => null, clear: () => {} };
+const STORAGE_KEY = 'mortgageCalcState';
 
 function saveState() {
-    P.save({ horMode, surplusMode, repayMethod, creditScore, taxMode, exMode, lockDown, lockTerm, lockHor, buyerType, mode, advancedTermMode }, getPrepayments);
+    if (bootstrapping) return;
+    const state = {
+        equity: $('inpEquity')?.value, down: $('rDown')?.value, dur: $('rDur')?.value, hor: $('rHor')?.value,
+        pctPrime: $('pctPrime')?.value, pctKalats: $('pctKalats')?.value, pctMalatz: $('pctMalatz')?.value, pctKatz: $('pctKatz')?.value, pctMatz: $('pctMatz')?.value,
+        ratePrime: $('ratePrime')?.value, rateKalats: $('rateKalats')?.value, rateMalatz: $('rateMalatz')?.value, rateKatz: $('rateKatz')?.value, rateMatz: $('rateMatz')?.value,
+        termPrime: $('termPrime')?.value, termKalats: $('termKalats')?.value, termMalatz: $('termMalatz')?.value, termKatz: $('termKatz')?.value, termMatz: $('termMatz')?.value,
+        sSP: $('sSP')?.value, sApp: $('sApp')?.value, sInf: $('sInf')?.value, sInt: $('sInt')?.value, sYld: $('sYld')?.value,
+        rBuyCost: $('rBuyCost')?.value, rSellCost: $('rSellCost')?.value, rTrade: $('rTrade')?.value, rMer: $('rMer')?.value, rMaint: $('rMaint')?.value, rDiscount: $('rDiscount')?.value,
+        horMode, surplusMode, repayMethod, creditScore, taxMode, exMode, lockDown, lockTerm, lockHor, buyerType, mode, advancedTermMode,
+        prepayments: getPrepayments(),
+        usePurchaseTax: $('cPurchaseTax')?.checked ?? true, useMasShevach: $('cMasShevach')?.checked ?? false,
+        useTaxSP: $('cTaxSP')?.checked ?? true, useRentTax: $('cRentTax')?.checked ?? false, entryCostsFromEquity: $('cEntryCostsFromEquity')?.checked ?? true
+    };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
 
 function loadState() {
-    const saved = P.load(), s = saved && P.restore(saved);
-    if (!s) return false;
-    ['horMode','surplusMode','repayMethod','creditScore','taxMode','exMode','lockDown','lockTerm','lockHor','advancedTermMode','buyerType','mode']
-        .forEach(k => { if (s[k] != null) setState(k, s[k]); });
-    if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
-    return true;
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return false;
+        const s = JSON.parse(saved);
+        const setVal = (id, val) => { const el = $(id); if (el && val != null) el.value = val; };
+        const setChk = (id, val) => { const el = $(id); if (el && val != null) el.checked = val; };
+        setVal('inpEquity', s.equity); setVal('rDown', s.down); setVal('rDur', s.dur); setVal('rHor', s.hor);
+        setVal('pctPrime', s.pctPrime); setVal('sliderPrime', s.pctPrime);
+        setVal('pctKalats', s.pctKalats); setVal('sliderKalats', s.pctKalats);
+        setVal('pctMalatz', s.pctMalatz); setVal('sliderMalatz', s.pctMalatz);
+        setVal('pctKatz', s.pctKatz); setVal('sliderKatz', s.pctKatz);
+        setVal('pctMatz', s.pctMatz); setVal('sliderMatz', s.pctMatz);
+        setVal('ratePrime', s.ratePrime); setVal('rateKalats', s.rateKalats); setVal('rateMalatz', s.rateMalatz); setVal('rateKatz', s.rateKatz); setVal('rateMatz', s.rateMatz);
+        setVal('termPrime', s.termPrime); setVal('termKalats', s.termKalats); setVal('termMalatz', s.termMalatz); setVal('termKatz', s.termKatz); setVal('termMatz', s.termMatz);
+        setVal('sSP', s.sSP); setVal('sApp', s.sApp); setVal('sInf', s.sInf); setVal('sInt', s.sInt); setVal('sYld', s.sYld);
+        setVal('rBuyCost', s.rBuyCost); setVal('rSellCost', s.rSellCost); setVal('rTrade', s.rTrade); setVal('rMer', s.rMer); setVal('rMaint', s.rMaint); setVal('rDiscount', s.rDiscount);
+        setChk('cPurchaseTax', s.usePurchaseTax); setChk('cMasShevach', s.useMasShevach);
+        setChk('cTaxSP', s.useTaxSP); setChk('cRentTax', s.useRentTax); setChk('cEntryCostsFromEquity', s.entryCostsFromEquity);
+        if (s.horMode) setState('horMode', s.horMode);
+        if (s.surplusMode) setState('surplusMode', s.surplusMode);
+        if (s.repayMethod) setState('repayMethod', s.repayMethod);
+        if (s.creditScore) setState('creditScore', s.creditScore);
+        if (s.taxMode) setState('taxMode', s.taxMode);
+        if (s.exMode) setState('exMode', s.exMode);
+        if (s.lockDown != null) setState('lockDown', s.lockDown);
+        if (s.lockTerm != null) setState('lockTerm', s.lockTerm);
+        if (s.lockHor != null) setState('lockHor', s.lockHor);
+        if (s.advancedTermMode != null) setState('advancedTermMode', s.advancedTermMode);
+        if (s.buyerType) setState('buyerType', s.buyerType);
+        if (s.mode) setState('mode', s.mode);
+        if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
+        return true;
+    } catch(e) { return false; }
 }
 
 function bootstrap() {
+    S.set('bootstrapping', true);
     bootstrapping = true;
     window.Prepayments?.init(runSim);
     if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
     if (lang === 'he') { document.documentElement.lang = 'he'; document.documentElement.dir = 'rtl'; document.body.classList.add('rtl'); }
-    applyTranslations();
     const hadSaved = loadState();
+    applyTranslations();
     updMeter();
     updateLockUI();
     updateCreditUI();
@@ -469,6 +540,7 @@ function bootstrap() {
     checkMix();
     window.Prepayments?.renderPrepayments();
     if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); TRACKS.forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
+    S.set('bootstrapping', false);
     bootstrapping = false;
     runSim();
 }
@@ -477,8 +549,8 @@ function updateRateLabels() {
     TRACKS.forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
-function resetAll() { if (confirm('Reset all settings to defaults?')) { P.clear(); location.reload(); } }
-function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); runSim(); }
+function resetAll() { if (confirm('Reset all settings to defaults?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); runSim({ skipSweetSpots: true }); }
 function printResults() { window.print(); }
 
 Object.assign(window, {

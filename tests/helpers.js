@@ -28,8 +28,6 @@ function bootstrapApp() {
     eval(chartsCode);
     const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf-8');
     eval(prepayCode);
-    const persistCode = fs.readFileSync(path.resolve(__dirname, '../src/persistence/index.js'), 'utf-8');
-    eval(persistCode);
     require('../src/logic.js');
     require('../src/app.js');
     document.dispatchEvent(new Event('DOMContentLoaded'));
