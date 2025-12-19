@@ -12,7 +12,22 @@ global.document = window.document;
 global.Logic = Logic;
 global.Chart = class { constructor() {} destroy() {} resize() {} update() {} };
 
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
+// Load language files first
+const enCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/en.js'), 'utf8');
+eval(enCode);
+const heCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/he.js'), 'utf8');
+eval(heCode);
+// Load i18n, config, charts
+const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
+eval(i18nCode);
+const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
+eval(configCode);
+const stateCode = fs.readFileSync(path.resolve(__dirname, "../src/state/index.js"), "utf8");
+eval(stateCode);
+const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf8');
+eval(chartsCode);
+const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf8');
+eval(prepayCode);
 
 describe('Surplus Logic: Deep Dive', () => {
     
@@ -78,7 +93,10 @@ describe('Surplus Logic: Deep Dive', () => {
             <div id="pInf"><div></div><div></div></div>
             <div id="pYld"><div></div><div></div></div>
         `;
-        eval(appJsContent);
+        jest.resetModules();
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
     });
 
     test('Baseline: Huge Surplus exists', () => {

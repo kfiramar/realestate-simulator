@@ -1,81 +1,51 @@
-// Pure logic module: constants, calcPmt, calcCAGR, searchSweetSpots, and simulate.
+// Pure logic module
 
-// Purchase Tax (מס רכישה) brackets - valid 16.01.2024 to 15.01.2028
-const PURCHASE_TAX_FIRST_HOME = [
-    { limit: 1978745, rate: 0 },
-    { limit: 2347040, rate: 0.035 },
-    { limit: 6055070, rate: 0.05 },
-    { limit: 20183565, rate: 0.08 },
-    { limit: Infinity, rate: 0.10 }
-];
+// Purchase Tax brackets (valid 16.01.2024 to 15.01.2028)
+const PURCHASE_TAX_FIRST = [[1978745, 0], [2347040, 0.035], [6055070, 0.05], [20183565, 0.08], [Infinity, 0.10]];
+const PURCHASE_TAX_ADD = [[6055070, 0.08], [Infinity, 0.10]];
 
-const PURCHASE_TAX_ADDITIONAL = [
-    { limit: 6055070, rate: 0.08 },
-    { limit: Infinity, rate: 0.10 }
-];
-
-function calcPurchaseTax(propertyValue, isFirstHome = true) {
-    const brackets = isFirstHome ? PURCHASE_TAX_FIRST_HOME : PURCHASE_TAX_ADDITIONAL;
-    let tax = 0;
-    let prevLimit = 0;
-    
-    for (const bracket of brackets) {
-        if (propertyValue <= prevLimit) break;
-        const taxableInBracket = Math.min(propertyValue, bracket.limit) - prevLimit;
-        if (taxableInBracket > 0) {
-            tax += taxableInBracket * bracket.rate;
-        }
-        prevLimit = bracket.limit;
+function calcPurchaseTax(value, isFirst = true) {
+    const brackets = isFirst ? PURCHASE_TAX_FIRST : PURCHASE_TAX_ADD;
+    let tax = 0, prev = 0;
+    for (const [limit, rate] of brackets) {
+        if (value <= prev) break;
+        tax += (Math.min(value, limit) - prev) * rate;
+        prev = limit;
     }
-    
     return Math.round(tax);
 }
 
-// --- MAS SHEVACH (Capital Gains Tax) ---
-const MAS_SHEVACH_EXEMPTION_CAP = 5008000; // 2024-2027
+// Mas Shevach (Capital Gains Tax)
+const MAS_SHEVACH_CAP = 5008000;
 
-function calcMasShevach(salePrice, costBasis, exemptionType = 'single') {
-    const realGain = salePrice - costBasis;
-    if (realGain <= 0) return { tax: 0, exemptGain: 0, taxableGain: 0 };
-    
-    // 'none' = investment property, no exemption
-    if (exemptionType === 'none') {
-        return { tax: Math.round(realGain * 0.25), exemptGain: 0, taxableGain: realGain };
-    }
-    
-    // 'single' = single apartment exemption with cap
-    if (salePrice <= MAS_SHEVACH_EXEMPTION_CAP) {
-        return { tax: 0, exemptGain: realGain, taxableGain: 0 };
-    }
-    
-    // Luxury apartment: pro-rata split
-    const exemptFraction = MAS_SHEVACH_EXEMPTION_CAP / salePrice;
-    const exemptGain = realGain * exemptFraction;
-    const taxableGain = realGain * (1 - exemptFraction);
-    return { tax: Math.round(taxableGain * 0.25), exemptGain, taxableGain };
+function calcMasShevach(salePrice, costBasis, type = 'single') {
+    const gain = salePrice - costBasis;
+    if (gain <= 0) return { tax: 0, exemptGain: 0, taxableGain: 0 };
+    if (type === 'none') return { tax: Math.round(gain * 0.25), exemptGain: 0, taxableGain: gain };
+    if (salePrice <= MAS_SHEVACH_CAP) return { tax: 0, exemptGain: gain, taxableGain: 0 };
+    const exemptFrac = MAS_SHEVACH_CAP / salePrice;
+    return { tax: Math.round(gain * (1 - exemptFrac) * 0.25), exemptGain: gain * exemptFrac, taxableGain: gain * (1 - exemptFrac) };
 }
 
+// Historical data
 const H_SP = [0.1088, 0.0491, 0.1579, 0.0549, -0.3700, 0.2646, 0.1506, 0.0211, 0.1600, 0.3239, 0.1369, 0.0138, 0.1196, 0.2183, -0.0438, 0.3149, 0.1840, 0.2871, -0.1811, 0.2629, 0.2400];
 const H_RE = [-0.02, 0.04, 0.00, 0.03, 0.06, 0.19, 0.15, 0.04, 0.05, 0.08, 0.06, 0.07, 0.05, 0.04, 0.01, 0.03, 0.04, 0.12, 0.18, 0.02, 0.05];
 const H_EX = [4.48, 4.49, 4.45, 4.11, 3.59, 3.93, 3.73, 3.58, 3.85, 3.61, 3.58, 3.88, 3.84, 3.60, 3.59, 3.56, 3.44, 3.23, 3.36, 3.68, 3.75];
 const H_CPI = [0.012, 0.024, -0.001, 0.034, 0.038, 0.039, 0.027, 0.022, 0.016, 0.018, -0.002, -0.010, -0.002, 0.004, 0.008, 0.006, -0.007, 0.028, 0.053, 0.030, 0.032];
 const H_BOI = [0.041, 0.035, 0.050, 0.040, 0.035, 0.010, 0.015, 0.030, 0.025, 0.015, 0.0075, 0.001, 0.001, 0.001, 0.0025, 0.001, 0.001, 0.035, 0.045, 0.045];
+const getH = (arr, i) => i < arr.length ? arr[i] : arr[arr.length - 1];
 
-function getH(arr, i) { return i < arr.length ? arr[i] : arr[arr.length - 1]; }
-
+// Core calculations
 function calcPmt(p, rAnn, m) {
     if (p <= 0.01) return 0;
     if (rAnn === 0) return p / m;
-    let r = rAnn / 12;
+    const r = rAnn / 12;
     return p * (r * Math.pow(1 + r, m)) / (Math.pow(1 + r, m) - 1);
 }
 
-// Calculate IRR (annualized) given cash flows and final value
-// cashFlows: [{ month, amount }], finalValue: number, totalMonths: number
+// IRR calculation (Newton-Raphson)
 function calcIRR(cashFlows, finalValue, totalMonths) {
-    // Newton-Raphson to find monthly rate r where:
-    // sum(cf.amount * (1+r)^(totalMonths - cf.month)) = finalValue
-    let r = 0.007; // Initial guess ~8.7% annual
+    let r = 0.007;
     for (let i = 0; i < 50; i++) {
         let fv = 0, dfv = 0;
         for (const cf of cashFlows) {
@@ -83,17 +53,17 @@ function calcIRR(cashFlows, finalValue, totalMonths) {
             fv += cf.amount * Math.pow(1 + r, n);
             dfv += cf.amount * n * Math.pow(1 + r, n - 1);
         }
-        const err = fv - finalValue;
-        if (Math.abs(err) < 0.01) break;
-        r -= err / dfv;
+        if (Math.abs(fv - finalValue) < 0.01) break;
+        if (Math.abs(dfv) < 0.0001) break; // Prevent division by zero
+        const newR = r - (fv - finalValue) / dfv;
+        if (!isFinite(newR) || newR < -0.99) break; // Prevent invalid rates
+        r = newR;
     }
-    return (Math.pow(1 + r, 12) - 1) * 100; // Convert monthly to annual %
+    const result = (Math.pow(1 + r, 12) - 1) * 100;
+    return isFinite(result) ? result : 0;
 }
 
-/**
- * Core Simulation Engine
- * Handles both optimizing (single value return) and charting (time series return).
- */
+// Core Simulation Engine
 function simulate(params) {
     const {
         equity, downPct,
@@ -111,111 +81,77 @@ function simulate(params) {
 
     const repayMethod = config.repayMethod || 'spitzer';
     const purchaseDiscount = params.purchaseDiscount || 0;
-    const assetPrice = equity / downPct;
-    const totalLoan = assetPrice - equity;
-    // If bought at discount, true market value is higher
+    const entryCostsFromEquity = params.entryCostsFromEquity || false;
+    
+    // Calculate entry costs
+    const purchaseTax = fees.purchaseTax || 0;
+    
+    // If entry costs come from equity (before mortgage), we need to solve for asset price
+    // where: equity = assetPrice * downPct + entryCosts
+    // So: assetPrice = (equity - entryCosts) / downPct (approximately, since buyCosts depend on assetPrice)
+    let assetPrice, effectiveEquity, buyCosts, reEntryCosts;
+    
+    if (entryCostsFromEquity) {
+        // Entry costs come from equity first
+        // Solve: equity = effectiveDownPayment + purchaseTax + buyCosts
+        // where: effectiveDownPayment = assetPrice * downPct
+        // and: buyCosts = assetPrice * fees.buy
+        // So: equity = assetPrice * downPct + purchaseTax + assetPrice * fees.buy
+        // equity - purchaseTax = assetPrice * (downPct + fees.buy)
+        // assetPrice = (equity - purchaseTax) / (downPct + fees.buy)
+        assetPrice = (equity - purchaseTax) / (downPct + fees.buy);
+        buyCosts = assetPrice * fees.buy;
+        reEntryCosts = buyCosts + purchaseTax;
+        effectiveEquity = equity - reEntryCosts;  // What's left for down payment
+    } else {
+        // Entry costs are separate (after mortgage) - original behavior
+        assetPrice = equity / downPct;
+        buyCosts = assetPrice * fees.buy;
+        reEntryCosts = buyCosts + purchaseTax;
+        effectiveEquity = equity;
+    }
+    
+    const totalLoan = assetPrice - (entryCostsFromEquity ? effectiveEquity : equity);
     let assetVal = assetPrice / (1 - purchaseDiscount);
 
-    // Terms
-    const terms = {
-        p: (termMix?.p || loanTerm) * 12,
-        k: (termMix?.k || loanTerm) * 12,
-        z: (termMix?.z || loanTerm) * 12,
-        m: (termMix?.m || loanTerm) * 12,
-        mt: (termMix?.mt || loanTerm) * 12
-    };
+    const TRACK_KEYS = ['p', 'k', 'z', 'm', 'mt'];
+    const mixVals = [mix.prime, mix.kalats, mix.katz, mix.malatz || 0, mix.matz || 0];
+    const terms = Object.fromEntries(TRACK_KEYS.map((k, i) => [k, (termMix?.[k] || loanTerm) * 12]));
+    const initPrinc = Object.fromEntries(TRACK_KEYS.map((k, i) => [k, totalLoan * (mixVals[i] / 100)]));
+    let [balP, balK, balZ, balM, balMT] = TRACK_KEYS.map(k => initPrinc[k]);
 
-    // Initial principals for equal principal method
-    const initPrinc = {
-        p: totalLoan * (mix.prime / 100),
-        k: totalLoan * (mix.kalats / 100),
-        z: totalLoan * (mix.katz / 100),
-        m: totalLoan * ((mix.malatz || 0) / 100),
-        mt: totalLoan * ((mix.matz || 0) / 100)
-    };
+    // Both paths start with same equity
+    // S&P path invests full equity
+    let totalCashInvested = equity;  // Starting cash is equity only
 
-    // Initialize Tracks
-    let balP = initPrinc.p;
-    let balK = initPrinc.k;
-    let balZ = initPrinc.z;
-    let balM = initPrinc.m;
-    let balMT = initPrinc.mt;
+    const spCashFlows = [{ month: 0, amount: equity }];
+    const reCashFlows = [{ month: 0, amount: equity + reEntryCosts }];  // RE includes entry costs
 
-    // Initial Costs
-    const entryCosts = assetPrice * fees.buy + (fees.purchaseTax || 0);
-    let totalCashInvested = equity + entryCosts;
-
-    // Cash flow tracking for IRR: [{ month, amount }]
-    const spCashFlows = [{ month: 0, amount: totalCashInvested }];
-    const reCashFlows = [{ month: 0, amount: totalCashInvested }];
-
-    // S&P Setup
-    let spUnits = 0;
-    let spBasisLinked = totalCashInvested;
-    let spBasisUSD = 0;
-    let spInvestedILS = totalCashInvested;
-    let spValueHedged = totalCashInvested;
-
+    let spUnits = 0, spBasisLinked = equity, spBasisUSD = 0, spInvestedILS = equity, spValueHedged = equity;
     const startEx = getH(H_EX, 0);
     let currentEx = startEx;
-    if (config.exMode !== 'hedged') {
-        spUnits = totalCashInvested / startEx;
-        spBasisUSD = spUnits;
-    }
+    if (config.exMode !== 'hedged') { spUnits = equity / startEx; spBasisUSD = spUnits; }
 
-    // RE Side Portfolios
-    let reSideStockValue = 0;
-    let reSideStockBasis = 0;        // Nominal basis
-    let reSideStockBasisLinked = 0;  // Inflation-adjusted basis
-    let reSideCash = 0;
-    let spSideCash = 0;
+    let reSideStockValue = 0, reSideStockBasis = 0, reSideStockBasisLinked = 0, reSideCash = 0, spSideCash = 0;
+    let totalInterestWasted = 0, totalRentCollected = 0, firstPosMonth = null;
 
-    let totalInterestWasted = 0;
-    let totalRentCollected = 0;
-    let firstPosMonth = null;
+    const series = { labels: [], reDataPct: [], spDataPct: [], reDataVal: [], spDataVal: [], surplusVal: [], surplusPct: [], flowMort: [], flowRent: [], flowNet: [], flowInt: [], flowPrinc: [] };
 
-    // Series Storage
-    const series = {
-        labels: [],
-        reDataPct: [], spDataPct: [],
-        reDataVal: [], spDataVal: [],
-        surplusVal: [], surplusPct: [],
-        flowMort: [], flowRent: [], flowNet: [], flowInt: [], flowPrinc: []
-    };
-
-    // Constants
     const taxThresholdBase = 5654;
     let cpiIndex = 1.0;
+    const spreadPrime = rates.prime - market.boi, spreadMalatz = (rates.malatz || 0) - market.boi, spreadMatz = (rates.matz || 0) - market.boi;
+    let ratePrime = rates.prime, rateMalatz = rates.malatz || 0, rateMatz = rates.matz || 0;
+    const mDrift = Math.pow(1 + (config.drift / 100), 1 / 12) - 1;
 
-    // Spread Calculation (from Initial Rates vs Initial BoI)
-    const spreadPrime = rates.prime - market.boi;
-    const spreadMalatz = (rates.malatz || 0) - market.boi;
-    const spreadMatz = (rates.matz || 0) - market.boi;
-
-    // Dynamic Rates (Variable tracks)
-    let ratePrime = rates.prime;
-    let rateMalatz = rates.malatz || 0;
-    let rateMatz = rates.matz || 0;
-
-    const driftFactor = 1 + (config.drift / 100);
-    const mDrift = Math.pow(driftFactor, 1 / 12) - 1;
-
-    const simDur = params.simHorizon;
-
-    for (let y = 0; y < simDur; y++) {
-        // Determine Annual Rates (History vs Fixed)
+    for (let y = 0; y < params.simHorizon; y++) {
         const useHist = config.history || {};
-
         const rSP = useHist.SP?.is ? getH(H_SP, y) : market.sp;
         const rApp = useHist.App?.is ? getH(H_RE, y) : market.reApp;
         const rInf = useHist.Inf?.is ? getH(H_CPI, y) : market.cpi;
         const baseBoI = useHist.Int?.is ? getH(H_BOI, y) : market.boi;
 
-        // Update Floating Rate (Prime)
         ratePrime = baseBoI + spreadPrime;
-        // Kalats/Katz are Fixed
-        const rateKalats = rates.kalats;
-        const rateKatz = rates.katz;
+        const rateKalats = rates.kalats, rateKatz = rates.katz;
 
         let rYld = market.rentYield;
         if (useHist.Yld?.is) rYld = 0.042 - ((Math.min(y, 20) / 20) * (0.042 - 0.028));
@@ -226,32 +162,38 @@ function simulate(params) {
         const mInf = Math.pow(1 + rInf, 1 / 12) - 1;
 
         // Annual Aggregates for Charts
-        let yrRent = 0, yrNet = 0, yrInt = 0, yrPrinc = 0;
         let firstMonthRent = 0, firstMonthInt = 0, firstMonthPrinc = 0, firstMonthNet = 0;
 
-        // Apply prepayments at start of specified year (array format)
+        // Apply prepayments at start of specified year
         if (prepay && Array.isArray(prepay)) {
+            const bals = { p: balP, k: balK, m: balM, z: balZ, mt: balMT };
             prepay.filter(p => p.yr - 1 === y && p.amt > 0).forEach(p => {
-                let amt = 0;
-                if (p.track === 'p') { amt = Math.min(p.amt, balP); balP -= amt; }
-                else if (p.track === 'k') { amt = Math.min(p.amt, balK); balK -= amt; }
-                else if (p.track === 'm') { amt = Math.min(p.amt, balM); balM -= amt; }
-                else if (p.track === 'z') { amt = Math.min(p.amt, balZ); balZ -= amt; }
-                else if (p.track === 'mt') { amt = Math.min(p.amt, balMT); balMT -= amt; }
-                if (amt > 0) {
-                    totalCashInvested += amt;
-                    spCashFlows.push({ month: y * 12, amount: amt });
-                    reCashFlows.push({ month: y * 12, amount: amt });
-                    // Also invest same amount in S&P for fair comparison
-                    spValueHedged += amt;
-                    spInvestedILS += amt;
-                    spBasisLinked += amt;
-                    if (config.exMode !== 'hedged') {
-                        spUnits += amt / currentEx;
-                        spBasisUSD += amt / currentEx;
-                    }
+                const isCpi = ['z', 'mt'].includes(p.track);
+                const nominalCash = p.amt;
+                
+                // For CPI tracks, the balance is Real Principal.
+                // We must calculate how much Real Principal the Nominal Cash clears.
+                let realPrincipalToPay = isCpi ? nominalCash / cpiIndex : nominalCash;
+                
+                // Cap at remaining balance
+                if (realPrincipalToPay > (bals[p.track] || 0)) {
+                    realPrincipalToPay = bals[p.track] || 0;
+                }
+
+                if (realPrincipalToPay > 0) {
+                    bals[p.track] -= realPrincipalToPay;
+                    
+                    // The actual cash flow is the Nominal value
+                    const actualNominalCash = isCpi ? realPrincipalToPay * cpiIndex : realPrincipalToPay;
+
+                    totalCashInvested += actualNominalCash;
+                    spCashFlows.push({ month: y * 12, amount: actualNominalCash });
+                    reCashFlows.push({ month: y * 12, amount: actualNominalCash });
+                    spValueHedged += actualNominalCash; spInvestedILS += actualNominalCash; spBasisLinked += actualNominalCash;
+                    if (config.exMode !== 'hedged') { spUnits += actualNominalCash / currentEx; spBasisUSD += actualNominalCash / currentEx; }
                 }
             });
+            balP = bals.p; balK = bals.k; balM = bals.m; balZ = bals.z; balMT = bals.mt;
         }
 
         for (let m = 0; m < 12; m++) {
@@ -267,65 +209,39 @@ function simulate(params) {
 
             // Payments
             let pmtTotal = 0, intTotal = 0, princTotal = 0;
-            const mlP = terms.p - globalM;
-            const mlK = terms.k - globalM;
-            const mlZ = terms.z - globalM;
-            const mlM = terms.m - globalM;
-            const mlMT = terms.mt - globalM;
 
-            // Prime
-            if (balP > 10 && mlP > 0) {
-                let i = balP * (ratePrime / 12);
-                let pr = repayMethod === 'equalPrincipal' ? initPrinc.p / terms.p : calcPmt(balP, ratePrime, mlP) - i;
-                if (pr > balP) pr = balP;
-                let p = pr + i;
-                balP -= pr;
-                pmtTotal += p; intTotal += i; princTotal += pr;
-            }
-            // Kalats (Fixed, Non-Linked)
-            if (balK > 10 && mlK > 0) {
-                let i = balK * (rateKalats / 12);
-                let pr = repayMethod === 'equalPrincipal' ? initPrinc.k / terms.k : calcPmt(balK, rateKalats, mlK) - i;
-                if (pr > balK) pr = balK;
-                let p = pr + i;
-                balK -= pr;
-                pmtTotal += p; intTotal += i; princTotal += pr;
-            }
-            // Katz (Fixed, CPI-Linked) - calculate in real terms, then scale by CPI
-            if (balZ > 10 && mlZ > 0) {
-                // Real-terms calculation (balance already in real shekels)
-                let realI = balZ * (rateKatz / 12);
-                let realPr = repayMethod === 'equalPrincipal' ? initPrinc.z / terms.z : calcPmt(balZ, rateKatz, mlZ) - realI;
-                if (realPr > balZ) realPr = balZ;
-                balZ -= realPr;
-                // Convert to nominal for cash flow
-                let nomI = realI * cpiIndex;
-                let nomPr = realPr * cpiIndex;
-                let p = nomI + nomPr;
-                pmtTotal += p; intTotal += nomI; princTotal += nomPr;
-            }
-            // Malatz (Var 5, Non-Linked)
-            if (balM > 10 && mlM > 0) {
-                let i = balM * (rateMalatz / 12);
-                let pr = repayMethod === 'equalPrincipal' ? initPrinc.m / terms.m : calcPmt(balM, rateMalatz, mlM) - i;
-                if (pr > balM) pr = balM;
-                let p = pr + i;
-                balM -= pr;
-                pmtTotal += p; intTotal += i; princTotal += pr;
-            }
-            // Matz (Var 5, CPI-Linked) - calculate in real terms, then scale by CPI
-            if (balMT > 10 && mlMT > 0) {
-                // Real-terms calculation (balance already in real shekels)
-                let realI = balMT * (rateMatz / 12);
-                let realPr = repayMethod === 'equalPrincipal' ? initPrinc.mt / terms.mt : calcPmt(balMT, rateMatz, mlMT) - realI;
-                if (realPr > balMT) realPr = balMT;
-                balMT -= realPr;
-                // Convert to nominal for cash flow
-                let nomI = realI * cpiIndex;
-                let nomPr = realPr * cpiIndex;
-                let p = nomI + nomPr;
-                pmtTotal += p; intTotal += nomI; princTotal += nomPr;
-            }
+            // CPI-linked track payment helper (Katz/Matz)
+            // Israeli CPI-linked mortgages: balance stored in "real" (base) terms, scaled by cpiIndex for nominal values.
+            // Correct formula: P_indexed = P_real × (I_t / I_base), Interest = P_indexed × (r/12)
+            // Simplification: we skip interim period base index adjustment and daily interpolation (<0.1% impact over loan term)
+            const processTrack = (bal, rate, ml, initP, term, cpiLinked) => {
+                if (bal <= 10 || ml <= 0) return { bal, pmt: 0, int: 0, princ: 0 };
+                const realI = bal * (rate / 12);
+                const realPr = Math.max(0, Math.min(bal, repayMethod === 'equalPrincipal' ? initP / term : calcPmt(bal, rate, ml) - realI));
+                const newBal = bal - realPr;
+                if (cpiLinked) {
+                    // Nominal payment = real payment × cpiIndex (both interest and principal scale with CPI)
+                    return { bal: newBal, pmt: (realI + realPr) * cpiIndex, int: realI * cpiIndex, princ: realPr * cpiIndex };
+                }
+                return { bal: newBal, pmt: realI + realPr, int: realI, princ: realPr };
+            };
+
+            // Process all tracks
+            let r;
+            r = processTrack(balP, ratePrime, terms.p - globalM, initPrinc.p, terms.p, false);
+            balP = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balK, rateKalats, terms.k - globalM, initPrinc.k, terms.k, false);
+            balK = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balZ, rateKatz, terms.z - globalM, initPrinc.z, terms.z, true);
+            balZ = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balM, rateMalatz, terms.m - globalM, initPrinc.m, terms.m, false);
+            balM = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
+
+            r = processTrack(balMT, rateMatz, terms.mt - globalM, initPrinc.mt, terms.mt, true);
+            balMT = r.bal; pmtTotal += r.pmt; intTotal += r.int; princTotal += r.princ;
 
             totalInterestWasted += intTotal;
 
@@ -338,10 +254,6 @@ function simulate(params) {
             totalRentCollected += netRent;
             const oop = pmtTotal - netRent;
 
-            yrRent += netRent;
-            yrInt += intTotal;
-            yrPrinc += princTotal;
-            yrNet += (netRent - pmtTotal);
 
             if (m === 0) {
                 firstMonthRent = netRent;
@@ -356,52 +268,29 @@ function simulate(params) {
             if (oop < 0) {
                 const surplus = Math.abs(oop);
                 const mode = config.surplusMode;
-
                 if (mode === 'invest' || mode === true) {
-                    const netInvest = surplus * (1 - fees.trade);
-                    reSideStockValue += netInvest;
-                    reSideStockBasis += netInvest;
-                    reSideStockBasisLinked += netInvest;
-                } else {
-                    reSideCash += surplus;
-                }
+                    const net = surplus * (1 - fees.trade);
+                    reSideStockValue += net; reSideStockBasis += net; reSideStockBasisLinked += net;
+                } else reSideCash += surplus;
 
                 if (mode === 'match') {
                     const grossTarget = surplus / (1 - fees.trade);
-                    let withdrawn = 0;
-                    if (config.exMode === 'hedged') {
-                        const used = Math.min(spValueHedged, grossTarget);
-                        spValueHedged -= used;
-                        spBasisLinked = Math.max(0, spBasisLinked - used);
-                        spInvestedILS = Math.max(0, spInvestedILS - used);
-                        withdrawn = used;
-                    } else {
-                        const availableILS = spUnits * currentEx;
-                        const usedILS = Math.min(availableILS, grossTarget);
-                        const unitsSold = usedILS / currentEx;
-                        spUnits -= unitsSold;
-                        spBasisUSD = Math.max(0, spBasisUSD - unitsSold);
-                        spBasisLinked = Math.max(0, spBasisLinked - usedILS);
-                        withdrawn = usedILS;
-                    }
-                    spSideCash += withdrawn * (1 - fees.trade);
+                    const isHedged = config.exMode === 'hedged';
+                    const used = isHedged ? Math.min(spValueHedged, grossTarget) : Math.min(spUnits * currentEx, grossTarget);
+                    if (isHedged) { spValueHedged -= used; spInvestedILS = Math.max(0, spInvestedILS - used); }
+                    else { spUnits -= used / currentEx; spBasisUSD = Math.max(0, spBasisUSD - used / currentEx); }
+                    spBasisLinked = Math.max(0, spBasisLinked - used);
+                    spSideCash += used * (1 - fees.trade);
                 }
             } else {
-                // Deficit
+                // Deficit - inject into S&P
                 totalCashInvested += oop;
                 spCashFlows.push({ month: globalM, amount: oop });
                 reCashFlows.push({ month: globalM, amount: oop });
                 spBasisLinked += oop;
-
-                // S&P Injection
-                let netInject = oop * (1 - fees.trade);
-                if (config.exMode !== 'hedged') spBasisUSD += (oop / currentEx);
-                if (config.exMode === 'hedged') {
-                    spValueHedged += netInject;
-                    spInvestedILS += oop;
-                } else {
-                    spUnits += (netInject / currentEx);
-                }
+                const net = oop * (1 - fees.trade);
+                if (config.exMode === 'hedged') { spValueHedged += net; spInvestedILS += oop; }
+                else { spUnits += net / currentEx; spBasisUSD += oop / currentEx; }
             }
 
             spBasisLinked *= (1 + mInf);
@@ -420,79 +309,61 @@ function simulate(params) {
 
             // Chart Data (End of Year)
             if (m === 11 && returnSeries) {
+                // PRE-TAX for chart - tax only at exit (shown in tax zone)
+                const remainingLoan = balP + balK + (balZ * cpiIndex) + balM + (balMT * cpiIndex);
+                const exitVal = assetVal * (1 - fees.sell);
+                const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
+                // Only subtract entry costs if they weren't already deducted from equity (smaller asset)
+                const entryCostDeduction = entryCostsFromEquity ? 0 : reEntryCosts;
+                const grossRE = (exitVal - remainingLoan) + reSideStockValue + reSideCash - entryCostDeduction;
+                const grossSP = spValILS + spSideCash;
+
                 series.labels.push(y + 1);
                 series.flowRent.push(firstMonthRent);
-                series.flowInt.push(firstMonthInt * -1);
-                series.flowPrinc.push(firstMonthPrinc * -1);
+                series.flowInt.push(-firstMonthInt);
+                series.flowPrinc.push(-firstMonthPrinc);
                 series.flowNet.push(firstMonthNet);
-
-                // Net Worth Calc at Snapshot (PRE-TAX for chart - tax only at exit)
-                const exitVal = assetVal * (1 - fees.sell);
-                const netRE = (exitVal - (balP + balK + balZ + balM + balMT)) + reSideStockValue + reSideCash;
-
-                let spValILS = 0;
-                if (config.exMode === 'hedged') spValILS = spValueHedged;
-                else spValILS = spUnits * currentEx;
-
-                const netSP = spValILS + spSideCash;
-
-                series.reDataVal.push(netRE);
-                series.spDataVal.push(netSP);
-                series.reDataPct.push(((netRE - spInvestedILS) / spInvestedILS) * 100);
-                series.spDataPct.push(((netSP - spInvestedILS) / spInvestedILS) * 100);
+                series.reDataVal.push(grossRE);
+                series.spDataVal.push(grossSP);
+                
+                const div = totalCashInvested > 1 ? totalCashInvested : 1;
+                series.reDataPct.push(((grossRE - div) / div) * 100);
+                series.spDataPct.push(((grossSP - div) / div) * 100);
                 series.surplusVal.push(reSideStockValue);
-                series.surplusPct.push((reSideStockValue / spInvestedILS) * 100);
+                series.surplusPct.push((reSideStockValue / div) * 100);
             }
         }
     }
 
     // Final Calculation
+    const remainingLoan = balP + balK + (balZ * cpiIndex) + balM + (balMT * cpiIndex);
     const exitValue = assetVal * (1 - fees.sell);
+    const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
+
     let reSideTax = 0;
     if (tax.useRE) {
         const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
-        if (reSideStockValue > reBasis) {
-            reSideTax = (reSideStockValue - reBasis) * 0.25;
-        }
+        if (reSideStockValue > reBasis) reSideTax = (reSideStockValue - reBasis) * 0.25;
     }
     
-    // Mas Shevach on real estate appreciation
-    let masShevach = 0;
-    if (tax.useMasShevach) {
-        const costBasisIndexed = assetPrice * cpiIndex; // CPI-adjusted cost basis
-        const shevachResult = calcMasShevach(assetVal, costBasisIndexed, tax.masShevachType || 'single');
-        masShevach = shevachResult.tax;
-    }
-    
-    const netRE = (exitValue - masShevach - (balP + balK + balZ + balM + balMT)) + (reSideStockValue - reSideTax) + reSideCash;
-
-    let spValILS = 0;
-    if (config.exMode === 'hedged') spValILS = spValueHedged;
-    else spValILS = spUnits * currentEx;
+    const masShevach = tax.useMasShevach ? calcMasShevach(assetVal, assetPrice * cpiIndex, tax.masShevachType || 'single').tax : 0;
+    const netRE = exitValue - masShevach - remainingLoan + (reSideStockValue - reSideTax) + reSideCash;
 
     let spTax = 0;
     if (tax.useSP) {
-        if (tax.mode === 'real') {
-            let profit = spValILS - spBasisLinked;
-            if (profit > 0) spTax = profit * 0.25;
-        } else {
-            if (config.exMode === 'hedged') {
-                let prof = spValILS - spInvestedILS;
-                if (prof > 0) spTax = prof * 0.25;
-            } else {
-                let profUSD = spUnits - spBasisUSD;
-                if (profUSD > 0) spTax = (profUSD * currentEx) * 0.25;
-            }
-        }
+        const profit = tax.mode === 'real' ? spValILS - spBasisLinked
+            : config.exMode === 'hedged' ? spValILS - spInvestedILS
+            : (spUnits - spBasisUSD) * currentEx;
+        if (profit > 0) spTax = profit * 0.25;
     }
     const netSP = spValILS - spTax + spSideCash;
 
-    const totalMonths = simDur * 12;
+    const totalMonths = params.simHorizon * 12;
     const cagrRE = calcIRR(reCashFlows, netRE, totalMonths);
     const cagrSP = calcIRR(spCashFlows, netSP, totalMonths);
 
     // Pre-tax values for chart visualization
-    const grossRE = (exitValue - (balP + balK + balZ + balM + balMT)) + reSideStockValue + reSideCash;
+    const grossRE = exitValue - remainingLoan + reSideStockValue + reSideCash;
     const grossSP = spValILS + spSideCash;
     const totalRETax = masShevach + reSideTax;
 
@@ -500,277 +371,293 @@ function simulate(params) {
         netRE, netSP, cagrRE, cagrSP,
         grossRE, grossSP, totalRETax, reSideTax,
         totalCashInvested, totalInterestWasted, totalRentCollected,
-        firstPosMonth,
-        remainingLoan: balP + balK + balZ + balM + balMT,
-        reSideStockValue,
+        firstPosMonth, remainingLoan, reSideStockValue,
         spValueHedged, spUnits, spBasisLinked, spBasisUSD,
-        masShevach, spTax,
-        series
+        masShevach, spTax, series,
+        balances: { p: balP, k: balK, z: balZ, m: balM, mt: balMT }, cpiIndex,
+        finalAssetValue: assetVal
     };
 }
 
 // Adapter for legacy calcCAGR callers (Optimizer & Tests)
 function calcCAGR(eq, downPct, mortDur, simDur, useTaxSP, tradeFee, merFee, exModeCalc, taxModeCalc, cfgCalc, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) {
-    // Backward compat: if useTaxRE not provided, use same as useTaxSP
-    const taxSP = useTaxSP ?? true;
-    const taxRE = useTaxRE ?? taxSP;
-    const params = {
-        equity: eq,
-        downPct: downPct,
-        loanTerm: mortDur,
-        simHorizon: simDur,
+    const taxSP = useTaxSP ?? true, taxRE = useTaxRE ?? taxSP;
+    return simulate({
+        equity: eq, downPct, loanTerm: mortDur, simHorizon: simDur, mix, maintPct, purchaseDiscount: purchaseDiscount || 0,
         termMix: termMix || { p: mortDur, k: mortDur, z: mortDur, m: mortDur, mt: mortDur },
-        mix: mix,
-        rates: {
-            prime: overrides.RateP,
-            kalats: overrides.RateK,
-            katz: overrides.RateZ,
-            malatz: overrides.RateM || 0,
-            matz: overrides.RateMT || 0
-        },
-        market: {
-            sp: overrides.SP,
-            reApp: overrides.App,
-            cpi: overrides.Inf,
-            boi: overrides.Int,
-            rentYield: overrides.Yld
-        },
-        fees: {
-            buy: buyCostPct,
-            sell: sellCostPct,
-            trade: tradeFee,
-            mgmt: merFee,
-            purchaseTax: purchaseTax || 0
-        },
-        maintPct: maintPct,
-        purchaseDiscount: purchaseDiscount || 0,
-        tax: {
-            useSP: taxSP,
-            useRE: taxRE,
-            useRent: useRentTax,
-            useMasShevach: useMasShevach || false,
-            masShevachType: masShevachType || 'single',
-            mode: taxModeCalc
-        },
-        config: {
-            drift: drift,
-            surplusMode: surplusMode,
-            exMode: exModeCalc,
-            history: cfgCalc
-        },
+        rates: { prime: overrides.RateP, kalats: overrides.RateK, katz: overrides.RateZ, malatz: overrides.RateM || 0, matz: overrides.RateMT || 0 },
+        market: { sp: overrides.SP, reApp: overrides.App, cpi: overrides.Inf, boi: overrides.Int, rentYield: overrides.Yld },
+        fees: { buy: buyCostPct, sell: sellCostPct, trade: tradeFee, mgmt: merFee, purchaseTax: purchaseTax || 0 },
+        tax: { useSP: taxSP, useRE: taxRE, useRent: useRentTax, useMasShevach: useMasShevach || false, masShevachType: masShevachType || 'single', mode: taxModeCalc },
+        config: { drift, surplusMode, exMode: exModeCalc, history: cfgCalc },
         returnSeries: false
-    };
-
-    const res = simulate(params);
-    return res.cagrRE;
+    }).cagrRE;
 }
 
 function searchSweetSpots(params) {
-    const {
-        eq, curDown, curDur, simDur, useTaxSP, useTaxRE, useRentTax, tradeFee, merFee,
-        buyCostPct, maintPct, sellCostPct, overrides, mix, drift,
-        lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode, calcOverride,
-        surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount,
-        optimizeMode
-    } = params;
+    const { eq, curDown, curDur, simDur, useTaxSP, useTaxRE, useRentTax, tradeFee, merFee, buyCostPct, maintPct, sellCostPct, overrides, mix, drift, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode, calcOverride, surplusMode, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount, optimizeMode } = params;
 
-    // Scoring function based on mode
     const scoreFn = (d, t, h) => {
-        const simParams = {
-            equity: eq,
-            downPct: d / 100,
-            loanTerm: t,
-            simHorizon: h,
+        const res = simulate({
+            equity: eq, downPct: d / 100, loanTerm: t, simHorizon: h, mix, maintPct, purchaseDiscount: purchaseDiscount || 0,
             termMix: termMix || { p: t, k: t, z: t, m: t, mt: t },
-            mix,
             rates: { prime: overrides.RateP, kalats: overrides.RateK, katz: overrides.RateZ, malatz: overrides.RateM || 0, matz: overrides.RateMT || 0 },
             market: { sp: overrides.SP, reApp: overrides.App, cpi: overrides.Inf, boi: overrides.Int, rentYield: overrides.Yld },
             fees: { buy: buyCostPct, sell: sellCostPct, trade: tradeFee, mgmt: merFee, purchaseTax: purchaseTax || 0 },
-            maintPct,
-            purchaseDiscount: purchaseDiscount || 0,
             tax: { useSP: useTaxSP ?? true, useRE: useTaxRE ?? useTaxSP ?? true, useRent: useRentTax, useMasShevach: useMasShevach || false, masShevachType: masShevachType || 'single', mode: taxMode },
-            config: { drift, surplusMode, exMode, history: cfg },
-            returnSeries: false
-        };
-        const res = simulate(simParams);
-        if (optimizeMode === 'outperform') {
-            return res.netSP > 0 ? ((res.netRE - res.netSP) / res.netSP) * 100 : res.netRE;
-        }
-        return res.cagrRE;
+            config: { drift, surplusMode, exMode, history: cfg }, returnSeries: false
+        });
+        return optimizeMode === 'outperform' ? (res.netSP > 0 ? ((res.netRE - res.netSP) / res.netSP) * 100 : res.netRE) : res.cagrRE;
     };
 
-    const downMin = 25, downMax = 100;
-    const downVals = [];
-    const termVals = [];
-    const horVals = [];
-
-    if (lockDown) downVals.push(curDown * 100); else for (let d = downMin; d <= downMax; d += 5) downVals.push(d);
-    if (lockTerm) termVals.push(curDur); else for (let t = 10; t <= 30; t += 1) termVals.push(t);
-    if (lockHor || horMode === 'auto') horVals.push(simDur); else for (let h = 5; h <= 50; h += 2) horVals.push(h);
+    const range = (start, end, step) => { const r = []; for (let i = start; i <= end; i += step) r.push(i); return r; };
+    const downVals = lockDown ? [curDown * 100] : range(25, 100, 5);
+    const termVals = lockTerm ? [curDur] : range(10, 30, 1);
+    const horVals = lockHor || horMode === 'auto' ? [simDur] : range(5, 50, 2);
 
     let best = { d: downVals[0], t: termVals[0], h: horVals[0], c: -Infinity };
-    for (let d of downVals) {
-        for (let t of termVals) {
-            for (let h of horVals) {
+    for (const d of downVals) {
+        for (const t of termVals) {
+            for (const h of horVals) {
                 const simH = (horMode === 'auto' && !lockHor) ? t : h;
-                let c = calcOverride ? calcOverride(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) : scoreFn(d, t, simH);
-                const isBetter = c > best.c;
-                const isNearTie = Math.abs(c - best.c) < 0.05 && t > best.t;
-                if (isBetter || isNearTie) best = { d, t, h: simH, c };
+                const c = calcOverride ? calcOverride(eq, d / 100, t, simH, useTaxSP, tradeFee, merFee, exMode, taxMode, cfg, overrides, useRentTax, mix, buyCostPct, maintPct, sellCostPct, drift, surplusMode, useTaxRE, termMix, purchaseTax, useMasShevach, masShevachType, purchaseDiscount) : scoreFn(d, t, simH);
+                if (c > best.c || (Math.abs(c - best.c) < 0.05 && t > best.t)) best = { d, t, h: simH, c };
             }
         }
     }
     return best;
 }
 
-/**
- * Calculate balance after k payments (closed-form)
- * @param {number} P - Principal
- * @param {number} rAnn - Annual interest rate (decimal)
- * @param {number} n - Total months
- * @param {number} k - Payments made
- * @param {string} method - 'spitzer' or 'equalPrincipal'
- */
+// Balance after k payments (closed-form)
 function calcBalanceAfterK(P, rAnn, n, k, method = 'spitzer') {
     if (k >= n) return 0;
     if (k <= 0) return P;
-    if (method === 'equalPrincipal') {
-        return P * (1 - k / n);
-    }
-    // Spitzer closed-form: B_k = P(1+r)^k - A * ((1+r)^k - 1) / r
+    if (method === 'equalPrincipal') return P * (1 - k / n);
     const r = rAnn / 12;
     if (r === 0) return P * (1 - k / n);
-    const A = calcPmt(P, rAnn, n);
-    const factor = Math.pow(1 + r, k);
+    const A = calcPmt(P, rAnn, n), factor = Math.pow(1 + r, k);
     return P * factor - A * (factor - 1) / r;
 }
 
-/**
- * Calculate total interest over loan life (closed-form)
- * @param {number} P - Principal
- * @param {number} rAnn - Annual interest rate (decimal)
- * @param {number} n - Total months
- * @param {string} method - 'spitzer' or 'equalPrincipal'
- */
+// Total interest over loan life (closed-form)
 function calcTotalInterest(P, rAnn, n, method = 'spitzer') {
-    if (method === 'equalPrincipal') {
-        const r = rAnn / 12;
-        return r * P * (n + 1) / 2;
-    }
-    // Spitzer: Total Interest = A * n - P
-    const A = calcPmt(P, rAnn, n);
-    return A * n - P;
+    if (method === 'equalPrincipal') return (rAnn / 12) * P * (n + 1) / 2;
+    return calcPmt(P, rAnn, n) * n - P;
 }
 
-/**
- * Generate full amortization schedule
- * @param {Object} params
- * @param {number} params.principal - Loan amount
- * @param {number} params.annualRate - Annual interest rate (decimal, e.g., 0.047 for 4.7%)
- * @param {number} params.termMonths - Loan term in months
- * @param {string} params.method - 'spitzer' or 'equalPrincipal'
- * @param {boolean} params.cpiLinked - Whether loan is CPI-linked
- * @param {number|number[]} params.cpiRate - Annual CPI rate(s) (decimal). Single value or array per year.
- * @param {Object[]} params.rateResets - Array of {month, newRate} for variable rate resets
- * @returns {Object} { schedule: [...], totalInterest, totalPayments }
- */
+// Generate full amortization schedule
 function generateSchedule(params) {
-    const {
-        principal: P,
-        annualRate,
-        termMonths: n,
-        method = 'spitzer',
-        cpiLinked = false,
-        cpiRate = 0,
-        rateResets = []
-    } = params;
-
-    const schedule = [];
-    let balance = P;
-    let currentRate = annualRate;
-    let remainingMonths = n;
-    let totalInterest = 0;
-    let totalPayments = 0;
-
-    // Sort resets by month
-    const resets = [...rateResets].sort((a, b) => a.month - b.month);
-    let resetIdx = 0;
-
-    // For Spitzer, calculate initial payment
+    const { principal: P, annualRate, termMonths: n, method = 'spitzer', cpiLinked = false, cpiRate = 0, rateResets = [] } = params;
+    const schedule = [], resets = [...rateResets].sort((a, b) => a.month - b.month);
+    let balance = P, currentRate = annualRate, totalInterest = 0, totalPayments = 0, resetIdx = 0;
     let payment = method === 'spitzer' ? calcPmt(P, currentRate, n) : 0;
+    const round = v => Math.round(v * 100) / 100;
 
     for (let t = 1; t <= n; t++) {
-        // Check for rate reset
         while (resetIdx < resets.length && resets[resetIdx].month === t) {
-            currentRate = resets[resetIdx].newRate;
-            remainingMonths = n - t + 1;
-            if (method === 'spitzer') {
-                payment = calcPmt(balance, currentRate, remainingMonths);
-            }
-            resetIdx++;
+            currentRate = resets[resetIdx++].newRate;
+            if (method === 'spitzer') payment = calcPmt(balance, currentRate, n - t + 1);
         }
 
-        // CPI indexation (apply at start of month)
         let cpiFactor = 1;
         if (cpiLinked) {
-            const yearIdx = Math.floor((t - 1) / 12);
-            const annualCpi = Array.isArray(cpiRate) ? (cpiRate[yearIdx] ?? cpiRate[cpiRate.length - 1]) : cpiRate;
+            const annualCpi = Array.isArray(cpiRate) ? (cpiRate[Math.floor((t - 1) / 12)] ?? cpiRate[cpiRate.length - 1]) : cpiRate;
             cpiFactor = Math.pow(1 + annualCpi, 1 / 12);
             balance *= cpiFactor;
         }
 
-        const r = currentRate / 12;
-        const interest = balance * r;
-        let principalPaid;
+        const interest = balance * (currentRate / 12);
+        let principalPaid = method === 'equalPrincipal' ? Math.min(P / n, balance) : (cpiLinked ? calcPmt(balance, currentRate, n - t + 1) : payment) - interest;
+        if (principalPaid > balance) principalPaid = balance;
+        payment = principalPaid + interest;
+        balance = Math.max(0, balance - principalPaid);
+        totalInterest += interest; totalPayments += payment;
 
-        if (method === 'equalPrincipal') {
-            principalPaid = P / n;
-            if (principalPaid > balance) principalPaid = balance;
-            payment = principalPaid + interest;
-        } else {
-            // Spitzer - recalc payment if CPI-linked (payment grows with CPI)
-            if (cpiLinked) {
-                payment = calcPmt(balance, currentRate, n - t + 1);
-            }
-            principalPaid = payment - interest;
-            if (principalPaid > balance) {
-                principalPaid = balance;
-                payment = principalPaid + interest;
-            }
-        }
-
-        balance -= principalPaid;
-        if (balance < 0.01) balance = 0;
-
-        totalInterest += interest;
-        totalPayments += payment;
-
-        schedule.push({
-            month: t,
-            payment: Math.round(payment * 100) / 100,
-            interest: Math.round(interest * 100) / 100,
-            principal: Math.round(principalPaid * 100) / 100,
-            balance: Math.round(balance * 100) / 100,
-            cpiAdjustment: cpiLinked ? Math.round((cpiFactor - 1) * balance * 100) / 100 : 0
-        });
+        schedule.push({ month: t, payment: round(payment), interest: round(interest), principal: round(principalPaid), balance: round(balance), cpiAdjustment: cpiLinked ? round((cpiFactor - 1) * balance) : 0 });
     }
 
-    return {
-        schedule,
-        totalInterest: Math.round(totalInterest * 100) / 100,
-        totalPayments: Math.round(totalPayments * 100) / 100,
-        method,
-        principal: P,
-        annualRate,
-        termMonths: n
+    return { schedule, totalInterest: round(totalInterest), totalPayments: round(totalPayments), method, principal: P, annualRate, termMonths: n };
+}
+
+/**
+ * Early Repayment Penalty Calculator (עמלות פירעון מוקדם)
+ * Based on Banking (Early Repayment of Housing Loans) Order, 5762-2002
+ * 
+ * Fee components per track type:
+ * - Prime: No discounting fee (variable rate changes frequently) - only operational ₪60
+ * - Kalatz: Operational + discounting fee (fixed, unlinked)
+ * - Malatz: Operational + discounting fee until next 5-year reset (variable, unlinked)
+ * - Katz: Operational + discounting fee + CPI fee if days 1-15 (fixed, CPI-linked)
+ * - Matz: Operational + discounting fee until next reset + CPI fee if days 1-15 (variable, CPI-linked)
+ * 
+ * Simplifications:
+ * - Assumes 10+ days notice (no no-notice fee)
+ * - Assumes prepayment on days 16-31 (no CPI average fee)
+ * - Uses current BOI rate as the "average rate" reference
+ */
+function calcEarlyRepaymentFee(params) {
+    const {
+        track,           // 'prime' | 'kalatz' | 'malatz' | 'katz' | 'matz'
+        balance,         // Current outstanding balance (nominal for CPI tracks)
+        contractRate,    // Annual contractual interest rate (decimal)
+        boiAvgRate,      // BOI average mortgage rate for remaining term (decimal)
+        remainingMonths, // Months until maturity
+        originalTermMonths, // Original loan term in months (for Section 8 discount)
+        monthsToReset,   // For variable tracks: months until next rate reset (null for fixed)
+        cpiLinked,       // Is this a CPI-linked track?
+        prepayDay,       // Day of month (1-31) for CPI fee calculation
+        avgCpiChange12m, // Average monthly CPI change over last 12 months (decimal, e.g., 0.003)
+        isPartial,       // Partial prepayment?
+        partialAmount    // If partial, how much being prepaid
+    } = params;
+
+    // No penalty if loan term is complete
+    if (remainingMonths <= 0) {
+        return { operational: 0, discounting: 0, cpiAverage: 0, statutoryDiscount: 0, total: 0 };
+    }
+
+    const OPERATIONAL_FEE = 60; // ₪60 flat
+    const repaidAmount = isPartial ? partialAmount : balance;
+    
+    let fees = {
+        operational: OPERATIONAL_FEE,
+        discounting: 0,
+        cpiAverage: 0,
+        statutoryDiscount: 0,
+        total: OPERATIONAL_FEE
     };
+
+    // Prime track: no discounting fee (rate changes too frequently)
+    if (track === 'prime') {
+        return fees;
+    }
+
+    // Determine effective term for discounting calculation
+    // For variable tracks (malatz/matz): only until next reset
+    // For fixed tracks (kalatz/katz): until maturity
+    const isVariable = track === 'malatz' || track === 'matz';
+    const effectiveMonths = isVariable && monthsToReset ? Math.min(monthsToReset, remainingMonths) : remainingMonths;
+
+    // If prepaying exactly on reset date for variable tracks, only operational fee
+    if (isVariable && monthsToReset === 0) {
+        return fees;
+    }
+
+    // Calculate discounting fee (Section 3(3) of the Order)
+    // Fee = max(0, PV_at_avg_rate - PV_at_contract_rate)
+    // Only applies when BOI avg rate < contract rate
+    if (boiAvgRate < contractRate && effectiveMonths > 0) {
+        const monthlyPmt = calcPmt(balance, contractRate, remainingMonths);
+        const rAvg = boiAvgRate / 12;
+        const rContract = contractRate / 12;
+
+        // For variable tracks, include remaining balance at reset as final "payment"
+        const balanceAtEnd = isVariable ? calcBalanceAfterK(balance, contractRate, remainingMonths, effectiveMonths) : 0;
+
+        // PV of payments at BOI average rate
+        let pvAvg = 0;
+        for (let i = 1; i <= effectiveMonths; i++) {
+            pvAvg += monthlyPmt / Math.pow(1 + rAvg, i);
+        }
+        if (balanceAtEnd > 0) {
+            pvAvg += balanceAtEnd / Math.pow(1 + rAvg, effectiveMonths);
+        }
+
+        // PV of payments at contractual rate
+        let pvContract = 0;
+        for (let i = 1; i <= effectiveMonths; i++) {
+            pvContract += monthlyPmt / Math.pow(1 + rContract, i);
+        }
+        if (balanceAtEnd > 0) {
+            pvContract += balanceAtEnd / Math.pow(1 + rContract, effectiveMonths);
+        }
+
+        let rawDiscounting = Math.max(0, pvAvg - pvContract);
+
+        // For partial prepayment, pro-rata the fee
+        if (isPartial && balance > 0) {
+            rawDiscounting *= (partialAmount / balance);
+        }
+
+        // Section 8 statutory discounts based on loan age
+        // Standard loans: 3-5 years = 20% off, 5+ years = 30% off
+        const loanAgeMonths = (originalTermMonths || remainingMonths * 2) - remainingMonths;
+        const loanAgeYears = loanAgeMonths / 12;
+        let discountPct = 0;
+        if (loanAgeYears >= 5) discountPct = 0.30;
+        else if (loanAgeYears >= 3) discountPct = 0.20;
+        
+        fees.statutoryDiscount = rawDiscounting * discountPct;
+        fees.discounting = rawDiscounting - fees.statutoryDiscount;
+    }
+
+    // CPI average fee (Section 5) - only for CPI-linked tracks, only days 1-15
+    if (cpiLinked && prepayDay >= 1 && prepayDay <= 15 && avgCpiChange12m > 0) {
+        fees.cpiAverage = repaidAmount * 0.5 * avgCpiChange12m;
+    }
+
+    fees.total = fees.operational + fees.discounting + fees.cpiAverage;
+    return fees;
 }
 
-const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach };
+/**
+ * Calculate fees for all tracks in a mortgage mix
+ */
+function calcTotalEarlyRepaymentFees(params) {
+    const {
+        balances,        // { prime, kalatz, malatz, katz, matz } - current balances
+        rates,           // { prime, kalatz, malatz, katz, matz } - contractual rates
+        boiAvgRate,      // BOI average rate
+        remainingMonths, // { prime, kalatz, malatz, katz, matz } - remaining months per track
+        originalTermMonths, // { prime, kalatz, malatz, katz, matz } - original term per track
+        monthsToReset,   // { malatz, matz } - months to next reset for variable tracks
+        cpiIndex,        // Current CPI index (for nominal balance calculation)
+        prepayDay,       // Day of month
+        avgCpiChange12m, // Average CPI change
+        isPartial,
+        partialAmounts   // { prime, kalatz, malatz, katz, matz } if partial
+    } = params;
 
-if (typeof module !== 'undefined') {
-    module.exports = Logic;
+    const tracks = ['prime', 'kalatz', 'malatz', 'katz', 'matz'];
+    const cpiTracks = ['katz', 'matz'];
+    
+    let totalFees = { operational: 0, discounting: 0, cpiAverage: 0, statutoryDiscount: 0, total: 0, byTrack: {} };
+
+    for (const track of tracks) {
+        const bal = balances[track] || 0;
+        if (bal <= 0) continue;
+
+        // For CPI tracks, balance is stored in real terms - convert to nominal
+        const nominalBal = cpiTracks.includes(track) ? bal * cpiIndex : bal;
+
+        const trackFees = calcEarlyRepaymentFee({
+            track,
+            balance: nominalBal,
+            contractRate: rates[track],
+            boiAvgRate,
+            remainingMonths: remainingMonths[track],
+            originalTermMonths: originalTermMonths?.[track],
+            monthsToReset: monthsToReset?.[track],
+            cpiLinked: cpiTracks.includes(track),
+            prepayDay,
+            avgCpiChange12m,
+            isPartial,
+            partialAmount: partialAmounts?.[track]
+        });
+
+        totalFees.byTrack[track] = trackFees;
+        totalFees.operational += trackFees.operational;
+        totalFees.discounting += trackFees.discounting;
+        totalFees.cpiAverage += trackFees.cpiAverage;
+        totalFees.statutoryDiscount += (trackFees.statutoryDiscount || 0);
+        totalFees.total += trackFees.total;
+    }
+
+    return totalFees;
 }
-if (typeof window !== 'undefined') {
-    window.Logic = Logic;
-}
+
+const Logic = { calcPmt, calcCAGR, searchSweetSpots, simulate, H_SP, H_RE, H_EX, H_CPI, H_BOI, getH, generateSchedule, calcBalanceAfterK, calcTotalInterest, calcPurchaseTax, calcMasShevach, calcEarlyRepaymentFee, calcTotalEarlyRepaymentFees };
+
+if (typeof module !== 'undefined' && module.exports) module.exports = Logic;
+if (typeof window !== 'undefined') window.Logic = Logic;
+if (typeof self !== 'undefined' && typeof window === 'undefined') self.Logic = Logic;

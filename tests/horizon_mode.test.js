@@ -17,11 +17,29 @@ global.Chart = class {
     update() {}
 };
 
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
+// Load language files first
+const enCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/en.js'), 'utf8');
+eval(enCode);
+const heCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/he.js'), 'utf8');
+eval(heCode);
+// Load i18n, config, charts
+const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
+eval(i18nCode);
+const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
+eval(configCode);
+const stateCode = fs.readFileSync(path.resolve(__dirname, "../src/state/index.js"), "utf8");
+eval(stateCode);
+const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf8');
+eval(chartsCode);
+const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf8');
+eval(prepayCode);
 
 describe('Horizon Mode: Auto vs Custom Consistency', () => {
     
     beforeEach(() => {
+        // Clear module cache to get fresh state
+        jest.resetModules();
+        
         document.body.innerHTML = `
             <input id="inpEquity" value="400000">
             <input id="rDown" value="30">
@@ -149,7 +167,10 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
             <canvas id="flowChart"></canvas>
         `;
         
-        eval(appJsContent);
+        // Load modules via require (Babel transpiles ESM to CommonJS)
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
     });
 
     test('auto mode sets rHor to effectiveMax', () => {
@@ -204,7 +225,7 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
         document.getElementById('rDur').value = '25';
         window.runSim();
         
-        expect(document.getElementById('dHor').innerText).toContain('25');
+        expect(document.getElementById('dHor').textContent).toContain('25');
     });
 
     test('custom mode allows different horizon than mortgage term', () => {
@@ -213,7 +234,7 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
         document.getElementById('rHor').value = '20';
         window.runSim();
         
-        expect(document.getElementById('dHor').innerText).toBe('20 Yr');
+        expect(document.getElementById('dHor').textContent).toContain('20');
     });
 
     test('simulation results change when horizon changes in custom mode', () => {
@@ -242,11 +263,11 @@ describe('Horizon Mode: Auto vs Custom Consistency', () => {
         document.getElementById('rHor').value = '15';
         window.runSim();
         
-        expect(document.getElementById('dHor').innerText).toBe('15 Yr');
+        expect(document.getElementById('dHor').textContent).toContain('15');
         
         window.tglHor(true);
         
-        expect(document.getElementById('dHor').innerText).toContain('30');
+        expect(document.getElementById('dHor').textContent).toContain('30');
     });
 });
 

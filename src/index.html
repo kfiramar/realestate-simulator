@@ -7,17 +7,29 @@
     <title>Brickfolio</title>
     <link rel="icon" type="image/png" href="./favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="./i18n/en.js"></script>
+    <script src="./i18n/he.js"></script>
+    <script src="./i18n/index.js"></script>
+    <script src="./config/index.js"></script>
+    <script src="./state/index.js"></script>
+    <script src="./charts/index.js"></script>
+    <script src="./prepayments/index.js"></script>
     <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body class="loading">
 
-    <header>
+    <header x-data>
         <h1>Brickfolio <span class="version-badge">BETA</span></h1>
         <div class="header-controls">
             <div class="view-toggles">
-                <div class="toggle-btn" id="btnCurr" onclick="setMode('currency')" data-t="value">₪ Value</div>
-                <div class="toggle-btn active" id="btnPct" onclick="setMode('percent')" data-t="roi">% ROI</div>
+                <div class="toggle-btn" id="btnCurr" 
+                     :class="{ active: $store.app.mode === 'currency' }"
+                     @click="setMode('currency')" data-t="value">₪ Value</div>
+                <div class="toggle-btn" id="btnPct"
+                     :class="{ active: $store.app.mode === 'percent' }"
+                     @click="setMode('percent')" data-t="roi">% ROI</div>
             </div>
             <div class="util-btns">
                 <button class="util-btn" onclick="toggleLang()" title="עברית / English">🌐</button>
@@ -30,26 +42,30 @@
 
     <div class="layout">
         <div class="sidebar">
-            <div class="sidebar-content">
+            <div class="sidebar-content" x-data>
 
-                <div class="equity-box" id="equityBox">
+                <div class="equity-box" id="equityBox" x-show="$store.app.mode === 'currency'">
                     <div class="card-lbl" style="color:#0369a1; margin-bottom:4px;" data-t="startingCash">Starting Cash</div>
                     <input type="number" id="inpEquity" value="400000" step="10000" oninput="runSim()">
+                    <div id="equitySplit" style="font-size:0.7rem; color:#64748b; margin-top:4px;"></div>
                 </div>
 
                 <div class="section-title" data-t="dealStructure">Deal Structure</div>
                 <div class="control-card">
-                    <div class="card-row"><span class="card-lbl" data-t="buyerType">Buyer Type</span>
+                    <div class="card-row" x-data><span class="card-lbl" data-t="buyerType">Buyer Type</span>
                         <select id="buyerType"
                             style="padding:6px; border-radius:6px; border:1px solid var(--border); font-weight:600; color:#475569;"
-                            onchange="setBuyerType(this.value)">
-                            <option value="first" selected data-t="firstHome">First Home (75% LTV)</option>
+                            onchange="setBuyerType(this.value)"
+                            x-model="$store.app.buyerType">
+                            <option value="first" data-t="firstHome">First Home (75% LTV)</option>
                             <option value="replacement" data-t="replacement">Replacement (70% LTV)</option>
                             <option value="investor" data-t="investor">Investment (50% LTV)</option>
                         </select>
                     </div>
-                    <div class="card-row"><span class="card-lbl" data-t="downPayment">Down Payment<span class="lock-toggle" id="lockDownBtn"
-                                onclick="toggleLock('down')" data-t="free">Free</span></span> <span class="card-val"
+                    <div class="card-row" x-data><span class="card-lbl" data-t="downPayment">Down Payment<span class="lock-toggle" id="lockDownBtn"
+                                onclick="toggleLock('down')"
+                                :class="{ locked: $store.app.lockDown }"
+                                x-text="$store.app.lockDown ? 'Locked' : 'Free'">Free</span></span> <span class="card-val"
                             id="dDown">30%</span></div>
                     <div class="range-wrapper">
                         <input type="range" id="rDown" min="25" max="100" step="5" value="30" oninput="runSim()">
@@ -88,10 +104,10 @@
                                 oninput="syncMixInput('Prime')">
                         </div>
                         <div class="mix-pct-val" id="dispPrime">30%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRatePrime" onclick="toggleRateEdit()">4.95%</span>
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRatePrime" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">4.95%</span>
                             <input type="number" class="mix-rate-input" id="ratePrime" value="4.95" step="0.05"
-                                oninput="runSim()">
+                                oninput="runSim()" x-show="$store.app.rateEditMode">
                         </div>
                         <input type="hidden" id="pctPrime" value="30">
                     </div>
@@ -104,9 +120,9 @@
                                 oninput="syncMixInput('Kalats')">
                         </div>
                         <div class="mix-pct-val" id="dispKalats">40%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateKalats" onclick="toggleRateEdit()">4.70%</span>
-                            <input type="number" class="mix-rate-input" id="rateKalats" value="4.70" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateKalats" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">4.70%</span>
+                            <input type="number" class="mix-rate-input" id="rateKalats" x-show="$store.app.rateEditMode" value="4.70" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctKalats" value="40">
@@ -120,9 +136,9 @@
                                 oninput="syncMixInput('Malatz')">
                         </div>
                         <div class="mix-pct-val" id="dispMalatz">30%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateMalatz" onclick="toggleRateEdit()">4.61%</span>
-                            <input type="number" class="mix-rate-input" id="rateMalatz" value="4.61" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateMalatz" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">4.61%</span>
+                            <input type="number" class="mix-rate-input" id="rateMalatz" x-show="$store.app.rateEditMode" value="4.61" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctMalatz" value="30">
@@ -136,9 +152,9 @@
                                 oninput="syncMixInput('Katz')">
                         </div>
                         <div class="mix-pct-val" id="dispKatz">0%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateKatz" onclick="toggleRateEdit()">2.85% + CPI</span>
-                            <input type="number" class="mix-rate-input" id="rateKatz" value="2.85" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateKatz" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">2.85% + CPI</span>
+                            <input type="number" class="mix-rate-input" id="rateKatz" x-show="$store.app.rateEditMode" value="2.85" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctKatz" value="0">
@@ -152,48 +168,53 @@
                                 oninput="syncMixInput('Matz')">
                         </div>
                         <div class="mix-pct-val" id="dispMatz">0%</div>
-                        <div class="mix-rate-box">
-                            <span class="mix-rate-val" id="lblRateMatz" onclick="toggleRateEdit()">3.10% + CPI</span>
-                            <input type="number" class="mix-rate-input" id="rateMatz" value="3.10" step="0.1"
+                        <div class="mix-rate-box" x-data>
+                            <span class="mix-rate-val" id="lblRateMatz" onclick="toggleRateEdit()" x-show="!$store.app.rateEditMode">3.10% + CPI</span>
+                            <input type="number" class="mix-rate-input" id="rateMatz" x-show="$store.app.rateEditMode" value="3.10" step="0.1"
                                 oninput="runSim()">
                         </div>
                         <input type="hidden" id="pctMatz" value="0">
                     </div>
 
                     <!-- Early Repayments Section -->
-                    <div class="prepay-section">
-                        <div class="prepay-header" onclick="togglePrepaySection()">
+                    <div class="prepay-section" x-data>
+                        <div class="prepay-header" onclick="togglePrepaySection()" @click="$store.app.set('prepayExpanded', !$store.app.prepayExpanded)">
                             <span data-t="earlyRepayments">Early Repayments</span>
-                            <span class="prepay-arrow" id="prepayArrow">+</span>
+                            <span class="prepay-arrow" id="prepayArrow" x-text="$store.app.prepayExpanded ? '−' : '+'">+</span>
                         </div>
-                        <div class="prepay-container" id="prepayContainer" style="display:none;">
+                        <div class="prepay-container" id="prepayContainer" x-show="$store.app.prepayExpanded">
                             <div id="prepayList"></div>
-                            <button class="prepay-add-btn" onclick="addPrepayment()" data-t="addPrepayment">+ Add Prepayment</button>
+                            <button class="prepay-add-btn" onclick="window.Prepayments.addPrepayment()" data-t="addPrepayment">+ Add Prepayment</button>
                         </div>
                     </div>
 
                     <div class="card-divider"></div>
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
                         <span class="card-lbl" data-t="repayMethod">Repayment Method</span>
-                        <div class="pills" id="pRepayMethod">
-                            <div class="pill active" id="repaySpitzer" onclick="setRepayMethod('spitzer')"><span data-t="spitzer">Spitzer</span> <span class="opt-star" id="starSpitzer">★</span></div>
-                            <div class="pill" id="repayEqualPrincipal" onclick="setRepayMethod('equalPrincipal')"><span data-t="equalPrincipal">Equal Principal</span> <span class="opt-star" id="starEqual">★</span></div>
+                        <div class="pills" id="pRepayMethod" x-data>
+                            <div class="pill" id="repaySpitzer" @click="setRepayMethod('spitzer')"
+                                :class="{ active: $store.app.repayMethod === 'spitzer' }"><span data-t="spitzer">Spitzer</span> <span class="opt-star" id="starSpitzer">★</span></div>
+                            <div class="pill" id="repayEqualPrincipal" @click="setRepayMethod('equalPrincipal')"
+                                :class="{ active: $store.app.repayMethod === 'equalPrincipal' }"><span data-t="equalPrincipal">Equal Principal</span> <span class="opt-star" id="starEqual">★</span></div>
                         </div>
                     </div>
-                    <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;">
+                    <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;" x-data>
                         <span class="card-lbl" data-t="mortgageTerm">Mortgage Term <span class="lock-toggle" id="lockTermBtn"
-                                onclick="toggleLock('term')" data-t="free">Free</span></span>
+                                onclick="toggleLock('term')"
+                                :class="{ locked: $store.app.lockTerm }"
+                                x-text="$store.app.lockTerm ? 'Locked' : 'Free'">Free</span></span>
                         <span class="card-val" id="dDur">25 Yr</span>
                         <div class="pill toggle" id="btnAdvancedTerm" onclick="toggleAdvancedTerms()"
+                            :class="{ active: $store.app.advancedTermMode }"
                             style="margin-left:auto;" data-t="advanced">Advanced</div>
                     </div>
-                    <div id="basicTermBox">
+                    <div id="basicTermBox" x-show="!$store.app.advancedTermMode">
                         <div class="range-wrapper">
                             <input type="range" id="rDur" min="1" max="30" step="1" value="30" oninput="runSim()">
                             <div class="sweet-spot" id="spotDur"></div>
                         </div>
                     </div>
-                    <div id="advancedTermBox" style="display:none; margin-top:8px;">
+                    <div id="advancedTermBox" x-show="$store.app.advancedTermMode" style="margin-top:8px;">
                         <div class="mix-row">
                             <div class="mix-label" data-t="prime">Prime</div>
                             <input type="range" id="termPrime" min="1" max="30" step="1" value="30"
@@ -242,15 +263,19 @@
                         660</div>
                 </div>
 
-                <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;">
-                    <div class="card-row"><span class="card-lbl" data-t="simTimeframe">Simulation Timeframe <span class="lock-toggle locked"
-                                id="lockHorBtn" onclick="toggleLock('hor')" data-t="locked">Locked</span></span> <span class="card-val"
+                <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;" x-data>
+                    <div class="card-row"><span class="card-lbl" data-t="simTimeframe">Simulation Timeframe <span class="lock-toggle"
+                                id="lockHorBtn" onclick="toggleLock('hor')"
+                                :class="{ locked: $store.app.lockHor }"
+                                x-text="$store.app.lockHor ? 'Locked' : 'Free'">Locked</span></span> <span class="card-val"
                             id="dHor">Auto</span></div>
                     <div class="pills" id="pHor">
-                        <div class="pill active" onclick="tglHor(true)" data-t="auto">Auto</div>
-                        <div class="pill" onclick="tglHor(false)" data-t="custom">Custom</div>
+                        <div class="pill" onclick="tglHor(true)" @click="tglHor(true)"
+                            :class="{ active: $store.app.horMode === 'auto' }" data-t="auto">Auto</div>
+                        <div class="pill" onclick="tglHor(false)" @click="tglHor(false)"
+                            :class="{ active: $store.app.horMode === 'custom' }" data-t="custom">Custom</div>
                     </div>
-                    <div class="input-box" id="bHor">
+                    <div class="input-box" id="bHor" x-show="$store.app.horMode === 'custom'">
                         <div class="range-wrapper">
                             <input type="range" id="rHor" min="1" max="50" step="1" value="25" oninput="runSim()">
                             <div class="sweet-spot" id="spotHor"></div>
@@ -258,15 +283,15 @@
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:end; margin-top:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:end; margin-top:15px;" x-data>
                     <div class="section-title" style="margin:0" data-t="assumptions">Market Variables</div>
                     <div class="pills" id="pGlobal">
-                        <div class="pill" onclick="setGlobalMode(true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="setGlobalMode(false)" data-t="fixed">Fixed</div>
+                        <div class="pill" onclick="setGlobalMode(true)" :class="{ active: $store.app.globalHistMode }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="setGlobalMode(false)" :class="{ active: !$store.app.globalHistMode }" data-t="fixed">Fixed</div>
                     </div>
                 </div>
 
-                <div class="scenario-box" id="scenBox">
+                <div class="scenario-box" id="scenBox" x-show="!$store.app.globalHistMode">
                     <div data-t="quickScenarios"
                         style="font-size:0.7rem; font-weight:800; color:#64748b; letter-spacing:0.05em; margin-bottom:4px;">
                         QUICK SCENARIOS</div>
@@ -275,11 +300,13 @@
                         <div class="scen-btn base active" id="scenBase" onclick="applyScenario('base')" data-t="base">😐 Base</div>
                         <div class="scen-btn bull" id="scenBull" onclick="applyScenario('bull')" data-t="optimistic">🚀 Bull</div>
                     </div>
-                    <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+                    <div style="margin-top:8px; display:flex; align-items:center; gap:8px;" x-data>
                         <span style="font-size:0.7rem; font-weight:600; color:#64748b;" data-t="sweetSpotOptimize">Sweet Spot:</span>
                         <div class="pills">
-                            <div class="pill active" id="optOutperf" onclick="setOptimizeMode('outperform')" data-t="optOutperform">Outperform</div>
-                            <div class="pill" id="optRoi" onclick="setOptimizeMode('roi')" data-t="optRoi">ROI</div>
+                            <div class="pill" id="optOutperf" @click="setOptimizeMode('outperform')"
+                                :class="{ active: $store.app.optimizeMode === 'outperform' }" data-t="optOutperform">Outperform</div>
+                            <div class="pill" id="optRoi" @click="setOptimizeMode('roi')"
+                                :class="{ active: $store.app.optimizeMode === 'roi' }" data-t="optRoi">ROI</div>
                         </div>
                     </div>
                 </div>
@@ -288,21 +315,21 @@
                     <!-- RE APPRECIATION -->
                     <div class="card-row"><span class="card-lbl" data-t="appreciation">Home Appreciation</span> <span class="card-val"
                             id="vApp">Fixed</span></div>
-                    <div class="pills" id="pApp">
-                        <div class="pill" onclick="tgl('App',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('App',false)" data-t="fixed">Fixed</div>
+                    <div class="pills" id="pApp" x-data>
+                        <div class="pill" onclick="tgl('App',true)" :class="{ active: $store.app.histApp }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('App',false)" :class="{ active: !$store.app.histApp }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bApp"><input type="range" id="sApp" min="0" max="10" step="0.5"
+                    <div class="input-box show" id="bApp" x-data x-show="!$store.app.histApp"><input type="range" id="sApp" min="0" max="10" step="0.5"
                             value="4" oninput="runSim()"></div>
 
-                    <div style="margin-top:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
+                    <div style="margin-top:12px; padding-top:8px; border-top:1px solid #f1f5f9;" x-data>
                         <div class="card-row"><span class="card-lbl" data-t="rentYield">Rental Yield</span> <span class="card-val"
                                 id="vYld">Fixed</span></div>
                         <div class="pills" id="pYld">
-                            <div class="pill" onclick="tgl('Yld',true)" data-t="hist">Hist</div>
-                            <div class="pill active" onclick="tgl('Yld',false)" data-t="fixed">Fixed</div>
+                            <div class="pill" onclick="tgl('Yld',true)" :class="{ active: $store.app.histYld }" data-t="hist">Hist</div>
+                            <div class="pill" onclick="tgl('Yld',false)" :class="{ active: !$store.app.histYld }" data-t="fixed">Fixed</div>
                         </div>
-                        <div class="input-box show" id="bYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1"
+                        <div class="input-box show" id="bYld" x-show="!$store.app.histYld"><input type="range" id="sYld" min="1.5" max="6" step="0.1"
                                 value="3.0" oninput="runSim()"></div>
                         <label class="chk-row" style="margin-top:10px;">
                             <input type="checkbox" id="cRentTax" checked onchange="runSim()">
@@ -314,11 +341,11 @@
                 <div class="control-card">
                     <div class="card-row"><span class="card-lbl" data-t="spReturn">S&P 500 Return</span> <span class="card-val"
                             id="vSP">Fixed</span></div>
-                    <div class="pills" id="pSP">
-                        <div class="pill" onclick="tgl('SP',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('SP',false)" data-t="fixed">Fixed</div>
+                    <div class="pills" id="pSP" x-data>
+                        <div class="pill" onclick="tgl('SP',true)" :class="{ active: $store.app.histSP }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('SP',false)" :class="{ active: !$store.app.histSP }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bSP"><input type="range" id="sSP" min="4" max="15" step="0.5"
+                    <div class="input-box show" id="bSP" x-show="!$store.app.histSP"><input type="range" id="sSP" min="4" max="15" step="0.5"
                             value="9" oninput="runSim()"></div>
 
                     <div class="fees-box">
@@ -332,13 +359,16 @@
                         <input type="range" id="rTrade" min="0" max="1.0" step="0.05" value="0.1" oninput="runSim()">
                         <div class="card-row" style="margin-top:12px;">
                             <span class="card-lbl" data-t="rentSurplus">Rent Surplus</span>
-                            <div style="display:flex; flex-direction:column; width:60%;">
+                            <div style="display:flex; flex-direction:column; width:60%;" x-data>
                                 <div class="pills" id="surplusPills" style="width:100%;">
-                                    <div class="pill" id="surplusInvest" onclick="setSurplusMode('invest')"
+                                    <div class="pill" id="surplusInvest" @click="setSurplusMode('invest')"
+                                        :class="{ active: $store.app.surplusMode === 'invest' }"
                                         style="flex:1; text-align:center;" data-t="reinvest">Reinvest</div>
-                                    <div class="pill" id="surplusConsume" onclick="setSurplusMode('consume')"
+                                    <div class="pill" id="surplusConsume" @click="setSurplusMode('consume')"
+                                        :class="{ active: $store.app.surplusMode === 'consume' }"
                                         style="flex:1; text-align:center;" data-t="pocket">Pocket</div>
-                                    <div class="pill active" id="surplusMatch" onclick="setSurplusMode('match')"
+                                    <div class="pill" id="surplusMatch" @click="setSurplusMode('match')"
+                                        :class="{ active: $store.app.surplusMode === 'match' }"
                                         style="flex:1; text-align:center;" data-t="match">Match</div>
                                 </div>
                                 <div id="surplusDescText" class="card-sub" data-t="surplusDescMatch"
@@ -352,25 +382,25 @@
                 <div class="control-card">
                     <div class="card-row"><span class="card-lbl" data-t="interest">Interest (Base)</span> <span class="card-val"
                             id="vInt">Fixed</span></div>
-                    <div class="pills" id="pInt">
-                        <div class="pill" onclick="tgl('Int',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('Int',false)" data-t="fixed">Fixed</div>
+                    <div class="pills" id="pInt" x-data>
+                        <div class="pill" onclick="tgl('Int',true)" :class="{ active: $store.app.histInt }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('Int',false)" :class="{ active: !$store.app.histInt }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bInt">
+                    <div class="input-box show" id="bInt" x-data x-show="!$store.app.histInt">
                         <input type="range" id="sInt" min="1" max="8" step="0.25" value="4.25" oninput="syncPrime()">
                         <div style="font-size:0.65rem; color:#64748b; margin-top:4px;" data-t="affectsPrime">*Affects Prime Rate (BoI + 1.5%)
                         </div>
                     </div>
                 </div>
 
-                <div class="control-card">
+                <div class="control-card" x-data>
                     <div class="card-row"><span class="card-lbl" data-t="inflation">Inflation (CPI)</span> <span class="card-val"
                             id="vInf">Fixed</span></div>
                     <div class="pills" id="pInf">
-                        <div class="pill" onclick="tgl('Inf',true)" data-t="hist">Hist</div>
-                        <div class="pill active" onclick="tgl('Inf',false)" data-t="fixed">Fixed</div>
+                        <div class="pill" onclick="tgl('Inf',true)" :class="{ active: $store.app.histInf }" data-t="hist">Hist</div>
+                        <div class="pill" onclick="tgl('Inf',false)" :class="{ active: !$store.app.histInf }" data-t="fixed">Fixed</div>
                     </div>
-                    <div class="input-box show" id="bInf">
+                    <div class="input-box show" id="bInf" x-show="!$store.app.histInf">
                         <input type="range" id="sInf" min="0" max="6" step="0.5" value="2.5"
                             oninput="updMeter(); runSim()">
                         <div class="meter" id="infMeter">
@@ -408,11 +438,13 @@
                 <div class="control-card" style="border-left:3px solid #8b5cf6">
                     <div class="card-row"><span class="card-lbl" data-t="taxBasis">Taxation Basis</span> <span class="card-val"
                             id="vTaxMode">Real</span></div>
-                    <div class="select-list">
-                        <div class="select-item active" id="txReal" onclick="setTaxMode('real')">
+                    <div class="select-list" x-data>
+                        <div class="select-item" id="txReal" onclick="setTaxMode('real')"
+                            :class="{ active: $store.app.taxMode === 'real' }">
                             <div class="radio"></div><span class="item-text" data-t="realVsInflation">Real (vs Inflation)</span>
                         </div>
-                        <div class="select-item" id="txForex" onclick="setTaxMode('forex')">
+                        <div class="select-item" id="txForex" onclick="setTaxMode('forex')"
+                            :class="{ active: $store.app.taxMode === 'forex' }">
                             <div class="radio"></div><span class="item-text" data-t="nominalVsUsd">Nominal (vs USD)</span>
                         </div>
                     </div>
@@ -420,6 +452,8 @@
                             onchange="runSim()"> <span data-t="applyTaxSP">S&P Path: 25% Capital Gains</span></label>
                     <label class="chk-row"><input type="checkbox" id="cPurchaseTax" checked
                             onchange="runSim()"> <span data-t="includePurchaseTax">Include Purchase Tax</span></label>
+                    <label class="chk-row"><input type="checkbox" id="cEntryCostsFromEquity" checked
+                            onchange="runSim()"> <span data-t="entryCostsFromEquity">Deduct entry costs from equity</span></label>
                     <label class="chk-row"><input type="checkbox" id="cMasShevach" checked
                             onchange="runSim()"> <span data-t="applyMasShevach">Apply Mas Shevach</span></label>
                 </div>
@@ -473,6 +507,10 @@
                     <span class="inline-value" id="valPurchaseTax">0</span>
                 </div>
                 <div class="inline-spec">
+                    <span class="inline-label" data-t="entryCosts">Entry Costs</span>
+                    <span class="inline-value" id="valEntryCosts">0</span>
+                </div>
+                <div class="inline-spec">
                     <span class="inline-label" data-t="leverage">Leverage</span>
                     <span class="inline-value" id="valLev">x3.3</span>
                     <div class="lev-bar-bg compact">
@@ -494,6 +532,10 @@
                 <div class="inline-spec">
                     <span class="inline-label" data-t="capGainsPaid">Capital Gains Tax</span>
                     <span class="inline-value" id="kCapGains">0</span>
+                </div>
+                <div class="inline-spec">
+                    <span class="inline-label" data-t="earlyRepayPenalty">Early Repay Penalty</span>
+                    <span class="inline-value" id="kEarlyRepay">0</span>
                 </div>
             </div>
 

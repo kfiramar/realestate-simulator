@@ -1,519 +1,89 @@
 const AppLogic = window.Logic || {};
+const T = window.i18n?.T || { en: {}, he: {} };
+const { SCENARIOS, TAMHEEL_PROFILES, ANCHORS, CREDIT_MATRIX, TERM_MIN, TERM_MAX, LTV_MIN } = window.AppConfig || {};
 
-// --- TRANSLATIONS ---
-let lang = localStorage.getItem('lang') || 'en';
-const T = {
-    en: {
-        title: 'Brickfolio',
-        startingCash: 'Starting Cash',
-        dealStructure: 'Deal Structure',
-        buyerType: 'Buyer Type',
-        firstHome: 'First Home (75% LTV)',
-        replacement: 'Replacement (70% LTV)',
-        investor: 'Investment (50% LTV)',
-        downPayment: 'Down Payment',
-        duration: 'Duration',
-        horizon: 'Horizon',
-        mortgageMix: 'Mortgage Mix (Tamheel)',
-        prime: 'Prime',
-        kalatz: 'Kalatz',
-        malatz: 'Malatz',
-        katz: 'Katz (CPI)',
-        matz: 'Matz (CPI)',
-        prepayments: 'Prepayments',
-        addPrepay: '+ Add Prepayment',
-        assumptions: 'Market Variables',
-        spReturn: 'S&P 500 Return',
-        appreciation: 'Home Appreciation',
-        inflation: 'Inflation (CPI)',
-        interest: 'Interest (Base)',
-        rentYield: 'Rental Yield',
-        scenario: 'Scenario',
-        base: '😐 Base',
-        optimistic: '🚀 Bull',
-        pessimistic: '🐻 Bear',
-        costs: 'Hidden Costs & Friction',
-        buyCost: 'Buying Friction',
-        sellCost: 'Selling Friction',
-        maintenance: 'Maint. & Vacancy',
-        spFee: 'S&P Expense Ratio',
-        fxSpread: 'FX Spread',
-        discount: 'Purchase Discount',
-        results: 'Results',
-        realEstate: 'Real Estate',
-        sp500: 'S&P 500',
-        finalEquity: 'Final Equity',
-        cagr: 'CAGR',
-        totalInterest: 'Interest Paid',
-        wealthGrowth: 'Wealth Growth',
-        cashFlow: 'Cash Flow',
-        rent: 'Rent',
-        interestPmt: 'Interest',
-        principal: 'Principal',
-        netCashflow: 'Net Cashflow',
-        year: 'Year',
-        years: 'years',
-        asset: 'Asset',
-        mortgage: 'Mortgage',
-        leverage: 'Leverage',
-        creditScore: 'Credit Score',
-        value: '₪ Value',
-        roi: '% ROI',
-        repayMethod: 'Repayment Method',
-        spitzer: 'Spitzer',
-        equalPrincipal: 'Equal Principal',
-        mortgageTerm: 'Mortgage Term',
-        simTimeframe: 'Simulation Timeframe',
-        advancedConfig: 'Advanced Configuration',
-        taxBasis: 'Taxation Basis',
-        realTerms: 'Real Terms',
-        nominalTerms: 'Nominal Terms',
-        fxMode: 'FX Mode',
-        hedged: 'Hedged (ILS)',
-        exposed: 'Exposed (USD)',
-        rentSurplus: 'Rent Surplus',
-        reinvest: 'Reinvest',
-        pocket: 'Pocket',
-        match: 'Match',
-        reAnnualRoi: 'RE Annual ROI',
-        spAnnualRoi: 'S&P Annual ROI',
-        roiDiff: 'Outperformance',
-        reNet: 'Real Estate Net',
-        spNet: 'S&P 500 Net',
-        rentIncome: 'Rent Income',
-        masShevachPaid: 'Mas Shevach',
-        capGainsPaid: 'Capital Gains Tax',
-        mixAllocation: 'Mix Allocation',
-        editRates: 'Edit Rates',
-        earlyRepayments: 'Early Repayments',
-        addPrepayment: '+ Add Prepayment',
-        advanced: 'Advanced',
-        advancedTermHint: 'Use Advanced to set different terms per track. Click again to revert to single term.',
-        riskTier: 'Risk Tier',
-        auto: 'Auto',
-        custom: 'Custom',
-        hist: 'Hist',
-        fixed: 'Fixed',
-        quickScenarios: 'QUICK SCENARIOS',
-        sweetSpotOptimize: 'Sweet Spot:',
-        optRoi: 'ROI',
-        optOutperform: 'Outperform',
-        rentTax: 'Rent Tax (10% > 5.6k)',
-        annualMgmtFee: 'Annual Mgmt Fee',
-        depositFee: 'Deposit Fee',
-        surplusDescInvest: 'Buy S&P (reinvests rent surplus into S&P 500)',
-        surplusDescConsume: 'Pocket (keep rent surplus as cash)',
-        surplusDescMatch: 'Sells S&P 500 to match rent surplus cashflow',
-        affectsPrime: '*Affects Prime Rate (BoI + 1.5%)',
-        discountHint: 'Below market price (negative = overpay)',
-        buyCostHint: 'Entry costs (legal/registration; no purchase tax/broker)',
-        maintHint: '% of Gross Rent lost annually',
-        sellCostHint: 'Agent & Lawyer at Exit',
-        taxBasis: 'Taxation Basis',
-        realVsInflation: 'Real (vs Inflation)',
-        nominalVsUsd: 'Nominal (vs USD)',
-        applyTaxSP: 'Capital Gains Tax (25%)',
-        yearsToPosCF: 'Years to +CF',
-        moneyInvested: 'Money Invested',
-        mixWarning: 'Mix must total 100% of mortgage to view charts',
-        wealthChart: 'Net Wealth Accumulation',
-        flowChart: 'Monthly Cashflow (Revenue vs Cost)',
-        free: 'Free',
-        locked: 'Locked',
-        tamheelDefault: '⚖️ Balanced',
-        tamheelArbitrage: '📉 Rate-Cuts',
-        tamheelShield: '🛡️ Stability',
-        tamheelInvestor: '📊 CPI Mix',
-        cpiSuffix: '+ CPI',
-        yrSuffix: 'Yr',
-        ySuffix: 'Y',
-        chartRealEstate: 'Real Estate',
-        chartSP500: 'S&P 500',
-        chartREAfterTax: 'RE After Tax',
-        chartSPAfterTax: 'S&P After Tax',
-        chartRETax: 'RE Tax',
-        chartSPTax: 'S&P Tax',
-        afterTax: 'After Tax',
-        taxPaid: 'Tax',
-        taxDeduction: 'Tax',
-        chartReinvested: 'Reinvested Surplus',
-        chartNetCashflow: 'Net Cashflow',
-        chartRentMinusInt: 'Rent minus Interest',
-        chartRevenue: 'Revenue (Rent)',
-        chartInterest: 'Interest (Cost)',
-        chartPrincipal: 'Principal (Equity)',
-        chartYAxisROI: 'Cumulative ROI (%)',
-        chartYAxisWealth: 'Net Wealth (₪)',
-        chartYAxisMonthly: 'Monthly ₪',
-        chartTotalMortgage: 'Total Mortgage',
-        tooltipRentMinusInt: 'Rent - Interest',
-        tooltipInterest: 'Interest',
-        tooltipPrincipal: 'Principal',
-        tooltipRent: 'Rent',
-        tooltipNet: 'Net',
-        purchaseTax: 'Purchase Tax',
-        includePurchaseTax: 'Apply Mas Rechisha',
-        applyMasShevach: 'Apply Mas Shevach (CPI-adjusted)'
-    },
-    he: {
-        title: 'בריקפוליו',
-        startingCash: 'הון עצמי',
-        dealStructure: 'מבנה העסקה',
-        buyerType: 'סוג רוכש',
-        firstHome: 'דירה ראשונה (75% מימון)',
-        replacement: 'דירה חלופית (70% מימון)',
-        investor: 'משקיע (50% מימון)',
-        downPayment: 'מקדמה',
-        duration: 'תקופה',
-        horizon: 'אופק',
-        mortgageMix: 'תמהיל משכנתא',
-        prime: 'פריים',
-        kalatz: 'קל"צ',
-        malatz: 'מל"צ',
-        katz: 'ק"צ (צמוד)',
-        matz: 'מ"צ (צמוד)',
-        prepayments: 'פירעונות מוקדמים',
-        addPrepay: '+ הוסף פירעון',
-        assumptions: 'משתני שוק',
-        spReturn: 'תשואת S&P 500',
-        appreciation: 'עליית ערך נכס',
-        inflation: 'אינפלציה (מדד)',
-        interest: 'ריבית (בסיס)',
-        rentYield: 'תשואת שכירות',
-        scenario: 'תרחיש',
-        base: '😐 בסיס',
-        optimistic: '🚀 שורי',
-        pessimistic: '🐻 דובי',
-        costs: 'עלויות נסתרות',
-        buyCost: 'עלות רכישה',
-        sellCost: 'עלות מכירה',
-        maintenance: 'תחזוקה ופינוי',
-        spFee: 'דמי ניהול S&P',
-        fxSpread: 'מרווח מט"ח',
-        discount: 'הנחה ברכישה',
-        results: 'תוצאות',
-        realEstate: 'נדל"ן',
-        sp500: 'S&P 500',
-        finalEquity: 'הון סופי',
-        cagr: 'תשואה שנתית',
-        totalInterest: 'ריבית ששולמה',
-        wealthGrowth: 'צמיחת הון',
-        cashFlow: 'תזרים מזומנים',
-        rent: 'שכירות',
-        interestPmt: 'ריבית',
-        principal: 'קרן',
-        netCashflow: 'תזרים נטו',
-        year: 'שנה',
-        years: 'שנים',
-        asset: 'נכס',
-        mortgage: 'משכנתא',
-        leverage: 'מינוף',
-        creditScore: 'דירוג אשראי',
-        value: '₪ ערך',
-        roi: '% תשואה',
-        repayMethod: 'שיטת החזר',
-        spitzer: 'שפיצר',
-        equalPrincipal: 'קרן שווה',
-        mortgageTerm: 'תקופת משכנתא',
-        simTimeframe: 'אופק סימולציה',
-        advancedConfig: 'הגדרות מתקדמות',
-        taxBasis: 'בסיס מיסוי',
-        realTerms: 'ערכים ריאליים',
-        nominalTerms: 'ערכים נומינליים',
-        fxMode: 'מצב מט"ח',
-        hedged: 'מגודר (₪)',
-        exposed: 'חשוף ($)',
-        rentSurplus: 'עודף שכירות',
-        reinvest: 'השקעה מחדש',
-        pocket: 'כיס',
-        match: 'התאמה',
-        reAnnualRoi: 'תשואה שנתית נדל"ן',
-        spAnnualRoi: 'תשואה שנתית S&P',
-        roiDiff: 'ביצועי יתר',
-        reNet: 'נדל"ן נטו',
-        spNet: 'S&P 500 נטו',
-        rentIncome: 'הכנסה משכירות',
-        masShevachPaid: 'מס שבח',
-        capGainsPaid: 'מס רווחי הון',
-        mixAllocation: 'הקצאת תמהיל',
-        editRates: 'עריכת ריביות',
-        earlyRepayments: 'פירעונות מוקדמים',
-        addPrepayment: '+ הוסף פירעון',
-        advanced: 'מתקדם',
-        advancedTermHint: 'השתמש במתקדם לקביעת תקופות שונות לכל מסלול. לחץ שוב לחזרה לתקופה אחידה.',
-        riskTier: 'דרגת סיכון',
-        auto: 'אוטומטי',
-        custom: 'מותאם',
-        hist: 'היסטורי',
-        fixed: 'קבוע',
-        quickScenarios: 'תרחישים מהירים',
-        sweetSpotOptimize: 'נקודה מתוקה:',
-        optRoi: 'תשואה',
-        optOutperform: 'ביצועי יתר',
-        rentTax: 'מס שכירות (10% > 5.6k)',
-        annualMgmtFee: 'דמי ניהול שנתיים',
-        depositFee: 'עמלת הפקדה',
-        surplusDescInvest: 'קנה S&P (משקיע עודף שכירות ב-S&P 500)',
-        surplusDescConsume: 'כיס (שמור עודף שכירות כמזומן)',
-        surplusDescMatch: 'מוכר S&P 500 להתאמה לעודף שכירות',
-        affectsPrime: '*משפיע על ריבית פריים (בנק ישראל + 1.5%)',
-        discountHint: 'מתחת למחיר שוק (שלילי = תשלום יתר)',
-        buyCostHint: 'עלויות כניסה (עו"ד/רישום; ללא מס רכישה/תיווך)',
-        maintHint: '% מהשכירות ברוטו שאובד שנתית',
-        sellCostHint: 'מתווך ועו"ד ביציאה',
-        taxBasis: 'בסיס מיסוי',
-        realVsInflation: 'ריאלי (מול אינפלציה)',
-        nominalVsUsd: 'נומינלי (מול דולר)',
-        applyTaxSP: 'מס רווחי הון (25%)',
-        yearsToPosCF: 'שנים לתזרים חיובי',
-        moneyInvested: 'כסף שהושקע',
-        mixWarning: 'התמהיל חייב להסתכם ב-100% לצפייה בגרפים',
-        wealthChart: 'צבירת הון נטו',
-        flowChart: 'תזרים חודשי (הכנסות מול הוצאות)',
-        free: 'חופשי',
-        locked: 'נעול',
-        tamheelDefault: '⚖️ מאוזן',
-        tamheelArbitrage: '📉 הורדת ריבית',
-        tamheelShield: '🛡️ יציבות',
-        tamheelInvestor: '📊 צמוד מדד',
-        cpiSuffix: '+ מדד',
-        yrSuffix: 'שנה',
-        ySuffix: 'שנה',
-        chartRealEstate: 'נדל"ן',
-        chartSP500: 'S&P 500',
-        chartREAfterTax: 'נדל"ן אחרי מס',
-        chartSPAfterTax: 'S&P אחרי מס',
-        chartRETax: 'מס נדל"ן',
-        chartSPTax: 'מס S&P',
-        afterTax: 'אחרי מס',
-        taxPaid: 'מס',
-        taxDeduction: 'מס',
-        chartReinvested: 'עודף מושקע מחדש',
-        chartNetCashflow: 'תזרים נטו',
-        chartRentMinusInt: 'שכירות פחות ריבית',
-        chartRevenue: 'הכנסה (שכירות)',
-        chartInterest: 'ריבית (עלות)',
-        chartPrincipal: 'קרן (הון)',
-        chartYAxisROI: 'תשואה מצטברת (%)',
-        chartYAxisWealth: 'הון נטו (₪)',
-        chartYAxisMonthly: '₪ חודשי',
-        chartTotalMortgage: 'סה"כ משכנתא',
-        tooltipRentMinusInt: 'שכירות - ריבית',
-        tooltipInterest: 'ריבית',
-        tooltipPrincipal: 'קרן',
-        tooltipRent: 'שכירות',
-        tooltipNet: 'נטו',
-        purchaseTax: 'מס רכישה',
-        includePurchaseTax: 'החל מס רכישה',
-        applyMasShevach: 'החל מס שבח (צמוד מדד)'
-    }
-};
+const TRACKS = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
+const $ = id => document.getElementById(id);
+const $pct = id => parseFloat($(id)?.value || 0) / 100;
+const $int = id => parseInt($(id)?.value || 0);
+const $pill = (id, isFirst) => { const p = $(id); if (p) { p.children[0]?.classList.toggle('active', isFirst); p.children[1]?.classList.toggle('active', !isFirst); } };
+const $ltr = txt => lang === 'he' ? `<span style="direction:ltr;display:inline-block">${txt}</span>` : txt;
+const getMix = () => ({ prime: $int('pctPrime'), kalats: $int('pctKalats'), katz: $int('pctKatz'), malatz: $int('pctMalatz'), matz: $int('pctMatz') });
+const getRates = () => ({ prime: $pct('ratePrime'), kalats: $pct('rateKalats'), katz: $pct('rateKatz'), malatz: $pct('rateMalatz'), matz: $pct('rateMatz') });
 
-function t(key) { return T[lang][key] || T['en'][key] || key; }
+let lang = window.i18n?.getLang() || 'en';
+
+function t(key) { return (T[lang] && T[lang][key]) || (T['en'] && T['en'][key]) || key; }
 
 function toggleLang() {
-    lang = lang === 'en' ? 'he' : 'en';
-    localStorage.setItem('lang', lang);
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
-    document.body.classList.toggle('rtl', lang === 'he');
+    lang = lang === 'en' ? 'he' : 'en'; window.i18n?.setLang(lang); localStorage.setItem('lang', lang);
+    const isHe = lang === 'he'; document.documentElement.lang = lang; document.documentElement.dir = isHe ? 'rtl' : 'ltr'; document.body.classList.toggle('rtl', isHe);
     applyTranslations();
 }
 
 function applyTranslations() {
     document.querySelectorAll('[data-t]').forEach(el => {
-        if (el.tagName === 'OPTION') {
-            el.textContent = t(el.dataset.t);
-        } else if (el.children.length === 0 || el.classList.contains('card-lbl')) {
-            // For elements with no children or card-lbl (which may have lock toggle child)
-            const lockChild = el.querySelector('.lock-toggle');
-            if (lockChild) {
-                // Preserve the lock toggle, only update text before it
-                const textNode = el.firstChild;
-                if (textNode && textNode.nodeType === 3) {
-                    textNode.textContent = t(el.dataset.t);
-                }
-            } else {
-                el.textContent = t(el.dataset.t);
-            }
+        const lockChild = el.querySelector('.lock-toggle');
+        if (lockChild) {
+            if (el.firstChild?.nodeType === 3) el.firstChild.textContent = t(el.dataset.t);
         } else {
             el.textContent = t(el.dataset.t);
         }
     });
-    document.querySelectorAll('[data-t-placeholder]').forEach(el => {
-        el.placeholder = t(el.dataset.tPlaceholder);
-    });
-    // Update dynamic UI elements
+    document.querySelectorAll('[data-t-placeholder]').forEach(el => el.placeholder = t(el.dataset.tPlaceholder));
     updateLockUI();
     setSurplusMode(surplusMode, { skipSim: true });
     updateRateLabels();
-    // Update all values on language change
     runSim();
 }
 
-const SCENARIOS = {
-    // Based on CBS official data (2018-2024 district indices, 2023 rent tables)
-    // RE appreciation: ~5-6% nominal, Rent yield: ~2.5-3% gross, S&P: ~7-10% nominal
-    bear: { sp: 7.0, app: 3.0, int: 5.0, inf: 3.5, yld: 2.5, drift: 1.0 },
-    base: { sp: 9.5, app: 5.0, int: 4.25, inf: 2.5, yld: 2.8, drift: 0.5 },
-    bull: { sp: 10.0, app: 7.0, int: 3.0, inf: 2.0, yld: 3.0, drift: -0.5 }
-};
+const S = window.AppState || { get: () => null, set: () => {}, getAll: () => ({}), setAll: () => {} };
 
-// Common Israeli mortgage mixes (תמהיל משכנתא) - Dec 2025
-// All comply with BoI rules: ≥33% fixed, ≤66% variable
-const TAMHEEL_PROFILES = {
-    // Mix 1: "2025 Balanced Base" - most common modern recommendation
-    // 30% Prime + 40% KLATZ + 30% MALATZ - balanced exposure
-    defaultEven: { p: 30, k: 40, z: 0, m: 30, mt: 0, tP: 30, tK: 20, tZ: 20, tM: 30, tMt: 15 },
-    
-    // Mix 2: "High Stability" - risk-averse, payment predictability
-    // 25% Prime + 50% KLATZ + 25% MALATZ
-    shield: { p: 25, k: 50, z: 0, m: 25, mt: 0, tP: 30, tK: 25, tZ: 25, tM: 30, tMt: 20 },
-    
-    // Mix 3: "Classic Thirds with CPI" - lower initial payment, CPI risk
-    // 33% Prime + 34% KLATZ + 33% Variable CPI-linked
-    investor: { p: 33, k: 34, z: 0, m: 0, mt: 33, tP: 30, tK: 20, tZ: 20, tM: 30, tMt: 20 },
-    
-    // Mix 4: "Rate-Cuts Thesis" - max flexibility for refinancing
-    // 37% Prime + 33% KALATZ + 30% MALATZ
-    arbitrage: { p: 37, k: 33, z: 0, m: 30, mt: 0, tP: 30, tK: 12, tZ: 12, tM: 30, tMt: 10 }
-};
+let mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode;
 
-// Base Spreads (Anchors) relative to BoI rate
-// Dec 2025 market data: BoI 4.25%, Prime 5.75% (BoI+1.5%), 5Y gov yield ~3.75%
-// Market ranges (LTV 60-75%): Prime 4.70-5.00%, MALATZ 4.45-4.75%, KLATZ 4.60-4.80%
-// CPI-Linked: Katz, Matz | Non-Linked: Prime, Kalatz, Malatz
-const ANCHORS = {
-    prime: 1.50,    // Prime = BoI + 1.5% (fixed by law), discount applied via risk
-    kalats: 0.60,   // Fixed, Non-Linked (KLATZ): target 4.60-4.70% for top tier
-    malatz: 0.51,   // Var 5yr, Non-Linked (MALATZ): ~5Y gov 3.75% + spread
-    katz: -1.30,    // Fixed, CPI-Linked: ~2.70% real rate for top tier
-    matz: -1.05     // Var 5yr, CPI-Linked: ~2.95% real rate for top tier
-};
+const syncState = () => ({ mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode } = S.getAll());
+const setState = (k, v) => { S.set(k, v); syncState(); };
+syncState();
 
-// Risk Premiums by credit tier (added to BoI + Anchor)
-// Prime discount ranges: P-0.95 (elite) to P-0.32 (good) to P+0.40 (poor)
-// Market avg ~P-0.39, so tier C/D is "market average"
-const CREDIT_MATRIX = {
-    A: { range: [950, 1000], riskP: -0.95, riskK: -0.25, riskM: -0.20, riskZ: -0.20, maxLTV: 0.75 }, // Elite: P-0.95 → 4.80%
-    B: { range: [900, 949], riskP: -0.80, riskK: -0.15, riskM: -0.10, riskZ: -0.10, maxLTV: 0.75 },  // Strong: P-0.80 → 4.95%
-    C: { range: [850, 899], riskP: -0.60, riskK: -0.05, riskM: 0.00, riskZ: 0.00, maxLTV: 0.75 },    // Good: P-0.60 → 5.15%
-    D: { range: [800, 849], riskP: -0.40, riskK: 0.05, riskM: 0.10, riskZ: 0.10, maxLTV: 0.75 },     // OK: P-0.40 → 5.35%
-    E: { range: [750, 799], riskP: -0.20, riskK: 0.20, riskM: 0.25, riskZ: 0.25, maxLTV: 0.70 },     // Weak: P-0.20 → 5.55%
-    F: { range: [700, 749], riskP: 0.00, riskK: 0.40, riskM: 0.40, riskZ: 0.40, maxLTV: 0.65 },      // Bad: P+0.00 → 5.75%
-    G: { range: [660, 699], riskP: 0.25, riskK: 0.65, riskM: 0.60, riskZ: 0.60, maxLTV: 0.60 },      // Poor
-    H: { range: [0, 659], riskP: null, riskK: null, riskM: null, riskZ: null, maxLTV: 0 }            // Reject
-};
+const cfg = Object.fromEntries(['SP','App','Int','Yld','Inf'].map(k => [k, { is: false, b: 'b'+k, s: 's'+k, v: 'v'+k, p: 'p'+k }]));
 
-// --- STATE ---
-let mode = 'percent';
-let exMode = 'hedged';
-let taxMode = 'real';
-let horMode = 'auto';
-let wealthChart = null;
-let flowChart = null;
-let lockDown = false;
-let lockTerm = false;
-let lockHor = true;
-let buyerType = 'first';
-let advancedTermMode = false;
-let bootstrapping = false;
-let creditScore = 900;
-let surplusMode = 'match';
-let repayMethod = 'spitzer';
-let optimizeMode = 'outperform';
-
-const TERM_MIN = 1;
-const TERM_MAX = 30;
-
-const LTV_MIN = {
-    first: 25,
-    replacement: 30,
-    investor: 50
-};
-
-const cfg = {
-    SP: { is: false, b: 'bSP', s: 'sSP', v: 'vSP', p: 'pSP' },
-    App: { is: false, b: 'bApp', s: 'sApp', v: 'vApp', p: 'pApp' },
-    Int: { is: false, b: 'bInt', s: 'sInt', v: 'vInt', p: 'pInt' },
-    Yld: { is: false, b: 'bYld', s: 'sYld', v: 'vYld', p: 'pYld' },
-    Inf: { is: false, b: 'bInf', s: 'sInf', v: 'vInf', p: 'pInf' }
-};
-
-// --- UI FUNCTIONS ---
 function setMode(m, opts = {}) {
-    mode = m;
-    document.getElementById('btnCurr').classList.toggle('active', m === 'currency');
-    document.getElementById('btnPct').classList.toggle('active', m === 'percent');
-    document.getElementById('equityBox').classList.toggle('show', m === 'currency');
+    setState('mode', m);
+    $('equityBox')?.classList.toggle('show', m === 'currency');
     if (!opts.skipSim) runSim();
 }
 function tgl(k, h, opts = {}) {
     cfg[k].is = h;
-    const pills = document.getElementById(cfg[k].p).children;
-    pills[0].classList.toggle('active', h); pills[1].classList.toggle('active', !h);
-    document.getElementById(cfg[k].b).classList.toggle('show', !h);
+    setState('hist' + k, h);
+    $pill(cfg[k].p, h);
+    $(cfg[k].b)?.classList.toggle('show', !h);
     if (k === 'Inf') updMeter();
     if (!opts.skipSim) runSim();
 }
 function setGlobalMode(isHist, opts = {}) {
-    const globalPills = document.getElementById('pGlobal').children;
-    globalPills[0].classList.toggle('active', isHist);
-    globalPills[1].classList.toggle('active', !isHist);
-    document.getElementById('scenBox').classList.toggle('show', !isHist);
+    setState('globalHistMode', isHist);
+    $pill('pGlobal', isHist);
+    $('scenBox')?.classList.toggle('show', !isHist);
     for (let k in cfg) { tgl(k, isHist, opts); }
 }
 function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
-    document.getElementById('sSP').value = s.sp;
-    document.getElementById('sApp').value = s.app;
-    document.getElementById('sInt').value = s.int;
-    document.getElementById('sInf').value = s.inf;
-    document.getElementById('sYld').value = s.yld;
-
-    document.getElementById('scenBear').classList.toggle('active', type === 'bear');
-    document.getElementById('scenBase').classList.toggle('active', type === 'base');
-    document.getElementById('scenBull').classList.toggle('active', type === 'bull');
-
-    refreshRatesForProfile();
-    updateRateLabels();
-    updateCreditUI();
-    applyLtvCaps();
-    updMeter();
+    ['SP','App','Int','Inf','Yld'].forEach(k => $('s' + k).value = s[k.toLowerCase()]);
+    ['bear','base','bull'].forEach(t => $('scen' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', type === t));
+    refreshRatesForProfile(); updateRateLabels(); updateCreditUI(); applyLtvCaps(); updMeter();
     if (!opts.skipSim) runSim();
 }
 
 function applyTamheel(type) {
-    const t = TAMHEEL_PROFILES[type];
-    document.getElementById('pctPrime').value = t.p;
-    document.getElementById('pctKalats').value = t.k;
-    document.getElementById('pctKatz').value = t.z;
-    document.getElementById('pctMalatz').value = t.m || 0;
-    document.getElementById('pctMatz').value = t.mt || 0;
-    // Set term years per track
-    document.getElementById('termPrime').value = t.tP;
-    document.getElementById('termKalats').value = t.tK;
-    document.getElementById('termKatz').value = t.tZ;
-    document.getElementById('termMalatz').value = t.tM;
-    document.getElementById('termMatz').value = t.tMt;
-    ['termPrimeVal','termKalatsVal','termKatzVal','termMalatzVal','termMatzVal'].forEach((id, i) => {
-        document.getElementById(id).textContent = [t.tP, t.tK, t.tZ, t.tM, t.tMt][i] + 'y';
-    });
-    // Open advanced terms tab
+    const p = TAMHEEL_PROFILES[type], map = {Prime: ['p','tP'], Kalats: ['k','tK'], Katz: ['z','tZ'], Malatz: ['m','tM'], Matz: ['mt','tMt']};
+    Object.entries(map).forEach(([track, [pctKey, termKey]]) => { $('pct' + track).value = p[pctKey] || 0; $('term' + track).value = p[termKey]; $('term' + track + 'Val').textContent = p[termKey] + 'y'; });
     if (!advancedTermMode) toggleAdvancedTerms();
     checkMix();
 }
 
 function mapScoreToTierKey(score) {
-    const s = score || 0;
-    if (s >= 950) return 'A';
-    if (s >= 900) return 'B';
-    if (s >= 850) return 'C';
-    if (s >= 800) return 'D';
-    if (s >= 750) return 'E';
-    if (s >= 700) return 'F';
-    if (s >= 660) return 'G';
-    return 'H';
+    const thresholds = [[950,'A'],[900,'B'],[850,'C'],[800,'D'],[750,'E'],[700,'F'],[660,'G']];
+    return thresholds.find(([t]) => (score || 0) >= t)?.[1] || 'H';
 }
 
 function getCreditTier(score) {
@@ -523,548 +93,213 @@ function getCreditTier(score) {
 }
 
 function applyLtvCaps() {
-    const downSlider = document.getElementById('rDown');
+    const downSlider = $('rDown');
     if (!downSlider) return;
     const tier = getCreditTier(creditScore);
-    const buyerMinDown = LTV_MIN[buyerType] || 25;
     if (tier.maxLTV === 0) return;
 
-    const regCap = 1 - (buyerMinDown / 100);
-    const tierCap = tier.maxLTV;
-    const finalCap = Math.min(regCap, tierCap);
-    const finalMinDown = 100 - (finalCap * 100);
-
+    const finalMinDown = 100 - Math.min(1 - (LTV_MIN[buyerType] || 25) / 100, tier.maxLTV) * 100;
     downSlider.min = finalMinDown;
-    if (parseInt(downSlider.value, 10) < finalMinDown) {
-        downSlider.value = finalMinDown;
-    }
+    if (parseInt(downSlider.value, 10) < finalMinDown) downSlider.value = finalMinDown;
 }
 
 function updateCreditUI() {
-    const scoreEl = document.getElementById('creditScoreVal');
-    const tierEl = document.getElementById('creditTierLabel');
-    const warnEl = document.getElementById('creditWarn');
-    const tier = getCreditTier(creditScore);
-    const displayScore = tier.range[0] + '-' + tier.range[1];
-
-    if (scoreEl) scoreEl.innerText = displayScore;
-    if (tierEl) tierEl.innerText = `Risk Tier: ${tier.tier}`;
-    if (warnEl) {
-        warnEl.style.display = tier.maxLTV === 0 ? 'block' : 'none';
-        if (tier.maxLTV === 0) warnEl.innerText = 'Application rejected: score below 660';
-    }
+    const tier = getCreditTier(creditScore), warnEl = $('creditWarn');
+    $('creditScoreVal')?.innerText && ($('creditScoreVal').innerText = tier.range[0] + '-' + tier.range[1]);
+    $('creditTierLabel')?.innerText && ($('creditTierLabel').innerText = `Risk Tier: ${tier.tier}`);
+    if (warnEl) { warnEl.style.display = tier.maxLTV === 0 ? 'block' : 'none'; if (tier.maxLTV === 0) warnEl.innerText = 'Application rejected: score below 660'; }
 }
 
 function refreshRatesForProfile() {
-    const tier = getCreditTier(parseInt(creditScore, 10));
-    const base = parseFloat(document.getElementById('sInt').value) || 4.25;
-
-    const setVal = (id, anchor, risk) => {
-        const el = document.getElementById(id);
-        if (el && risk !== null) {
-            el.value = Math.max(0.1, base + anchor + risk).toFixed(2);
-        }
-    };
-
-    setVal('ratePrime', ANCHORS.prime, tier.riskP);
-    setVal('rateKalats', ANCHORS.kalats, tier.riskK);
-    setVal('rateMalatz', ANCHORS.malatz, tier.riskK); // Malatz non-linked, same risk as Kalats
-    setVal('rateKatz', ANCHORS.katz, tier.riskZ);
-    setVal('rateMatz', ANCHORS.matz, tier.riskZ); // Matz CPI-linked, same risk as Katz
+    const tier = getCreditTier(parseInt(creditScore, 10)), base = parseFloat($('sInt').value) || 4.25;
+    Object.entries({Prime: ['prime', 'riskP'], Kalats: ['kalats', 'riskK'], Malatz: ['malatz', 'riskK'], Katz: ['katz', 'riskZ'], Matz: ['matz', 'riskZ']}).forEach(([track, [anchor, risk]]) => { const el = $('rate' + track); if (el && tier[risk] !== null) el.value = Math.max(0.1, base + ANCHORS[anchor] + tier[risk]).toFixed(2); });
 }
 
 function setCreditScore(v) {
-    creditScore = parseInt(v, 10) || creditScore;
-    updateCreditUI();
-    applyLtvCaps();
-    refreshRatesForProfile();
-    updateRateLabels();
-    runSim();
+    setState('creditScore', parseInt(v, 10) || creditScore);
+    updateCreditUI(); applyLtvCaps(); refreshRatesForProfile(); updateRateLabels(); runSim();
 }
 
 function tglHor(isAuto) {
-    horMode = isAuto ? 'auto' : 'custom';
-    document.getElementById('pHor').children[0].classList.toggle('active', isAuto);
-    document.getElementById('pHor').children[1].classList.toggle('active', !isAuto);
-    document.getElementById('bHor').classList.toggle('show', !isAuto);
-    if (isAuto) { lockHor = true; }
+    setState('horMode', isAuto ? 'auto' : 'custom');
+    $pill('pHor', isAuto);
+    $('bHor')?.classList.toggle('show', !isAuto);
+    if (isAuto) { setState('lockHor', true); }
     runSim();
 }
 
 function setTaxMode(m) {
-    taxMode = m;
-    document.getElementById('txReal').classList.toggle('active', m === 'real');
-    document.getElementById('txForex').classList.toggle('active', m === 'forex');
-    const label = m === 'real' ? 'Real' : 'Nominal';
-    const vTaxMode = document.getElementById('vTaxMode');
-    if (vTaxMode) vTaxMode.innerText = label;
+    setState('taxMode', m);
+    $('txReal').classList.toggle('active', m === 'real');
+    $('txForex').classList.toggle('active', m === 'forex');
+    $('vTaxMode')?.innerText && ($('vTaxMode').innerText = m === 'real' ? 'Real' : 'Nominal');
     runSim();
 }
 function updateLockUI() {
-    const setBtn = (id, locked) => {
-        const el = document.getElementById(id);
-        el.classList.toggle('locked', locked);
-        el.innerText = locked ? t('locked') : t('free');
-    };
-    setBtn('lockDownBtn', lockDown);
-    setBtn('lockTermBtn', lockTerm);
-    setBtn('lockHorBtn', lockHor);
-    const summaryEl = document.getElementById('optModeLabel');
-    if (summaryEl) {
-        const locks = [];
-        if (lockDown) locks.push('Down');
-        if (lockTerm) locks.push('Term');
-        if (lockHor) locks.push('Horizon');
-        summaryEl.innerText = locks.length ? locks.join(' & ') : t('free');
-    }
+    const locks = {Down: lockDown, Term: lockTerm, Hor: lockHor};
+    Object.entries(locks).forEach(([k, v]) => { const el = $('lock' + k + 'Btn'); if (el) { el.classList.toggle('locked', v); el.innerText = v ? t('locked') : t('free'); } });
+    const summaryEl = $('optModeLabel');
+    if (summaryEl) summaryEl.innerText = Object.entries(locks).filter(([,v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k).join(' & ') || t('free');
 }
 function toggleLock(target) {
-    if (target === 'down') lockDown = !lockDown;
-    if (target === 'term') lockTerm = !lockTerm;
-    if (target === 'hor') {
-        if (horMode === 'auto' && lockHor) {
-            horMode = 'custom';
-            document.getElementById('pHor').children[0].classList.remove('active');
-            document.getElementById('pHor').children[1].classList.add('active');
-            document.getElementById('bHor').classList.add('show');
-        }
-        lockHor = !lockHor;
-    }
+    const map = { down: ['lockDown', lockDown], term: ['lockTerm', lockTerm], hor: ['lockHor', lockHor] };
+    const [key, val] = map[target] || [];
+    if (!key) return;
+    if (target === 'hor' && horMode === 'auto' && lockHor) { setState('horMode', 'custom'); $pill('pHor', false); $('bHor').classList.add('show'); }
+    setState(key, !val);
     updateLockUI();
-    runSim({ skipCharts: true });
+    runSim();
 }
 
 function setBuyerType(type) {
-    buyerType = type;
+    setState('buyerType', type);
     applyLtvCaps();
     runSim();
 }
 
-function recommendMix() {
-    const baseRate = parseFloat(document.getElementById('sInt').value) || 4.25;
-    const cpi = parseFloat(document.getElementById('sInf').value) || 2.5;
-    if (baseRate >= 4.5 || cpi >= 3.5) applyTamheel('shield');
-    else if (baseRate >= 3.0 || cpi >= 2.5) applyTamheel('arbitrage');
-    else applyTamheel('investor');
-}
-
 function showTermVal(elId, v) {
-    const el = document.getElementById(elId);
-    if (el) {
-        if (lang === 'he') {
-            el.innerHTML = '<span style="direction:ltr;display:inline-block">' + v + ' ' + t('ySuffix') + '</span>';
-        } else {
-            el.innerHTML = v + t('ySuffix');
-        }
-    }
+    const el = $(elId);
+    if (el) el.innerHTML = $ltr(v + ' ' + t('ySuffix'));
 }
 
 function syncTrackTermsToMain() {
-    const dur = document.getElementById('rDur').value;
-    document.getElementById('termPrime').value = dur;
-    document.getElementById('termKalats').value = dur;
-    document.getElementById('termKatz').value = dur;
-    document.getElementById('termMalatz').value = dur;
-    document.getElementById('termMatz').value = dur;
-    showTermVal('termPrimeVal', dur);
-    showTermVal('termKalatsVal', dur);
-    showTermVal('termKatzVal', dur);
-    showTermVal('termMalatzVal', dur);
-    showTermVal('termMatzVal', dur);
+    const dur = $('rDur').value;
+    TRACKS.forEach(t => { $('term' + t).value = dur; showTermVal('term' + t + 'Val', dur); });
 }
 
 function toggleAdvancedTerms() {
-    advancedTermMode = !advancedTermMode;
-    const advBox = document.getElementById('advancedTermBox');
-    const basicBox = document.getElementById('basicTermBox');
-    const btn = document.getElementById('btnAdvancedTerm');
-    if (advancedTermMode) {
-        advBox.style.display = 'block';
-        basicBox.style.display = 'none';
-        btn.classList.add('active');
-        syncTrackTermsToMain();
-    } else {
-        advBox.style.display = 'none';
-        basicBox.style.display = 'block';
-        btn.classList.remove('active');
-        syncTrackTermsToMain();
-    }
+    setState('advancedTermMode', !advancedTermMode);
+    $('advancedTermBox').style.display = advancedTermMode ? 'block' : 'none';
+    $('basicTermBox').style.display = advancedTermMode ? 'none' : 'block';
+    $('btnAdvancedTerm')?.classList.toggle('active', advancedTermMode);
+    syncTrackTermsToMain();
     runSim();
 }
 function updMeter() {
-    let v = parseFloat(document.getElementById('sInf').value);
-    let s = document.getElementById('infMeter').children;
-    s[0].style.opacity = v < 2 ? 1 : 0.2;
-    s[1].style.opacity = (v >= 2 && v < 4) ? 1 : 0.2;
-    s[2].style.opacity = v >= 4 ? 1 : 0.2;
+    const v = parseFloat($('sInf').value), s = $('infMeter').children;
+    [v < 2, v >= 2 && v < 4, v >= 4].forEach((active, i) => s[i].style.opacity = active ? 1 : 0.2);
 }
 
-function fmt(v) {
-    if (Math.abs(v) >= 1000000) return (v / 1000000).toFixed(2) + 'M';
-    if (Math.abs(v) >= 1000) return (v / 1000).toFixed(0) + 'k';
-    return v.toFixed(0);
-}
+function fmt(v) { return Math.abs(v) >= 1000000 ? (v / 1000000).toFixed(2) + 'M' : Math.abs(v) >= 1000 ? (v / 1000).toFixed(0) + 'k' : v.toFixed(0); }
 function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
+function updateSliderLabels() {
+    Object.entries({Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1}).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
+}
+
+function updateDealDisplay(eq, downPct, initialLoan) {
+    const entryCostsFromEquity = $('cEntryCostsFromEquity')?.checked ?? false;
+    const buyCostPct = $pct('rBuyCost') || 0;
+    
+    let assetPriceStart, effectiveLoan;
+    const purchaseTaxEnabled = $('cPurchaseTax')?.checked ?? true;
+    
+    if (entryCostsFromEquity) {
+        // Entry costs come from equity - need to solve for asset price
+        // First estimate without purchase tax to get asset price
+        const estAsset = eq / (downPct + buyCostPct);
+        const purchaseTax = purchaseTaxEnabled ? AppLogic.calcPurchaseTax(estAsset, buyerType === 'first') : 0;
+        // Now solve: equity = assetPrice * downPct + purchaseTax + assetPrice * buyCostPct
+        // assetPrice = (equity - purchaseTax) / (downPct + buyCostPct)
+        assetPriceStart = (eq - purchaseTax) / (downPct + buyCostPct);
+        const effectiveDown = eq - purchaseTax - (assetPriceStart * buyCostPct);
+        effectiveLoan = assetPriceStart - effectiveDown;
+    } else {
+        assetPriceStart = eq / downPct;
+        effectiveLoan = initialLoan;
+    }
+    
+    const lev = assetPriceStart / eq;
+    $('valAsset').dataset.initial = assetPriceStart; // Store for later
+    $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
+    $('valLev').innerText = 'x' + lev.toFixed(1);
+    $('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
+    $('valMortgage').innerText = fmt(effectiveLoan) + ' ₪';
+
+    const purchaseTax = purchaseTaxEnabled ? AppLogic.calcPurchaseTax(assetPriceStart, buyerType === 'first') : 0;
+    const entryCosts = purchaseTax + (assetPriceStart * buyCostPct);
+    $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
+    $('valEntryCosts')?.innerText && ($('valEntryCosts').innerText = fmt(entryCosts) + ' ₪');
+    
+    // Show equity split: down payment vs entry costs
+    const equitySplit = $('equitySplit');
+    if (equitySplit) {
+        const downPayment = entryCostsFromEquity ? (eq - entryCosts) : eq;
+        equitySplit.innerHTML = `↳ ${fmt(downPayment)} ₪ ${t('downPayment')} + ${fmt(entryCosts)} ₪ ${t('entryCosts')}`;
+    }
+    
+    TRACKS.forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track), amt = effectiveLoan * pct / 100; if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${fmt(amt)}</span>`; });
+    return { assetPriceStart, purchaseTax };
+}
+
 function updateTrackTermEnabled() {
-    const pP = parseFloat(document.getElementById('pctPrime').value) || 0;
-    const pK = parseFloat(document.getElementById('pctKalats').value) || 0;
-    const pZ = parseFloat(document.getElementById('pctKatz').value) || 0;
-    const pM = parseFloat(document.getElementById('pctMalatz').value) || 0;
-    const pMT = parseFloat(document.getElementById('pctMatz').value) || 0;
-
-    const setDisabled = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = val <= 0;
-    };
-
-    setDisabled('termPrime', pP);
-    setDisabled('termKalats', pK);
-    setDisabled('termKatz', pZ);
-    setDisabled('termMalatz', pM);
-    setDisabled('termMatz', pMT);
+    TRACKS.forEach(t => { const el = $('term' + t); if (el) el.disabled = ($int('pct' + t) || 0) <= 0; });
 }
 
 function syncMixInput(track) {
-    const slider = document.getElementById('slider' + track);
-    const hidden = document.getElementById('pct' + track);
-    const disp = document.getElementById('disp' + track);
+    const slider = $('slider' + track);
+    const othersSum = TRACKS.filter(t => t !== track).reduce((sum, t) => sum + $int('pct' + t), 0);
+    const maxAllowed = 100 - othersSum, newVal = Math.min(parseInt(slider.value) || 0, maxAllowed);
 
-    // Calculate sum of other tracks
-    const tracks = ['Prime', 'Kalats', 'Katz', 'Malatz', 'Matz'];
-    let othersSum = 0;
-    tracks.forEach(t => {
-        if (t !== track) othersSum += parseInt(document.getElementById('pct' + t).value) || 0;
-    });
-
-    // Cap this slider so total doesn't exceed 100
-    const maxAllowed = 100 - othersSum;
-    const requested = parseInt(slider.value) || 0;
-    const newVal = Math.min(requested, maxAllowed);
-
-    // Show tooltip if capped
-    if (requested > maxAllowed) {
-        showMaxTooltip(slider, maxAllowed);
-    }
-
+    if (parseInt(slider.value) > maxAllowed) showMaxTooltip(slider, maxAllowed);
     slider.value = newVal;
-    hidden.value = newVal;
-    disp.innerText = newVal + '%';
-
+    $('pct' + track).value = newVal;
+    $('disp' + track).innerText = newVal + '%';
     checkMix();
-    renderPrepayments(); // Update prepayment dropdowns when tracks change
+    window.Prepayments?.renderPrepayments();
 }
 
 function showMaxTooltip(el, maxVal) {
-    let tip = document.getElementById('maxTip');
-    if (!tip) {
-        tip = document.createElement('div');
-        tip.id = 'maxTip';
-        tip.innerHTML = '<span></span><div style="position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid #ef4444;"></div>';
-        tip.style.cssText = 'position:fixed;background:#ef4444;color:#fff;padding:3px 6px;border-radius:4px;font-size:0.65rem;font-weight:500;z-index:999;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,0.2);transform:translateX(-50%);transition:opacity 0.2s;';
-        document.body.appendChild(tip);
-    }
+    let tip = $('maxTip');
+    if (!tip) { tip = document.createElement('div'); tip.id = 'maxTip'; tip.innerHTML = '<span></span><div style="position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid #ef4444;"></div>'; tip.style.cssText = 'position:fixed;background:#ef4444;color:#fff;padding:3px 6px;border-radius:4px;font-size:0.65rem;font-weight:500;z-index:999;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,0.2);transform:translateX(-50%);transition:opacity 0.2s;'; document.body.appendChild(tip); }
     tip.querySelector('span').textContent = '⚠️ Max 100%';
     const rect = el.getBoundingClientRect();
-    const thumbPos = rect.left + (maxVal / 100) * rect.width;
-    tip.style.left = thumbPos + 'px';
-    tip.style.top = (rect.top - 28) + 'px';
-    tip.style.opacity = '1';
-    tip.style.display = 'block';
+    Object.assign(tip.style, { left: (rect.left + (maxVal / 100) * rect.width) + 'px', top: (rect.top - 28) + 'px', opacity: '1', display: 'block' });
     clearTimeout(tip._timeout);
     tip._timeout = setTimeout(() => { tip.style.opacity = '0'; setTimeout(() => tip.style.display = 'none', 100); }, 150);
 }
 
 function updateVisualBar(p, k, m, z, mt) {
-    const bar = document.getElementById('mixVisualBar');
+    const bar = $('mixVisualBar');
     if (!bar) return;
-    const segs = bar.children;
-    segs[0].style.width = p + '%';   // Prime
-    segs[1].style.width = k + '%';   // Kalats
-    segs[2].style.width = m + '%';   // Malatz
-    segs[3].style.width = z + '%';   // Katz
-    segs[4].style.width = mt + '%';  // Matz
+    [p, k, m, z, mt].forEach((v, i) => bar.children[i].style.width = v + '%');
 }
 
 function checkMix() {
-    let p = parseInt(document.getElementById('pctPrime').value) || 0;
-    let k = parseInt(document.getElementById('pctKalats').value) || 0;
-    let z = parseInt(document.getElementById('pctKatz').value) || 0;
-    let m = parseInt(document.getElementById('pctMalatz').value) || 0;
-    let mt = parseInt(document.getElementById('pctMatz').value) || 0;
+    const vals = TRACKS.map(t => $int('pct' + t));
+    const [p, k, z, m, mt] = vals;
 
-    // Sync sliders if called externally (e.g. presets)
-    document.getElementById('sliderPrime').value = p;
-    document.getElementById('dispPrime').innerText = p + '%';
-    document.getElementById('sliderKalats').value = k;
-    document.getElementById('dispKalats').innerText = k + '%';
-    document.getElementById('sliderKatz').value = z;
-    document.getElementById('dispKatz').innerText = z + '%';
-    document.getElementById('sliderMalatz').value = m;
-    document.getElementById('dispMalatz').innerText = m + '%';
-    document.getElementById('sliderMatz').value = mt;
-    document.getElementById('dispMatz').innerText = mt + '%';
-
+    TRACKS.forEach((t, i) => { $('slider' + t).value = vals[i]; $('disp' + t).innerText = vals[i] + '%'; });
     updateVisualBar(p, k, m, z, mt);
 
-    let sum = p + k + z + m + mt;
-    const fixedPct = k + z; // Kalatz + Katz = fixed rate tracks
-    const fixedOk = fixedPct >= 33;
-
-    let el = document.getElementById('valMixSum');
+    const sum = vals.reduce((a, b) => a + b, 0), fixedOk = (k + z) >= 33;
+    const el = $('valMixSum');
     el.innerText = sum + "%";
     el.style.display = sum === 100 ? 'none' : 'block';
     el.style.color = sum === 100 ? '#16a34a' : '#ef4444';
-    const warnEl = document.getElementById('mixWarn');
-    if (warnEl) {
-        warnEl.style.display = sum === 100 ? 'none' : 'block';
-    }
-    const charts = document.getElementById('chartsContainer');
-    const chartsWarn = document.getElementById('chartsWarn');
-    const dimCharts = sum !== 100 || !fixedOk;
-    if (charts) charts.classList.toggle('charts-dim', dimCharts);
-    if (chartsWarn) {
-        if (sum !== 100) {
-            chartsWarn.textContent = 'Mix must total 100% of mortgage to view charts';
-            chartsWarn.style.display = 'block';
-        } else if (!fixedOk) {
-            chartsWarn.textContent = 'Min 33% fixed rate required (Kalatz/ Katz)';
-            chartsWarn.style.display = 'block';
-        } else {
-            chartsWarn.style.display = 'none';
-        }
-    }
+    
+    $('mixWarn')?.style && ($('mixWarn').style.display = sum === 100 ? 'none' : 'block');
+    $('chartsContainer')?.classList.toggle('charts-dim', sum !== 100 || !fixedOk);
+    const chartsWarn = $('chartsWarn'), msg = sum !== 100 ? 'Mix must total 100% of mortgage to view charts' : !fixedOk ? 'Min 33% fixed rate required (Kalatz/ Katz)' : '';
+    if (chartsWarn) { chartsWarn.textContent = msg; chartsWarn.style.display = msg ? 'block' : 'none'; }
     updateTrackTermEnabled();
     runSim();
 }
 
-let rateEditMode = false;
 function toggleRateEdit() {
-    rateEditMode = !rateEditMode;
-    const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
-    tracks.forEach(track => {
-        const lbl = document.getElementById('lblRate' + track);
-        const inp = document.getElementById('rate' + track);
-        if (rateEditMode) {
-            lbl.style.display = 'none';
-            inp.classList.add('show');
-        } else {
-            lbl.style.display = 'block';
-            inp.classList.remove('show');
-            // Sync label with input value
-            let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
-            lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
-        }
-    });
+    setState('rateEditMode', !rateEditMode);
+    TRACKS.forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl) lbl.style.display = rateEditMode ? 'none' : 'block'; if (inp) inp.classList.toggle('show', rateEditMode); if (!rateEditMode && lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
 function togglePrepaySection() {
-    const container = document.getElementById('prepayContainer');
-    const arrow = document.getElementById('prepayArrow');
-    if (container.style.display === 'none') {
-        container.style.display = 'block';
-        arrow.classList.add('open');
-    } else {
-        container.style.display = 'none';
-        arrow.classList.remove('open');
-    }
+    const container = $('prepayContainer'), arrow = $('prepayArrow');
+    const isOpen = container?.style.display !== 'none';
+    if (container) container.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '+' : '−';
 }
 
-let prepayments = [];
-let prepayIdCounter = 0;
-
-function getActiveTracksForPrepay() {
-    const tracks = [
-        { id: 'p', name: 'Prime', pct: parseFloat(document.getElementById('pctPrime').value) || 0 },
-        { id: 'k', name: 'Kalats', pct: parseFloat(document.getElementById('pctKalats').value) || 0 },
-        { id: 'm', name: 'Malatz', pct: parseFloat(document.getElementById('pctMalatz').value) || 0 },
-        { id: 'z', name: 'Katz', pct: parseFloat(document.getElementById('pctKatz').value) || 0 },
-        { id: 'mt', name: 'Matz', pct: parseFloat(document.getElementById('pctMatz').value) || 0 }
-    ];
-    return tracks.filter(t => t.pct > 0);
-}
-
-function addPrepayment() {
-    const active = getActiveTracksForPrepay();
-    if (active.length === 0) {
-        alert('No active tracks to prepay. Add allocation to at least one track first.');
-        return;
-    }
-    // Find first track with remaining balance
-    const trackWithBalance = active.find(t => getRemainingForTrack(t.id) > 0);
-    if (!trackWithBalance) {
-        alert('All track balances are fully allocated to existing prepayments.');
-        return;
-    }
-    const remaining = getRemainingForTrack(trackWithBalance.id);
-    const id = prepayIdCounter++;
-    prepayments.push({ id, track: trackWithBalance.id, amt: Math.min(100000, remaining), yr: 5 });
-    renderPrepayments();
-    runSim();
-}
-
-function removePrepayment(id) {
-    prepayments = prepayments.filter(p => p.id !== id);
-    renderPrepayments();
-    runSim();
-}
-
-function getTrackInitialBalance(trackId) {
-    const eq = parseFloat(document.getElementById('inpEquity')?.value) || 0;
-    const downPct = (parseFloat(document.getElementById('rDown')?.value) || 25) / 100;
-    const loan = eq / downPct - eq;
-    const pctMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
-    const elId = pctMap[trackId];
-    if (!elId) return 0;
-    const pct = parseFloat(document.getElementById('pct' + elId)?.value) || 0;
-    return loan * pct / 100;
-}
-
-function getTrackBalanceAtYear(trackId, year) {
-    const initial = getTrackInitialBalance(trackId);
-    if (initial <= 0 || year <= 0) return initial;
-
-    const rateMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
-    const termMap = { p: 'Prime', k: 'Kalats', m: 'Malatz', z: 'Katz', mt: 'Matz' };
-    const rateName = rateMap[trackId];
-    const termName = termMap[trackId];
-
-    const rate = (parseFloat(document.getElementById('rate' + rateName)?.value) || 5) / 100;
-    const termYears = parseInt(document.getElementById('term' + termName)?.value) ||
-                      parseInt(document.getElementById('rDur')?.value) || 25;
-
-    // Calculate remaining balance using amortization formula
-    const monthlyRate = rate / 12;
-    const totalMonths = termYears * 12;
-    const paidMonths = year * 12;
-
-    if (monthlyRate === 0) {
-        // Simple linear payoff
-        return initial * (1 - paidMonths / totalMonths);
-    }
-
-    // Remaining balance formula: P * [(1+r)^n - (1+r)^p] / [(1+r)^n - 1]
-    const factor = Math.pow(1 + monthlyRate, totalMonths);
-    const paidFactor = Math.pow(1 + monthlyRate, paidMonths);
-    const remaining = initial * (factor - paidFactor) / (factor - 1);
-
-    return Math.max(0, remaining);
-}
-
-function getRemainingForTrack(trackId, excludeId = null, atYear = null) {
-    // Get balance at the specified year (or initial if no year)
-    const p = excludeId !== null ? prepayments.find(x => x.id === excludeId) : null;
-    const year = atYear !== null ? atYear : (p ? p.yr : 0);
-
-    const balanceAtYear = year > 0 ? getTrackBalanceAtYear(trackId, year) : getTrackInitialBalance(trackId);
-
-    // Subtract other prepayments on this track that happen before or at this year
-    const used = prepayments
-        .filter(pp => pp.track === trackId && pp.id !== excludeId && pp.yr <= year)
-        .reduce((sum, pp) => sum + pp.amt, 0);
-
-    return Math.max(0, balanceAtYear - used);
-}
-
-function getMaxPrepayForTrack(trackId, year, excludeId) {
-    const balanceAtYear = getTrackBalanceAtYear(trackId, year);
-    const otherPrepays = prepayments
-        .filter(pp => pp.track === trackId && pp.id !== excludeId && pp.yr <= year)
-        .reduce((sum, pp) => sum + pp.amt, 0);
-    return Math.round(Math.max(0, balanceAtYear - otherPrepays));
-}
-
-function updatePrepayment(id, field, value) {
-    const p = prepayments.find(x => x.id === id);
-    if (!p) return;
-
-    let needsRender = false;
-
-    if (field === 'yr') {
-        const newYr = Math.max(1, Math.min(30, parseInt(value) || 1));
-        if (newYr !== p.yr) {
-            const oldMax = getMaxPrepayForTrack(p.track, p.yr, id);
-            const wasAtMax = p.amt >= oldMax - 1; // tolerance for rounding
-            p.yr = newYr;
-            const newMax = getMaxPrepayForTrack(p.track, p.yr, id);
-            if (wasAtMax) {
-                p.amt = newMax; // Keep at max
-            } else if (p.amt > newMax) {
-                p.amt = newMax; // Cap if exceeds
-            }
-            needsRender = true;
-        }
-    } else if (field === 'amt') {
-        const requested = parseFloat(value) || 0;
-        const max = getMaxPrepayForTrack(p.track, p.yr, id);
-        p.amt = Math.round(Math.min(requested, max));
-        // Update display without full re-render
-        const items = document.querySelectorAll('.prepay-item');
-        const idx = prepayments.findIndex(x => x.id === id);
-        if (items[idx]) {
-            items[idx].querySelector('.prepay-max').textContent = `/ ${Math.round(max/1000)}K`;
-            const inp = items[idx].querySelector('input[type="number"]');
-            if (inp && requested >= max) {
-                inp.value = p.amt;
-                inp.blur(); // Kick out when max reached
-            }
-        }
-    } else if (field === 'track') {
-        p.track = value;
-        const max = getMaxPrepayForTrack(value, p.yr, id);
-        if (p.amt > max) p.amt = max;
-        needsRender = true;
-    }
-
-    if (needsRender) renderPrepayments();
-    runSim();
-}
-
-function renderPrepayments() {
-    const list = document.getElementById('prepayList');
-    if (!list) return;
-    const active = getActiveTracksForPrepay();
-
-    list.innerHTML = prepayments.map(p => {
-        const trackValid = active.some(t => t.id === p.track);
-        if (!trackValid && active.length > 0) p.track = active[0].id;
-
-        // Max is balance at year minus other prepayments (not including this one's current value)
-        const balanceAtYear = getTrackBalanceAtYear(p.track, p.yr);
-        const otherPrepays = prepayments
-            .filter(pp => pp.track === p.track && pp.id !== p.id && pp.yr <= p.yr)
-            .reduce((sum, pp) => sum + pp.amt, 0);
-        const maxVal = Math.max(0, balanceAtYear - otherPrepays);
-
-        // Cap current amount if it exceeds max
-        if (p.amt > maxVal) p.amt = maxVal;
-
-        const options = active.map(t => {
-            return `<option value="${t.id}" ${p.track === t.id ? 'selected' : ''}>${t.name}</option>`;
-        }).join('');
-
-        return `<div class="prepay-item">
-            <select onchange="updatePrepayment(${p.id},'track',this.value)">${options}</select>
-            <span class="prepay-label">₪</span>
-            <div class="prepay-amt-group">
-                <input type="number" value="${p.amt}" min="0" max="${maxVal}" step="10000" oninput="updatePrepayment(${p.id},'amt',this.value)">
-                <span class="prepay-max-btn" onclick="maxPrepayment(${p.id})">MAX</span>
-            </div>
-            <span class="prepay-label">Yr</span>
-            <input type="number" value="${p.yr}" min="1" max="30" style="width:45px" oninput="updatePrepayment(${p.id},'yr',this.value)">
-            <span class="prepay-remove" onclick="removePrepayment(${p.id})">✕</span>
-        </div>`;
-    }).join('');
-}
-
-function maxPrepayment(id) {
-    const p = prepayments.find(x => x.id === id);
-    if (!p) return;
-    p.amt = getMaxPrepayForTrack(p.track, p.yr, id);
-    renderPrepayments();
-    runSim();
-}
+function getPrepayments() { return window.Prepayments?.getPrepayments() || []; }
 
 function syncPrime() {
     refreshRatesForProfile();
@@ -1073,680 +308,227 @@ function syncPrime() {
 }
 
 function setSurplusMode(m, opts = {}) {
-    surplusMode = m;
-    document.getElementById('surplusConsume').classList.toggle('active', m === 'consume');
-    document.getElementById('surplusMatch').classList.toggle('active', m === 'match');
-    document.getElementById('surplusInvest').classList.toggle('active', m === 'invest');
-    const descEl = document.getElementById('surplusDescText') || document.getElementById('surplusDesc');
-    if (descEl) {
-        if (m === 'invest') descEl.innerText = t('surplusDescInvest');
-        else if (m === 'consume') descEl.innerText = t('surplusDescConsume');
-        else if (m === 'match') descEl.innerText = t('surplusDescMatch');
-    }
+    setState('surplusMode', m);
+    ['consume', 'match', 'invest'].forEach(mode => $('surplus' + mode.charAt(0).toUpperCase() + mode.slice(1))?.classList.toggle('active', m === mode));
+    const descEl = $('surplusDescText') || $('surplusDesc');
+    if (descEl) descEl.innerText = t('surplusDesc' + m.charAt(0).toUpperCase() + m.slice(1));
     if (!opts.skipSim) runSim();
 }
 
 function setRepayMethod(m) {
-    repayMethod = m;
-    document.getElementById('repaySpitzer').classList.toggle('active', m === 'spitzer');
-    document.getElementById('repayEqualPrincipal').classList.toggle('active', m === 'equalPrincipal');
+    setState('repayMethod', m);
     runSim();
 }
 
 function setOptimizeMode(m) {
-    optimizeMode = m;
-    document.getElementById('optRoi').classList.toggle('active', m === 'roi');
-    document.getElementById('optOutperf').classList.toggle('active', m === 'outperform');
+    setState('optimizeMode', m);
+    $('optRoi').classList.toggle('active', m === 'roi');
+    $('optOutperf').classList.toggle('active', m === 'outperform');
     updateSweetSpots();
 }
 
 function updateOptimalRepayMethod(baseParams, currentCagr) {
     const altMethod = repayMethod === 'spitzer' ? 'equalPrincipal' : 'spitzer';
-    const altParams = { ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false };
-    const altRes = AppLogic.simulate(altParams);
-
-    const starSpitzer = document.getElementById('starSpitzer');
-    const starEqual = document.getElementById('starEqual');
+    const altRes = AppLogic.simulate({ ...baseParams, config: { ...baseParams.config, repayMethod: altMethod }, returnSeries: false });
+    const starSpitzer = $('starSpitzer'), starEqual = $('starEqual');
     if (!starSpitzer || !starEqual) return;
-
-    const spitzerCagr = repayMethod === 'spitzer' ? currentCagr : altRes.cagrRE;
-    const equalCagr = repayMethod === 'equalPrincipal' ? currentCagr : altRes.cagrRE;
-
-    starSpitzer.classList.remove('show');
-    starEqual.classList.remove('show');
-    if (spitzerCagr > equalCagr) starSpitzer.classList.add('show');
-    else if (equalCagr > spitzerCagr) starEqual.classList.add('show');
+    const [spitzerCagr, equalCagr] = repayMethod === 'spitzer' ? [currentCagr, altRes.cagrRE] : [altRes.cagrRE, currentCagr];
+    starSpitzer.classList.toggle('show', spitzerCagr > equalCagr); starEqual.classList.toggle('show', equalCagr > spitzerCagr);
 }
 
+let sweetSpotWorker = null;
+try { sweetSpotWorker = new Worker('sweetSpotWorker.js'); sweetSpotWorker.onmessage = (e) => updateSweetSpotMarkers(e.data); } catch (e) { /* fallback to sync */ }
+
 function updateSweetSpots() {
-    // Optimizer currently only optimizes Down/Term assuming existing mix
-    // We pass existing inputs to the optimizer
-    let eq = parseFloat(document.getElementById('inpEquity').value) || 400000;
-    let curDown = parseInt(document.getElementById('rDown').value) / 100;
-    let curDur = parseInt(document.getElementById('rDur').value);
-    let simDur = horMode === 'auto' ? curDur : parseInt(document.getElementById('rHor').value);
-    
-    // Calculate purchase tax for optimizer
+    const eq = parseFloat($('inpEquity').value) || 400000, curDown = $int('rDown') / 100, curDur = $int('rDur');
+    const simDur = horMode === 'auto' ? curDur : $int('rHor');
     const assetPrice = eq / curDown;
-    const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = document.getElementById('cPurchaseTax')?.checked ?? true;
-    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPrice, isFirstHome) : 0;
+    const purchaseTax = ($('cPurchaseTax')?.checked ?? true) ? AppLogic.calcPurchaseTax(assetPrice, buyerType === 'first') : 0;
 
     const params = {
-        eq, curDown, curDur, simDur,
-        useTaxSP: document.getElementById('cTaxSP')?.checked ?? true,
-        useTaxRE: document.getElementById('cTaxSP')?.checked ?? true,
-        useRentTax: document.getElementById('cRentTax')?.checked ?? false,
-        useMasShevach: document.getElementById('cMasShevach')?.checked ?? false,
+        eq, curDown, curDur, simDur, purchaseTax,
+        useTaxSP: $('cTaxSP')?.checked ?? true, useTaxRE: $('cTaxSP')?.checked ?? true,
+        useRentTax: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
         masShevachType: buyerType === 'investor' ? 'none' : 'single',
-        purchaseTax,
-        tradeFee: parseFloat(document.getElementById('rTrade').value) / 100,
-        merFee: parseFloat(document.getElementById('rMer').value) / 100,
-        buyCostPct: parseFloat(document.getElementById('rBuyCost').value) / 100,
-        maintPct: parseFloat(document.getElementById('rMaint').value) / 100,
-        sellCostPct: parseFloat(document.getElementById('rSellCost').value) / 100,
-        overrides: {
-            SP: parseFloat(document.getElementById('sSP').value) / 100,
-            App: parseFloat(document.getElementById('sApp').value) / 100,
-            Int: parseFloat(document.getElementById('sInt').value) / 100,
-            Inf: parseFloat(document.getElementById('sInf').value) / 100,
-            Yld: parseFloat(document.getElementById('sYld').value) / 100,
-            RateP: parseFloat(document.getElementById('ratePrime').value) / 100,
-            RateK: parseFloat(document.getElementById('rateKalats').value) / 100,
-            RateZ: parseFloat(document.getElementById('rateKatz').value) / 100,
-            RateM: parseFloat(document.getElementById('rateMalatz').value) / 100,
-            RateMT: parseFloat(document.getElementById('rateMatz').value) / 100,
-        },
-        mix: {
-            prime: parseFloat(document.getElementById('pctPrime').value),
-            kalats: parseFloat(document.getElementById('pctKalats').value),
-            katz: parseFloat(document.getElementById('pctKatz').value),
-            malatz: parseFloat(document.getElementById('pctMalatz').value),
-            matz: parseFloat(document.getElementById('pctMatz').value)
-        },
-        termMix: {
-            p: parseInt(document.getElementById('termPrime').value) || curDur,
-            k: parseInt(document.getElementById('termKalats').value) || curDur,
-            z: parseInt(document.getElementById('termKatz').value) || curDur,
-            m: parseInt(document.getElementById('termMalatz').value) || curDur,
-            mt: parseInt(document.getElementById('termMatz').value) || curDur
-        },
-        drift: -0.5,
-        lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
-        calcOverride: window.__calcCagrOverride || undefined,
-        surplusMode,
-        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100,
-        optimizeMode
+        tradeFee: $pct('rTrade'), merFee: $pct('rMer'), buyCostPct: $pct('rBuyCost'), maintPct: $pct('rMaint'), sellCostPct: $pct('rSellCost'),
+        overrides: { SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
+            RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'), RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz') },
+        mix: getMix(),
+        termMix: { p: $int('termPrime') || curDur, k: $int('termKalats') || curDur, z: $int('termKatz') || curDur, m: $int('termMalatz') || curDur, mt: $int('termMatz') || curDur },
+        drift: -0.5, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
+        calcOverride: window.__calcCagrOverride, surplusMode, purchaseDiscount: $pct('rDiscount'), optimizeMode
     };
+    if (sweetSpotWorker) sweetSpotWorker.postMessage(params);
+    else updateSweetSpotMarkers(AppLogic.searchSweetSpots(params));
+}
 
-    const best = AppLogic.searchSweetSpots(params);
-
-    const downMin = 25;
-    const downMax = 100;
-    let posDown = ((best.d - downMin) / (downMax - downMin)) * 100;
-    if (lang === 'he') posDown = 100 - posDown;
-    document.getElementById('spotDown').style.left = `calc(${posDown}% + (8px - (0.16px * ${posDown})))`;
-    document.getElementById('spotDown').classList.add('visible');
-
-    let posDur = ((best.t - 1) / (30 - 1)) * 100;
-    if (lang === 'he') posDur = 100 - posDur;
-    const spotDur = document.getElementById('spotDur');
-    if (advancedTermMode) {
-        // In advanced mode, each track has its own term - hide the single term sweet spot
-        spotDur.classList.remove('visible');
-    } else {
-        spotDur.style.left = `calc(${posDur}% + (8px - (0.16px * ${posDur})))`;
-        spotDur.classList.add('visible');
-    }
-
-    if (horMode === 'custom' || lockHor) {
-        let posHor = ((best.h - 1) / (50 - 1)) * 100;
-        if (lang === 'he') posHor = 100 - posHor;
-        let spotH = document.getElementById('spotHor');
-        spotH.style.left = `calc(${posHor}% + (8px - (0.16px * ${posHor})))`;
-        spotH.classList.add('visible');
-        spotH.title = `Best CAGR at ${best.h} Years`;
-    } else {
-        document.getElementById('spotHor').classList.remove('visible');
-    }
+function updateSweetSpotMarkers(best) {
+    const posCalc = (val, min, max) => { const pos = ((val - min) / (max - min)) * 100; return lang === 'he' ? 100 - pos : pos; };
+    const setSpot = (id, pos) => { const el = $(id); if (!el) return; el.style.left = `calc(${pos}% + (8px - (0.16px * ${pos})))`; el.classList.add('visible'); };
+    setSpot('spotDown', posCalc(best.d, 25, 100));
+    advancedTermMode ? $('spotDur').classList.remove('visible') : setSpot('spotDur', posCalc(best.t, 1, 30));
+    if (horMode === 'custom' || lockHor) { setSpot('spotHor', posCalc(best.h, 1, 50)); $('spotHor').title = `Best CAGR at ${best.h} Years`; }
+    else $('spotHor').classList.remove('visible');
 }
 
 function runSim(opts = {}) {
     if (bootstrapping) return;
     const skipCharts = !!opts.skipCharts;
 
-    let eq = parseFloat(document.getElementById('inpEquity').value) || 400000;
-    let downPct = parseInt(document.getElementById('rDown').value) / 100;
-    const mainTermSlider = document.getElementById('rDur');
-    let mortDur = parseInt(mainTermSlider.value);
-    let simDur = horMode === 'auto' ? mortDur : parseInt(document.getElementById('rHor').value);
+    const eq = parseFloat($('inpEquity').value) || 400000, downPct = parseInt($('rDown').value) / 100;
+    const mainTermSlider = $('rDur');
+    let mortDur = parseInt(mainTermSlider.value), simDur = horMode === 'auto' ? mortDur : parseInt($('rHor').value);
 
-    document.getElementById('dDown').innerText = (downPct * 100).toFixed(0) + '%';
-    const dDurEl = document.getElementById('dDur');
-    const dHorEl = document.getElementById('dHor');
-    if (lang === 'he') {
-        dDurEl.innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
-        dHorEl.innerHTML = horMode === 'auto' ? t('auto') + ' <span style="direction:ltr;display:inline-block">(' + mortDur + t('ySuffix') + ')</span>' : '<span style="direction:ltr;display:inline-block">' + simDur + ' ' + t('yrSuffix') + '</span>';
-    } else {
-        dDurEl.innerText = mortDur + ' ' + t('yrSuffix');
-        dHorEl.innerText = horMode === 'auto' ? t('auto') + ' (' + mortDur + t('ySuffix') + ')' : simDur + ' ' + t('yrSuffix');
-    }
+    $('dDown').innerText = (downPct * 100).toFixed(0) + '%';
+    $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix'));
+    $('dHor').innerHTML = horMode === 'auto' ? t('auto') + ' ' + $ltr('(' + mortDur + t('ySuffix') + ')') : $ltr(simDur + ' ' + t('yrSuffix'));
 
-    // ... Update other UI labels ...
-    document.getElementById('vTrade').innerText = parseFloat(document.getElementById('rTrade').value).toFixed(1) + '%';
-    document.getElementById('vMer').innerText = parseFloat(document.getElementById('rMer').value).toFixed(2) + '%';
-    document.getElementById('vDiscount').innerText = document.getElementById('rDiscount').value + '%';
-    document.getElementById('vBuyCost').innerText = parseFloat(document.getElementById('rBuyCost').value).toFixed(1) + '%';
-    document.getElementById('vMaint').innerText = parseFloat(document.getElementById('rMaint').value).toFixed(0) + '%';
-    document.getElementById('vSellCost').innerText = parseFloat(document.getElementById('rSellCost').value).toFixed(1) + '%';
+    updateSliderLabels();
 
-    let assetPriceStart = eq / downPct;
-    let lev = 1 / downPct;
-    document.getElementById('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
-    document.getElementById('valLev').innerText = 'x' + lev.toFixed(1);
-    document.getElementById('barLev').style.width = Math.min(((lev - 1) / 4) * 100, 100) + '%';
-    let initialLoan = assetPriceStart - eq;
-    document.getElementById('valMortgage').innerText = fmt(initialLoan) + ' ₪';
+    const initialAsset = eq / downPct, initialLoan = initialAsset - eq;
+    const { assetPriceStart, purchaseTax } = updateDealDisplay(eq, downPct, initialLoan);
 
-    // Purchase tax calculation
-    const isFirstHome = buyerType === 'first';
-    const includePurchaseTax = document.getElementById('cPurchaseTax')?.checked ?? true;
-    const purchaseTax = includePurchaseTax ? AppLogic.calcPurchaseTax(assetPriceStart, isFirstHome) : 0;
-    const taxEl = document.getElementById('valPurchaseTax');
-    if (taxEl) taxEl.innerText = fmt(purchaseTax) + ' ₪';
+    for (let k in cfg) { const el = $(cfg[k].v); if (el) el.innerText = cfg[k].is ? 'Hist' : $(cfg[k].s).value + '%'; }
 
-    // Update track percentage displays with amounts
-    const tracks = ['Prime','Kalats','Malatz','Katz','Matz'];
-    tracks.forEach(t => {
-        const pct = parseFloat(document.getElementById('pct'+t).value) || 0;
-        const el = document.getElementById('disp'+t);
-        if (el) {
-            const amt = initialLoan * pct / 100;
-            el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${Math.round(amt/1000)}K</span>`;
-        }
-    });
-
-    for (let k in cfg) {
-        let el = document.getElementById(cfg[k].v);
-        if (el) {
-            if (cfg[k].is) el.innerText = 'Hist'; else el.innerText = document.getElementById(cfg[k].s).value + '%';
-        }
-    }
-
-    // Terms
     const clampTerm = v => Math.max(TERM_MIN, Math.min(TERM_MAX, v));
-    let termP = clampTerm(parseInt(document.getElementById('termPrime').value) || mortDur);
-    let termK = clampTerm(parseInt(document.getElementById('termKalats').value) || mortDur);
-    let termZ = clampTerm(parseInt(document.getElementById('termKatz').value) || mortDur);
-    let termM = clampTerm(parseInt(document.getElementById('termMalatz').value) || mortDur);
-    let termMT = clampTerm(parseInt(document.getElementById('termMatz').value) || mortDur);
+    let [termP, termK, termZ, termM, termMT] = TRACKS.map(t => clampTerm(parseInt($('term' + t).value) || mortDur));
 
     if (!advancedTermMode) {
         termP = termK = termZ = termM = termMT = clampTerm(mortDur);
-        // UI Sync
-        document.getElementById('termPrime').value = termP;
-        document.getElementById('termKalats').value = termK;
-        document.getElementById('termKatz').value = termZ;
-        document.getElementById('termMalatz').value = termM;
-        document.getElementById('termMatz').value = termMT;
-        showTermVal('termPrimeVal', termP);
-        showTermVal('termKalatsVal', termK);
-        showTermVal('termKatzVal', termZ);
-        showTermVal('termMalatzVal', termM);
-        showTermVal('termMatzVal', termMT);
+        TRACKS.forEach(t => { $('term' + t).value = termP; showTermVal('term' + t + 'Val', termP); });
     }
 
-    // Logic restored to sync horizon/terms
-    const activeTerms = [];
-    const getPct = (id) => parseFloat(document.getElementById(id).value) || 0;
-    if (getPct('pctPrime') > 0) activeTerms.push(termP);
-    if (getPct('pctKalats') > 0) activeTerms.push(termK);
-    if (getPct('pctKatz') > 0) activeTerms.push(termZ);
-    if (getPct('pctMalatz') > 0) activeTerms.push(termM);
-    if (getPct('pctMatz') > 0) activeTerms.push(termMT);
-
+    const termMap = {Prime: termP, Kalats: termK, Katz: termZ, Malatz: termM, Matz: termMT};
+    const activeTerms = Object.entries(termMap).filter(([t]) => $pct('pct' + t) > 0).map(([,v]) => v);
     if (activeTerms.length === 0) activeTerms.push(mortDur);
 
     const maxTrackYears = Math.max(...activeTerms);
-    if (advancedTermMode) {
-        mortDur = maxTrackYears;
-        mainTermSlider.value = mortDur;
-        if (lang === 'he') {
-            document.getElementById('dDur').innerHTML = '<span style="direction:ltr;display:inline-block">' + mortDur + ' ' + t('yrSuffix') + '</span>';
-        } else {
-            document.getElementById('dDur').innerText = mortDur + ' ' + t('yrSuffix');
-        }
-    }
+    if (advancedTermMode) { mortDur = maxTrackYears; mainTermSlider.value = mortDur; $('dDur').innerHTML = $ltr(mortDur + ' ' + t('yrSuffix')); }
 
     const effectiveMax = Math.max(maxTrackYears, mortDur);
-    if (horMode === 'auto') {
-        document.getElementById('rHor').value = effectiveMax;
-        if (lang === 'he') {
-            document.getElementById('dHor').innerHTML = t('auto') + ' <span style="direction:ltr;display:inline-block">(' + effectiveMax + t('ySuffix') + ')</span>';
-        } else {
-            document.getElementById('dHor').innerText = t('auto') + ' (' + effectiveMax + t('ySuffix') + ')';
-        }
-        simDur = effectiveMax;
-    }
+    if (horMode === 'auto') { $('rHor').value = effectiveMax; $('dHor').innerHTML = t('auto') + ' ' + $ltr('(' + effectiveMax + t('ySuffix') + ')'); simDur = effectiveMax; }
 
     if (!opts.skipSweetSpots) updateSweetSpots();
 
-    let activeDrift = -0.5;
-    if (document.getElementById('scenBear').classList.contains('active')) activeDrift = SCENARIOS.bear.drift;
-    if (document.getElementById('scenBull').classList.contains('active')) activeDrift = SCENARIOS.bull.drift;
-
-    const params = {
-        equity: eq,
-        downPct: downPct,
-        loanTerm: mortDur,
-        simHorizon: simDur,
-        termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
-        mix: {
-            prime: parseFloat(document.getElementById('pctPrime').value) || 0,
-            kalats: parseFloat(document.getElementById('pctKalats').value) || 0,
-            katz: parseFloat(document.getElementById('pctKatz').value) || 0,
-            malatz: parseFloat(document.getElementById('pctMalatz').value) || 0,
-            matz: parseFloat(document.getElementById('pctMatz').value) || 0
-        },
-        rates: {
-            prime: parseFloat(document.getElementById('ratePrime').value) / 100,
-            kalats: parseFloat(document.getElementById('rateKalats').value) / 100,
-            katz: parseFloat(document.getElementById('rateKatz').value) / 100,
-            malatz: parseFloat(document.getElementById('rateMalatz').value) / 100,
-            matz: parseFloat(document.getElementById('rateMatz').value) / 100
-        },
-        market: {
-            sp: parseFloat(document.getElementById('sSP').value) / 100,
-            reApp: parseFloat(document.getElementById('sApp').value) / 100,
-            cpi: parseFloat(document.getElementById('sInf').value) / 100,
-            boi: parseFloat(document.getElementById('sInt').value) / 100,
-            rentYield: parseFloat(document.getElementById('sYld').value) / 100
-        },
-        fees: {
-            buy: parseFloat(document.getElementById('rBuyCost').value) / 100,
-            sell: parseFloat(document.getElementById('rSellCost').value) / 100,
-            trade: parseFloat(document.getElementById('rTrade').value) / 100,
-            mgmt: parseFloat(document.getElementById('rMer').value) / 100,
-            purchaseTax: purchaseTax
-        },
-        maintPct: parseFloat(document.getElementById('rMaint').value) / 100,
-        purchaseDiscount: parseFloat(document.getElementById('rDiscount').value) / 100,
-        tax: {
-            useSP: document.getElementById('cTaxSP')?.checked ?? true,
-            useRE: document.getElementById('cTaxSP')?.checked ?? true,
-            useRent: document.getElementById('cRentTax')?.checked ?? false,
-            useMasShevach: document.getElementById('cMasShevach')?.checked ?? false,
-            masShevachType: buyerType === 'investor' ? 'none' : 'single',
-            mode: taxMode
-        },
-        config: {
-            drift: activeDrift,
-            surplusMode: surplusMode,
-            exMode: exMode,
-            history: cfg,
-            repayMethod: repayMethod
-        },
-        prepay: prepayments,
-        returnSeries: !skipCharts
-    };
-
+    const params = buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM, termMT, purchaseTax, !skipCharts);
     const res = AppLogic.simulate(params);
-
-    // ... UPDATE UI KPIs ...
-    const lRE = res.netRE;
-    const lSP = res.netSP;
-    document.getElementById('kRE').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.reDataPct[res.series.reDataPct.length - 1] : 0) : lRE);
-    document.getElementById('kSP').innerText = fmtVal(mode === 'percent' ? (res.series ? res.series.spDataPct[res.series.spDataPct.length - 1] : 0) : lSP);
-
-    const diff = lRE - lSP;
-    const winnerIsRE = diff >= 0;
-    const base = winnerIsRE ? lSP : lRE;
-    const diffPct = base !== 0 ? (Math.abs(diff) / base) * 100 : 0;
-    document.getElementById('kDiff').innerText = diffPct.toFixed(1) + '%';
-    document.getElementById('kDiff').style.color = winnerIsRE ? "var(--success)" : "var(--primary)";
-
-    document.getElementById('kRECagr').innerText = res.cagrRE.toFixed(2) + '%';
-    document.getElementById('kSPCagr').innerText = res.cagrSP.toFixed(2) + '%';
-
-    // Highlight optimal repay method
-    updateOptimalRepayMethod(params, res.cagrRE);
-
-    let intPctOfAsset = (res.totalInterestWasted / assetPriceStart) * 100;
-    document.getElementById('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${intPctOfAsset.toFixed(0) + '%)'}`;
-    document.getElementById('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
-    document.getElementById('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
-    
-    const kMasShevach = document.getElementById('kMasShevach');
-    if (kMasShevach) kMasShevach.innerText = fmt(res.masShevach || 0) + ' ₪';
-    const kCapGains = document.getElementById('kCapGains');
-    if (kCapGains) kCapGains.innerText = fmt(res.spTax || 0) + ' ₪';
-
-    const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
-    const posTxt = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y';
-    const valPosCF = document.getElementById('valPosCF');
-    if (valPosCF) valPosCF.innerText = posTxt;
-
-    if (!skipCharts && res.series) {
-        if (typeof window !== 'undefined') {
-            window.__lastSim = {
-                ...res,
-                finalNetRE: res.netRE,
-                finalNetSP: res.netSP,
-                flowNet: res.series.flowNet[res.series.flowNet.length - 1],
-                posCFYears: posYears
-            };
-        }
-        drawCharts(res.series.labels, res.series.reDataVal, res.series.reDataPct, res.series.spDataVal, res.series.spDataPct,
-            res.series.flowRent, res.series.flowInt, res.series.flowPrinc, res.series.flowNet,
-            res.series.surplusVal, res.series.surplusPct,
-            { reTax: res.totalRETax, spTax: res.spTax, netRE: res.netRE, netSP: res.netSP, invested: res.totalCashInvested,
-              surplusTax: res.reSideTax, surplusGross: res.reSideStockValue });
-    }
+    updateKPIs(res, assetPriceStart, skipCharts, params);
     saveState();
     document.body.classList.remove('loading');
 }
 
-function drawCharts(l, rVal, rPct, sVal, sPct, fRent, fInt, fPrinc, fNet, surplusValSeries, surplusPctSeries, taxInfo = {}) {
-    const isDark = document.body.classList.contains('dark');
-    const textColor = isDark ? '#e2e8f0' : '#666';
-    const gridColor = isDark ? '#475569' : 'rgba(0,0,0,0.1)';
-
-    const ctx1 = document.getElementById('wealthChart').getContext('2d');
-    if (wealthChart) wealthChart.destroy();
-
-    let plotR = mode === 'percent' ? rPct : rVal;
-    let plotS = mode === 'percent' ? sPct : sVal;
-    let plotSurp = mode === 'percent' ? surplusPctSeries : surplusValSeries;
-    const reinvestActive = (surplusMode === 'invest');
-    let yTxt = mode === 'percent' ? t('chartYAxisROI') : t('chartYAxisWealth');
-
-    // Tax visualization - show after-tax as dashed extension at end
-    const { reTax = 0, spTax = 0, netRE = 0, netSP = 0, invested = 0, surplusTax = 0, surplusGross = 0 } = taxInfo;
-    const lastIdx = plotR.length - 1;
-    const hasRETax = reTax > 0;
-    const hasSPTax = spTax > 0;
-    const hasSurplusTax = surplusTax > 0;
-
-    // Create extended data with after-tax final point
-    let plotRWithTax = [...plotR];
-    let plotSWithTax = [...plotS];
-    
-    if (mode !== 'percent') {
-        if (hasRETax) plotRWithTax.push(netRE);
-        else plotRWithTax.push(plotR[lastIdx]);
-        if (hasSPTax) plotSWithTax.push(netSP);
-        else plotSWithTax.push(plotS[lastIdx]);
-    } else {
-        if (hasRETax) plotRWithTax.push(((netRE - invested) / invested) * 100);
-        else plotRWithTax.push(plotR[lastIdx]);
-        if (hasSPTax) plotSWithTax.push(((netSP - invested) / invested) * 100);
-        else plotSWithTax.push(plotS[lastIdx]);
-    }
-    
-    // Extended labels with "Tax" zone
-    const hasTax = hasRETax || hasSPTax || hasSurplusTax;
-    const labelsExt = hasTax ? [...l, t('taxDeduction') || 'Tax'] : l;
-
-    let datasets = [
-        { 
-            label: t('chartRealEstate'), 
-            data: plotRWithTax, 
-            borderColor: '#16a34a', 
-            backgroundColor: 'rgba(22,163,74,0.05)', 
-            borderWidth: 3, 
-            fill: true, 
-            pointRadius: plotRWithTax.map((_, i) => i === plotRWithTax.length - 1 && hasRETax ? 5 : 0),
-            pointBackgroundColor: '#0d5c2a',
-            pointHoverRadius: 6,
-            segment: {
-                borderDash: ctx => ctx.p0DataIndex === lastIdx ? [6, 4] : undefined,
-                borderColor: ctx => ctx.p0DataIndex === lastIdx && hasRETax ? '#0d5c2a' : undefined
-            }
+function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM, termMT, purchaseTax, returnSeries) {
+    const activeDrift = $('scenBear')?.classList.contains('active') ? SCENARIOS.bear.drift : $('scenBull')?.classList.contains('active') ? SCENARIOS.bull.drift : -0.5;
+    const entryCostsFromEquity = $('cEntryCostsFromEquity')?.checked ?? false;
+    return {
+        equity: eq, downPct, loanTerm: mortDur, simHorizon: simDur,
+        termMix: { p: termP, k: termK, z: termZ, m: termM, mt: termMT },
+        mix: getMix(), rates: getRates(),
+        market: { sp: $pct('sSP'), reApp: $pct('sApp'), cpi: $pct('sInf'), boi: $pct('sInt'), rentYield: $pct('sYld') },
+        fees: { buy: $pct('rBuyCost'), sell: $pct('rSellCost'), trade: $pct('rTrade'), mgmt: $pct('rMer'), purchaseTax },
+        maintPct: $pct('rMaint'), purchaseDiscount: $pct('rDiscount'),
+        entryCostsFromEquity,
+        tax: {
+            useSP: $('cTaxSP')?.checked ?? true, useRE: $('cTaxSP')?.checked ?? true,
+            useRent: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
+            masShevachType: buyerType === 'investor' ? 'none' : 'single', mode: taxMode
         },
-        { 
-            label: t('chartSP500'), 
-            data: plotSWithTax, 
-            borderColor: '#2563eb', 
-            backgroundColor: 'rgba(37,99,235,0.05)', 
-            borderWidth: 3, 
-            fill: true, 
-            pointRadius: plotSWithTax.map((_, i) => i === plotSWithTax.length - 1 && hasSPTax ? 5 : 0),
-            pointBackgroundColor: '#1e40af',
-            pointHoverRadius: 6,
-            segment: {
-                borderDash: ctx => ctx.p0DataIndex === lastIdx ? [6, 4] : undefined,
-                borderColor: ctx => ctx.p0DataIndex === lastIdx && hasSPTax ? '#1e40af' : undefined
-            }
-        }
-    ];
-
-    // Reinvested surplus with tax drop
-    if (reinvestActive && plotSurp && plotSurp.some(v => v > 0)) {
-        const surplusNet = surplusGross - surplusTax;
-        let plotSurpWithTax = [...plotSurp];
-        if (hasTax) {
-            if (mode !== 'percent') {
-                plotSurpWithTax.push(hasSurplusTax ? surplusNet : plotSurp[lastIdx]);
-            } else {
-                plotSurpWithTax.push(hasSurplusTax ? (surplusNet / invested) * 100 : plotSurp[lastIdx]);
-            }
-        }
-        datasets.push({ 
-            label: t('chartReinvested'), 
-            data: plotSurpWithTax, 
-            borderColor: '#f59e0b', 
-            backgroundColor: 'rgba(245,158,11,0.12)', 
-            borderWidth: 2, 
-            fill: true, 
-            pointRadius: plotSurpWithTax.map((_, i) => i === plotSurpWithTax.length - 1 && hasSurplusTax ? 5 : 0),
-            pointBackgroundColor: '#b45309',
-            pointHoverRadius: 6, 
-            segment: {
-                borderDash: ctx => ctx.p0DataIndex === lastIdx && hasSurplusTax ? [4, 3] : [6, 4],
-                borderColor: ctx => ctx.p0DataIndex === lastIdx && hasSurplusTax ? '#b45309' : undefined
-            }
-        });
-    }
-
-    wealthChart = new Chart(ctx1, {
-        type: 'line',
-        data: {
-            labels: labelsExt,
-            datasets: datasets
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: c => {
-                            const idx = c.dataIndex;
-                            const lbl = c.dataset.label;
-                            const isLastPoint = idx === plotRWithTax.length - 1 && hasTax;
-                            
-                            if (lbl === t('chartRealEstate')) {
-                                if (isLastPoint && hasRETax) {
-                                    return `${lbl}: ${fmt(netRE)} ₪ (−${fmt(reTax)} ₪ ${t('taxPaid') || 'tax'})`;
-                                }
-                                return `${lbl}: ${fmt(rVal[idx] || netRE)} ₪`;
-                            }
-                            if (lbl === t('chartSP500')) {
-                                if (isLastPoint && hasSPTax) {
-                                    return `${lbl}: ${fmt(netSP)} ₪ (−${fmt(spTax)} ₪ ${t('taxPaid') || 'tax'})`;
-                                }
-                                return `${lbl}: ${fmt(sVal[idx] || netSP)} ₪`;
-                            }
-                            if (lbl === t('chartReinvested')) {
-                                if (isLastPoint && hasSurplusTax) {
-                                    const surplusNet = surplusGross - surplusTax;
-                                    return `${lbl}: ${fmt(surplusNet)} ₪ (−${fmt(surplusTax)} ₪ ${t('taxPaid') || 'tax'})`;
-                                }
-                                return `${lbl}: ${fmt(surplusValSeries[idx] || 0)} ₪`;
-                            }
-                            return `${lbl}: ${fmt(c.raw)} ₪`;
-                        }
-                    }
-                },
-                legend: { labels: { color: textColor } }
-            },
-            scales: {
-                y: { title: { display: true, text: yTxt, color: textColor }, ticks: { color: textColor, callback: v => mode === 'percent' ? v + '%' : fmt(v) }, grid: { color: gridColor } },
-                x: { 
-                    ticks: { 
-                        color: textColor,
-                        maxRotation: 0,
-                        minRotation: 0,
-                        callback: (val, idx) => {
-                            if (idx === labelsExt.length - 1 && hasTax) return ''; // Hide tax label (drawn manually)
-                            return labelsExt[idx];
-                        }
-                    }, 
-                    grid: { color: gridColor } 
-                }
-            }
-        },
-        plugins: hasTax ? [{
-            id: 'taxZone',
-            afterDraw: (chart) => {
-                const { ctx, chartArea, scales } = chart;
-                const xScale = scales.x;
-                const lastX = xScale.getPixelForValue(lastIdx);
-                const endX = chartArea.right;
-                ctx.save();
-                // Shaded background
-                ctx.fillStyle = isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)';
-                ctx.fillRect(lastX, chartArea.top, endX - lastX, chartArea.bottom - chartArea.top);
-                // Vertical separator line
-                ctx.strokeStyle = isDark ? 'rgba(239,68,68,0.6)' : 'rgba(239,68,68,0.5)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 3]);
-                ctx.beginPath();
-                ctx.moveTo(lastX, chartArea.top);
-                ctx.lineTo(lastX, chartArea.bottom);
-                ctx.stroke();
-                // Centered label inside chart (above x-axis)
-                const centerX = (lastX + endX) / 2;
-                const labelY = chartArea.bottom - 10;
-                ctx.fillStyle = '#dc2626';
-                ctx.font = 'bold 12px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(t('taxDeduction') || 'Tax', centerX, labelY);
-                ctx.restore();
-            }
-        }] : []
-    });
-
-    const ctx2 = document.getElementById('flowChart').getContext('2d');
-    if (flowChart) flowChart.destroy();
-
-    // Rent minus Interest for tooltip
-    const rentMinusInt = fRent.map((r, i) => r + fInt[i]);
-
-    const netRentAfterInt = fRent.map((v, i) => v + (fInt[i] || 0)); // net rent minus interest cost
-    const totalMortgage = fInt.map((v, i) => v + (fPrinc[i] || 0)); // total mortgage payment (both negative)
-
-    flowChart = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: l,
-            datasets: [
-                { type: 'line', label: t('chartNetCashflow'), data: fNet, borderColor: isDark ? '#e2e8f0' : '#0f172a', borderWidth: 4, pointRadius: 3, tension: 0.3, order: 1, fill: false },
-                { type: 'line', label: t('chartRentMinusInt'), data: netRentAfterInt, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 0, tension: 0.2, order: 2, fill: false, borderDash: [6, 3] },
-                { type: 'bar', label: t('chartRevenue'), data: fRent, backgroundColor: '#22c55e', stack: 'Stack 0', order: 3, borderWidth: 0 },
-                { type: 'bar', label: t('chartInterest'), data: fInt, backgroundColor: '#ef4444', stack: 'Stack 0', order: 4, borderWidth: 0 },
-                { type: 'bar', label: t('chartPrincipal'), data: fPrinc, backgroundColor: '#fca5a5', stack: 'Stack 0', order: 5, borderWidth: 0 }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        afterBody: (items) => {
-                            if (items.length > 0) {
-                                const idx = items[0].dataIndex;
-                                return `${t('chartTotalMortgage')}: \u200E${fmtNum(totalMortgage[idx])} ₪`;
-                            }
-                        },
-                        label: c => {
-                            let v = Math.abs(c.raw);
-                            let lbl = c.dataset.label;
-                            const num = n => '\u200E' + fmtNum(n);
-                            if (lbl === t('chartRentMinusInt')) return `${t('tooltipRentMinusInt')}: ${num(c.raw)} ₪`;
-                            if (lbl === t('chartInterest')) {
-                                let idx = c.dataIndex;
-                                let iVal = Math.abs(c.chart.data.datasets[3].data[idx]);
-                                let pVal = Math.abs(c.chart.data.datasets[4].data[idx]);
-                                let total = iVal + pVal;
-                                let pct = total > 0 ? ((iVal / total) * 100).toFixed(0) : 0;
-                                return `${t('tooltipInterest')}: ${num(iVal)} (${pct}%)`;
-                            }
-                            if (lbl === t('chartPrincipal')) return `${t('tooltipPrincipal')}: ${num(v)}`;
-                            if (lbl === t('chartRevenue')) return `${t('tooltipRent')}: ${num(v)}`;
-                            return `${t('tooltipNet')}: ${num(c.raw)}`;
-                        }
-                    }
-                },
-                legend: { labels: { color: textColor } }
-            },
-            scales: {
-                y: { title: { display: true, text: t('chartYAxisMonthly'), color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } },
-                x: { stacked: true, ticks: { color: textColor }, grid: { color: gridColor } }
-            }
-        }
-    });
+        config: { drift: activeDrift, surplusMode, exMode, history: cfg, repayMethod },
+        prepay: getPrepayments(),
+        returnSeries
+    };
 }
 
-// --- PERSISTENCE ---
+function updateKPIs(res, assetPriceStart, skipCharts, params) {
+    const { netRE: lRE, netSP: lSP, series } = res;
+    
+    // Update asset price to show initial → final
+    const valAsset = $('valAsset');
+    if (valAsset) valAsset.innerText = fmt(assetPriceStart) + ' → ' + fmt(res.finalAssetValue) + ' ₪';
+    
+    $('kRE').innerText = fmtVal(mode === 'percent' ? (series?.reDataPct[series.reDataPct.length - 1] || 0) : lRE);
+    $('kSP').innerText = fmtVal(mode === 'percent' ? (series?.spDataPct[series.spDataPct.length - 1] || 0) : lSP);
+
+    const diff = lRE - lSP, winnerIsRE = diff >= 0, base = winnerIsRE ? lSP : lRE;
+    $('kDiff').innerText = (base !== 0 ? (Math.abs(diff) / base) * 100 : 0).toFixed(1) + '%';
+    $('kDiff').style.color = winnerIsRE ? "var(--success)" : "var(--primary)";
+
+    $('kRECagr').innerText = res.cagrRE.toFixed(2) + '%';
+    $('kSPCagr').innerText = res.cagrSP.toFixed(2) + '%';
+
+    updateOptimalRepayMethod(params, res.cagrRE);
+
+    $('kInt').innerText = fmt(res.totalInterestWasted) + ` ₪ (${((res.totalInterestWasted / assetPriceStart) * 100).toFixed(0)}%)`;
+    $('kRent').innerText = fmt(res.totalRentCollected) + ' ₪';
+    $('kInvested').innerText = fmt(res.totalCashInvested) + ' ₪';
+    [['kMasShevach', res.masShevach], ['kCapGains', res.spTax]].forEach(([id, val]) => { const el = $(id); if (el) el.innerText = fmt(val || 0) + ' ₪'; });
+
+    // Early repayment penalty - only applies if selling BEFORE loan term ends
+    // Penalty = discounting fee when BOI avg rate < contract rate (locked into higher rate)
+    const simHorizon = params.simHorizon;
+    const tm = params.termMix;
+    const remainingMonthsAtExit = {
+        prime: Math.max(0, (tm.p - simHorizon) * 12),
+        kalatz: Math.max(0, (tm.k - simHorizon) * 12),
+        malatz: Math.max(0, (tm.m - simHorizon) * 12),
+        katz: Math.max(0, (tm.z - simHorizon) * 12),
+        matz: Math.max(0, (tm.mt - simHorizon) * 12)
+    };
+    const originalTermMonths = {
+        prime: tm.p * 12, kalatz: tm.k * 12, malatz: tm.m * 12, katz: tm.z * 12, matz: tm.mt * 12
+    };
+    // Months to next 5-year reset. If exactly on reset (0), keep as 0 for minimal fee
+    const monthsToReset = {
+        malatz: remainingMonthsAtExit.malatz > 0 ? (60 - (simHorizon * 12) % 60) % 60 : 0,
+        matz: remainingMonthsAtExit.matz > 0 ? (60 - (simHorizon * 12) % 60) % 60 : 0
+    };
+    // BOI avg rate is typically close to contract rates; use BOI base - 0.5% as approximation
+    const boiAvgRate = Math.max(0.02, params.market.boi - 0.005);
+    const bal = res.balances || { p: 0, k: 0, z: 0, m: 0, mt: 0 };
+    const r = params.rates;
+    const earlyRepayFees = AppLogic.calcTotalEarlyRepaymentFees({
+        balances: { prime: bal.p, kalatz: bal.k, malatz: bal.m, katz: bal.z, matz: bal.mt },
+        rates: { prime: r.prime, kalatz: r.kalats, malatz: r.malatz, katz: r.katz, matz: r.matz },
+        boiAvgRate,
+        remainingMonths: remainingMonthsAtExit,
+        originalTermMonths,
+        monthsToReset,
+        cpiIndex: res.cpiIndex || 1,
+        prepayDay: 20,
+        avgCpiChange12m: params.market.cpi / 12
+    });
+    const kEarlyRepay = $('kEarlyRepay');
+    if (kEarlyRepay) kEarlyRepay.innerText = fmt(earlyRepayFees.total) + ' ₪';
+
+    const posYears = res.firstPosMonth === null ? null : (res.firstPosMonth / 12);
+    $('valPosCF')?.innerText && ($('valPosCF').innerText = res.firstPosMonth === null ? 'Never' : posYears.toFixed(1) + 'y');
+
+    if (!skipCharts && series) {
+        const entryCosts = (params.fees.purchaseTax || 0) + (assetPriceStart * (params.fees.buy || 0));
+        const equity = parseFloat($('inpEquity').value) || 400000;
+        window.__lastSim = { ...res, finalNetRE: lRE, finalNetSP: lSP, flowNet: series.flowNet[series.flowNet.length - 1], posCFYears: posYears };
+        window.Charts.drawCharts(series.labels, series.reDataVal, series.reDataPct, series.spDataVal, series.spDataPct,
+            series.flowRent, series.flowInt, series.flowPrinc, series.flowNet, series.surplusVal, series.surplusPct,
+            { reTax: res.totalRETax, spTax: res.spTax, netRE: lRE, netSP: lSP, invested: res.totalCashInvested, surplusTax: res.reSideTax, surplusGross: res.reSideStockValue, entryCosts, equity },
+            { mode, surplusMode, t, fmt, fmtNum });
+    }
+}
+
 const STORAGE_KEY = 'mortgageCalcState';
 
 function saveState() {
+    if (bootstrapping) return;
     const state = {
-        // Sliders
-        equity: document.getElementById('inpEquity')?.value,
-        down: document.getElementById('rDown')?.value,
-        dur: document.getElementById('rDur')?.value,
-        hor: document.getElementById('rHor')?.value,
-        // Mix
-        pctPrime: document.getElementById('pctPrime')?.value,
-        pctKalats: document.getElementById('pctKalats')?.value,
-        pctMalatz: document.getElementById('pctMalatz')?.value,
-        pctKatz: document.getElementById('pctKatz')?.value,
-        pctMatz: document.getElementById('pctMatz')?.value,
-        // Rates
-        ratePrime: document.getElementById('ratePrime')?.value,
-        rateKalats: document.getElementById('rateKalats')?.value,
-        rateMalatz: document.getElementById('rateMalatz')?.value,
-        rateKatz: document.getElementById('rateKatz')?.value,
-        rateMatz: document.getElementById('rateMatz')?.value,
-        // Advanced terms
-        termPrime: document.getElementById('termPrime')?.value,
-        termKalats: document.getElementById('termKalats')?.value,
-        termMalatz: document.getElementById('termMalatz')?.value,
-        termKatz: document.getElementById('termKatz')?.value,
-        termMatz: document.getElementById('termMatz')?.value,
-        advancedTermMode,
-        // Market assumptions
-        sSP: document.getElementById('sSP')?.value,
-        sApp: document.getElementById('sApp')?.value,
-        sInf: document.getElementById('sInf')?.value,
-        sInt: document.getElementById('sInt')?.value,
-        sYld: document.getElementById('sYld')?.value,
-        // Fees
-        rBuyCost: document.getElementById('rBuyCost')?.value,
-        rSellCost: document.getElementById('rSellCost')?.value,
-        rTrade: document.getElementById('rTrade')?.value,
-        rMer: document.getElementById('rMer')?.value,
-        rMaint: document.getElementById('rMaint')?.value,
-        rDiscount: document.getElementById('rDiscount')?.value,
-        // State
-        horMode, surplusMode, repayMethod, creditScore, taxMode, exMode,
-        lockDown, lockTerm, lockHor, buyerType, mode,
-        prepayments,
-        usePurchaseTax: document.getElementById('cPurchaseTax')?.checked ?? true,
-        useMasShevach: document.getElementById('cMasShevach')?.checked ?? false
+        equity: $('inpEquity')?.value, down: $('rDown')?.value, dur: $('rDur')?.value, hor: $('rHor')?.value,
+        pctPrime: $('pctPrime')?.value, pctKalats: $('pctKalats')?.value, pctMalatz: $('pctMalatz')?.value, pctKatz: $('pctKatz')?.value, pctMatz: $('pctMatz')?.value,
+        ratePrime: $('ratePrime')?.value, rateKalats: $('rateKalats')?.value, rateMalatz: $('rateMalatz')?.value, rateKatz: $('rateKatz')?.value, rateMatz: $('rateMatz')?.value,
+        termPrime: $('termPrime')?.value, termKalats: $('termKalats')?.value, termMalatz: $('termMalatz')?.value, termKatz: $('termKatz')?.value, termMatz: $('termMatz')?.value,
+        sSP: $('sSP')?.value, sApp: $('sApp')?.value, sInf: $('sInf')?.value, sInt: $('sInt')?.value, sYld: $('sYld')?.value,
+        rBuyCost: $('rBuyCost')?.value, rSellCost: $('rSellCost')?.value, rTrade: $('rTrade')?.value, rMer: $('rMer')?.value, rMaint: $('rMaint')?.value, rDiscount: $('rDiscount')?.value,
+        horMode, surplusMode, repayMethod, creditScore, taxMode, exMode, lockDown, lockTerm, lockHor, buyerType, mode, advancedTermMode,
+        prepayments: getPrepayments(),
+        usePurchaseTax: $('cPurchaseTax')?.checked ?? true, useMasShevach: $('cMasShevach')?.checked ?? false,
+        useTaxSP: $('cTaxSP')?.checked ?? true, useRentTax: $('cRentTax')?.checked ?? false, entryCostsFromEquity: $('cEntryCostsFromEquity')?.checked ?? true
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
@@ -1756,81 +538,45 @@ function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return false;
         const s = JSON.parse(saved);
-
-        // Restore inputs
-        const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
-        setVal('inpEquity', s.equity);
-        setVal('rDown', s.down);
-        setVal('rDur', s.dur);
-        setVal('rHor', s.hor);
+        const setVal = (id, val) => { const el = $(id); if (el && val != null) el.value = val; };
+        const setChk = (id, val) => { const el = $(id); if (el && val != null) el.checked = val; };
+        setVal('inpEquity', s.equity); setVal('rDown', s.down); setVal('rDur', s.dur); setVal('rHor', s.hor);
         setVal('pctPrime', s.pctPrime); setVal('sliderPrime', s.pctPrime);
         setVal('pctKalats', s.pctKalats); setVal('sliderKalats', s.pctKalats);
         setVal('pctMalatz', s.pctMalatz); setVal('sliderMalatz', s.pctMalatz);
         setVal('pctKatz', s.pctKatz); setVal('sliderKatz', s.pctKatz);
         setVal('pctMatz', s.pctMatz); setVal('sliderMatz', s.pctMatz);
-        setVal('ratePrime', s.ratePrime);
-        setVal('rateKalats', s.rateKalats);
-        setVal('rateMalatz', s.rateMalatz);
-        setVal('rateKatz', s.rateKatz);
-        setVal('rateMatz', s.rateMatz);
-        setVal('termPrime', s.termPrime);
-        setVal('termKalats', s.termKalats);
-        setVal('termMalatz', s.termMalatz);
-        setVal('termKatz', s.termKatz);
-        setVal('termMatz', s.termMatz);
-        setVal('sSP', s.sSP);
-        setVal('sApp', s.sApp);
-        setVal('sInf', s.sInf);
-        setVal('sInt', s.sInt);
-        setVal('sYld', s.sYld);
-        setVal('rBuyCost', s.rBuyCost);
-        setVal('rSellCost', s.rSellCost);
-        setVal('rTrade', s.rTrade);
-        setVal('rMer', s.rMer);
-        setVal('rMaint', s.rMaint);
-        setVal('rDiscount', s.rDiscount);
-
-        // Restore state vars
-        if (s.horMode) horMode = s.horMode;
-        if (s.surplusMode) surplusMode = s.surplusMode;
-        if (s.repayMethod) repayMethod = s.repayMethod;
-        if (s.creditScore) creditScore = s.creditScore;
-        if (s.taxMode) taxMode = s.taxMode;
-        if (s.exMode) exMode = s.exMode;
-        if (s.lockDown != null) lockDown = s.lockDown;
-        if (s.lockTerm != null) lockTerm = s.lockTerm;
-        if (s.lockHor != null) lockHor = s.lockHor;
-        if (s.prepayments) prepayments = s.prepayments;
-        if (s.advancedTermMode != null) advancedTermMode = s.advancedTermMode;
-        if (s.buyerType) buyerType = s.buyerType;
-        if (s.mode) mode = s.mode;
-        if (s.usePurchaseTax != null) {
-            const el = document.getElementById('cPurchaseTax');
-            if (el) el.checked = s.usePurchaseTax;
-        }
-        if (s.useMasShevach != null) {
-            const el = document.getElementById('cMasShevach');
-            if (el) el.checked = s.useMasShevach;
-        }
-
+        setVal('ratePrime', s.ratePrime); setVal('rateKalats', s.rateKalats); setVal('rateMalatz', s.rateMalatz); setVal('rateKatz', s.rateKatz); setVal('rateMatz', s.rateMatz);
+        setVal('termPrime', s.termPrime); setVal('termKalats', s.termKalats); setVal('termMalatz', s.termMalatz); setVal('termKatz', s.termKatz); setVal('termMatz', s.termMatz);
+        setVal('sSP', s.sSP); setVal('sApp', s.sApp); setVal('sInf', s.sInf); setVal('sInt', s.sInt); setVal('sYld', s.sYld);
+        setVal('rBuyCost', s.rBuyCost); setVal('rSellCost', s.rSellCost); setVal('rTrade', s.rTrade); setVal('rMer', s.rMer); setVal('rMaint', s.rMaint); setVal('rDiscount', s.rDiscount);
+        setChk('cPurchaseTax', s.usePurchaseTax); setChk('cMasShevach', s.useMasShevach);
+        setChk('cTaxSP', s.useTaxSP); setChk('cRentTax', s.useRentTax); setChk('cEntryCostsFromEquity', s.entryCostsFromEquity);
+        if (s.horMode) setState('horMode', s.horMode);
+        if (s.surplusMode) setState('surplusMode', s.surplusMode);
+        if (s.repayMethod) setState('repayMethod', s.repayMethod);
+        if (s.creditScore) setState('creditScore', s.creditScore);
+        if (s.taxMode) setState('taxMode', s.taxMode);
+        if (s.exMode) setState('exMode', s.exMode);
+        if (s.lockDown != null) setState('lockDown', s.lockDown);
+        if (s.lockTerm != null) setState('lockTerm', s.lockTerm);
+        if (s.lockHor != null) setState('lockHor', s.lockHor);
+        if (s.advancedTermMode != null) setState('advancedTermMode', s.advancedTermMode);
+        if (s.buyerType) setState('buyerType', s.buyerType);
+        if (s.mode) setState('mode', s.mode);
+        if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
         return true;
     } catch(e) { return false; }
 }
 
 function bootstrap() {
+    S.set('bootstrapping', true);
     bootstrapping = true;
-    // Restore dark mode first (before any rendering)
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
-    }
-    // Restore language
-    if (lang === 'he') {
-        document.documentElement.lang = 'he';
-        document.documentElement.dir = 'rtl';
-        document.body.classList.add('rtl');
-    }
-    applyTranslations();
+    window.Prepayments?.init(runSim);
+    if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+    if (lang === 'he') { document.documentElement.lang = 'he'; document.documentElement.dir = 'rtl'; document.body.classList.add('rtl'); }
     const hadSaved = loadState();
+    applyTranslations();
     updMeter();
     updateLockUI();
     updateCreditUI();
@@ -1841,88 +587,28 @@ function bootstrap() {
     setGlobalMode(false, { skipSim: true });
     if (!hadSaved) applyScenario('base', { skipSim: true });
     setMode(hadSaved && mode ? mode : 'currency', { skipSim: true });
-    // Restore horMode UI
-    if (horMode === 'custom') {
-        document.getElementById('pHor').children[0].classList.remove('active');
-        document.getElementById('pHor').children[1].classList.add('active');
-        document.getElementById('bHor').classList.add('show');
-    }
+    if (horMode === 'custom') { $pill('pHor', false); $('bHor').classList.add('show'); }
     checkMix();
-    renderPrepayments();
-    if (advancedTermMode) {
-        const panel = document.getElementById('advancedTermBox');
-        const basic = document.getElementById('basicTermBox');
-        const btn = document.getElementById('btnAdvancedTerm');
-        if (panel) panel.style.display = 'block';
-        if (basic) basic.style.display = 'none';
-        if (btn) btn.classList.add('active');
-        // Update term display values
-        ['Prime','Kalats','Malatz','Katz','Matz'].forEach(t => {
-            const inp = document.getElementById('term' + t);
-            if (inp) showTermVal('term' + t + 'Val', inp.value);
-        });
-    }
+    window.Prepayments?.renderPrepayments();
+    if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); TRACKS.forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
+    S.set('bootstrapping', false);
     bootstrapping = false;
     runSim();
 }
 
 function updateRateLabels() {
-    const tracks = ['Prime', 'Kalats', 'Malatz', 'Katz', 'Matz'];
-    tracks.forEach(track => {
-        const lbl = document.getElementById('lblRate' + track);
-        const inp = document.getElementById('rate' + track);
-        if (lbl && inp) {
-            let suffix = (track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%';
-            lbl.innerText = parseFloat(inp.value).toFixed(2) + suffix;
-        }
-    });
+    TRACKS.forEach(track => { const lbl = $('lblRate' + track), inp = $('rate' + track); if (lbl && inp) lbl.innerText = parseFloat(inp.value).toFixed(2) + ((track === 'Katz' || track === 'Matz') ? '% ' + t('cpiSuffix') : '%'); });
 }
 
-// --- UTILITY FUNCTIONS ---
-function resetAll() {
-    if (!confirm('Reset all settings to defaults?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-}
+function resetAll() { if (confirm('Reset all settings to defaults?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); runSim({ skipSweetSpots: true }); }
+function printResults() { window.print(); }
 
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-    runSim(); // Redraw charts with new colors
-}
-
-function printResults() {
-    window.print();
-}
-
-// Expose functions for inline handlers and tests
-window.setMode = setMode;
-window.tgl = tgl;
-window.setGlobalMode = setGlobalMode;
-window.applyScenario = applyScenario;
-window.applyTamheel = applyTamheel;
-window.tglHor = tglHor;
-window.setTaxMode = setTaxMode;
-window.updMeter = updMeter;
-window.checkMix = checkMix;
-window.syncPrime = syncPrime;
-window.calcPmt = AppLogic.calcPmt;
-window.calcCAGR = AppLogic.calcCAGR;
-window.updateSweetSpots = updateSweetSpots;
-window.runSim = runSim;
-window.setCreditScore = setCreditScore;
-window.toggleLock = toggleLock;
-window.setBuyerType = setBuyerType;
-window.recommendMix = recommendMix;
-window.syncTrackTermsToMain = syncTrackTermsToMain;
-window.showTermVal = showTermVal;
-window.toggleAdvancedTerms = toggleAdvancedTerms;
-window.setSurplusMode = setSurplusMode;
-window.syncMixInput = syncMixInput;
-window.toggleRateEdit = toggleRateEdit;
-window.toggleLang = toggleLang;
-window.resetAll = resetAll;
-window.toggleDarkMode = toggleDarkMode;
-window.printResults = printResults;
+Object.assign(window, {
+    setMode, tgl, setGlobalMode, applyScenario, applyTamheel, tglHor, setTaxMode, updMeter, checkMix, syncPrime,
+    calcPmt: AppLogic.calcPmt, calcCAGR: AppLogic.calcCAGR, updateSweetSpots, runSim, setCreditScore, toggleLock,
+    setBuyerType, syncTrackTermsToMain, showTermVal, toggleAdvancedTerms, setSurplusMode, syncMixInput,
+    toggleRateEdit, toggleLang, resetAll, toggleDarkMode, printResults
+});
 
 document.addEventListener('DOMContentLoaded', bootstrap);

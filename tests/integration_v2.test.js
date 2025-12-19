@@ -11,7 +11,7 @@ const Logic = require('../src/logic.js');
 // Mock global Logic for app.js
 global.window = window;
 global.document = window.document;
-global.Logic = Logic; // app.js expects window.Logic or just AppLogic = window.Logic
+global.Logic = Logic;
 
 // Mock Chart.js
 global.Chart = class {
@@ -25,9 +25,22 @@ global.Chart = class {
     update() {}
 };
 
-// Load App Code (by reading file and eval-ing, or require if commonjs)
-// Since app.js is likely browser-centric, we'll read it and execute it in the JSDOM context.
-const appJsContent = fs.readFileSync(path.resolve(__dirname, '../src/app.js'), 'utf8');
+// Load language files first
+const enCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/en.js'), 'utf8');
+eval(enCode);
+const heCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/he.js'), 'utf8');
+eval(heCode);
+// Load i18n, config, charts
+const i18nCode = fs.readFileSync(path.resolve(__dirname, '../src/i18n/index.js'), 'utf8');
+eval(i18nCode);
+const configCode = fs.readFileSync(path.resolve(__dirname, '../src/config/index.js'), 'utf8');
+eval(configCode);
+const stateCode = fs.readFileSync(path.resolve(__dirname, "../src/state/index.js"), "utf8");
+eval(stateCode);
+const chartsCode = fs.readFileSync(path.resolve(__dirname, '../src/charts/index.js'), 'utf8');
+eval(chartsCode);
+const prepayCode = fs.readFileSync(path.resolve(__dirname, '../src/prepayments/index.js'), 'utf8');
+eval(prepayCode);
 
 describe('Integration V2: Tamheel & Friction', () => {
     
@@ -141,8 +154,11 @@ describe('Integration V2: Tamheel & Friction', () => {
             <div id="pYld"><div></div><div></div></div>
         `;
         
-        // Execute app.js logic in this context
-        eval(appJsContent);
+        // Execute app.js logic via require (Babel transpiles ESM to CommonJS)
+        jest.resetModules();
+        require('../src/i18n/index.js');
+        require('../src/config/index.js');
+        require('../src/app.js');
     });
 
     test('Initialization: runSim runs without crashing', () => {
