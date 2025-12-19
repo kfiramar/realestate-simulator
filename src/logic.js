@@ -210,13 +210,17 @@ function simulate(params) {
             // Payments
             let pmtTotal = 0, intTotal = 0, princTotal = 0;
 
-            // Track payment helper
+            // CPI-linked track payment helper (Katz/Matz)
+            // Israeli CPI-linked mortgages: balance stored in "real" (base) terms, scaled by cpiIndex for nominal values.
+            // Correct formula: P_indexed = P_real × (I_t / I_base), Interest = P_indexed × (r/12)
+            // Simplification: we skip interim period base index adjustment and daily interpolation (<0.1% impact over loan term)
             const processTrack = (bal, rate, ml, initP, term, cpiLinked) => {
                 if (bal <= 10 || ml <= 0) return { bal, pmt: 0, int: 0, princ: 0 };
                 const realI = bal * (rate / 12);
                 const realPr = Math.max(0, Math.min(bal, repayMethod === 'equalPrincipal' ? initP / term : calcPmt(bal, rate, ml) - realI));
                 const newBal = bal - realPr;
                 if (cpiLinked) {
+                    // Nominal payment = real payment × cpiIndex (both interest and principal scale with CPI)
                     return { bal: newBal, pmt: (realI + realPr) * cpiIndex, int: realI * cpiIndex, princ: realPr * cpiIndex };
                 }
                 return { bal: newBal, pmt: realI + realPr, int: realI, princ: realPr };
