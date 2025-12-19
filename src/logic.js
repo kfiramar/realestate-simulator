@@ -264,8 +264,25 @@ function simulate(params) {
                 const remainingLoan = balP + balK + balZ + balM + balMT;
                 const exitVal = assetVal * (1 - fees.sell);
                 const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
-                const netRE = exitVal - remainingLoan + reSideStockValue + reSideCash;
-                const netSP = spValILS + spSideCash;
+
+                // Calculate taxes for this snapshot (same as master)
+                let reSideTaxSnap = 0;
+                if (tax.useRE) {
+                    const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
+                    if (reSideStockValue > reBasis) reSideTaxSnap = (reSideStockValue - reBasis) * 0.25;
+                }
+                const netRE = (exitVal - remainingLoan) + (reSideStockValue - reSideTaxSnap) + reSideCash;
+
+                let spTaxSnap = 0;
+                if (tax.useSP) {
+                    const profit = tax.mode === 'real' ? spValILS - spBasisLinked
+                        : config.exMode === 'hedged' ? spValILS - spInvestedILS
+                        : (spUnits - spBasisUSD) * currentEx;
+                    if (profit > 0) spTaxSnap = profit * 0.25;
+                }
+                const netSP = spValILS - spTaxSnap + spSideCash;
+
+                const netSurplus = reSideStockValue - reSideTaxSnap;
 
                 series.labels.push(y + 1);
                 series.flowRent.push(firstMonthRent);
@@ -276,8 +293,8 @@ function simulate(params) {
                 series.spDataVal.push(netSP);
                 series.reDataPct.push(((netRE - spInvestedILS) / spInvestedILS) * 100);
                 series.spDataPct.push(((netSP - spInvestedILS) / spInvestedILS) * 100);
-                series.surplusVal.push(reSideStockValue);
-                series.surplusPct.push((reSideStockValue / spInvestedILS) * 100);
+                series.surplusVal.push(netSurplus);
+                series.surplusPct.push((netSurplus / spInvestedILS) * 100);
             }
         }
     }
