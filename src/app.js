@@ -148,7 +148,7 @@ function toggleLock(target) {
     if (target === 'hor' && horMode === 'auto' && lockHor) { setState('horMode', 'custom'); $pill('pHor', false); $('bHor').classList.add('show'); }
     setState(key, !val);
     updateLockUI();
-    runSim({ skipCharts: true });
+    runSim();
 }
 
 function setBuyerType(type) {

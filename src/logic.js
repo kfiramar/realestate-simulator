@@ -135,14 +135,29 @@ function simulate(params) {
         if (prepay && Array.isArray(prepay)) {
             const bals = { p: balP, k: balK, m: balM, z: balZ, mt: balMT };
             prepay.filter(p => p.yr - 1 === y && p.amt > 0).forEach(p => {
-                const amt = Math.min(p.amt, bals[p.track] || 0);
-                if (amt > 0) {
-                    bals[p.track] -= amt;
-                    totalCashInvested += amt;
-                    spCashFlows.push({ month: y * 12, amount: amt });
-                    reCashFlows.push({ month: y * 12, amount: amt });
-                    spValueHedged += amt; spInvestedILS += amt; spBasisLinked += amt;
-                    if (config.exMode !== 'hedged') { spUnits += amt / currentEx; spBasisUSD += amt / currentEx; }
+                const isCpi = ['z', 'mt'].includes(p.track);
+                const nominalCash = p.amt;
+                
+                // For CPI tracks, the balance is Real Principal.
+                // We must calculate how much Real Principal the Nominal Cash clears.
+                let realPrincipalToPay = isCpi ? nominalCash / cpiIndex : nominalCash;
+                
+                // Cap at remaining balance
+                if (realPrincipalToPay > (bals[p.track] || 0)) {
+                    realPrincipalToPay = bals[p.track] || 0;
+                }
+
+                if (realPrincipalToPay > 0) {
+                    bals[p.track] -= realPrincipalToPay;
+                    
+                    // The actual cash flow is the Nominal value
+                    const actualNominalCash = isCpi ? realPrincipalToPay * cpiIndex : realPrincipalToPay;
+
+                    totalCashInvested += actualNominalCash;
+                    spCashFlows.push({ month: y * 12, amount: actualNominalCash });
+                    reCashFlows.push({ month: y * 12, amount: actualNominalCash });
+                    spValueHedged += actualNominalCash; spInvestedILS += actualNominalCash; spBasisLinked += actualNominalCash;
+                    if (config.exMode !== 'hedged') { spUnits += actualNominalCash / currentEx; spBasisUSD += actualNominalCash / currentEx; }
                 }
             });
             balP = bals.p; balK = bals.k; balM = bals.m; balZ = bals.z; balMT = bals.mt;
@@ -261,7 +276,7 @@ function simulate(params) {
 
             // Chart Data (End of Year)
             if (m === 11 && returnSeries) {
-                const remainingLoan = balP + balK + balZ + balM + balMT;
+                const remainingLoan = balP + balK + (balZ * cpiIndex) + balM + (balMT * cpiIndex);
                 const exitVal = assetVal * (1 - fees.sell);
                 const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
 
@@ -271,7 +286,8 @@ function simulate(params) {
                     const reBasis = tax.mode === 'real' ? reSideStockBasisLinked : reSideStockBasis;
                     if (reSideStockValue > reBasis) reSideTaxSnap = (reSideStockValue - reBasis) * 0.25;
                 }
-                const netRE = (exitVal - remainingLoan) + (reSideStockValue - reSideTaxSnap) + reSideCash;
+                const masShevachSnap = tax.useMasShevach ? calcMasShevach(assetVal, assetPrice * cpiIndex, tax.masShevachType || 'single').tax : 0;
+                const netRE = (exitVal - remainingLoan) - masShevachSnap + (reSideStockValue - reSideTaxSnap) + reSideCash;
 
                 let spTaxSnap = 0;
                 if (tax.useSP) {
@@ -291,16 +307,18 @@ function simulate(params) {
                 series.flowNet.push(firstMonthNet);
                 series.reDataVal.push(netRE);
                 series.spDataVal.push(netSP);
-                series.reDataPct.push(((netRE - spInvestedILS) / spInvestedILS) * 100);
-                series.spDataPct.push(((netSP - spInvestedILS) / spInvestedILS) * 100);
+                
+                const div = totalCashInvested > 1 ? totalCashInvested : 1;
+                series.reDataPct.push(((netRE - div) / div) * 100);
+                series.spDataPct.push(((netSP - div) / div) * 100);
                 series.surplusVal.push(netSurplus);
-                series.surplusPct.push((netSurplus / spInvestedILS) * 100);
+                series.surplusPct.push((netSurplus / div) * 100);
             }
         }
     }
 
     // Final Calculation
-    const remainingLoan = balP + balK + balZ + balM + balMT;
+    const remainingLoan = balP + balK + (balZ * cpiIndex) + balM + (balMT * cpiIndex);
     const exitValue = assetVal * (1 - fees.sell);
     const spValILS = config.exMode === 'hedged' ? spValueHedged : spUnits * currentEx;
 

@@ -63,7 +63,7 @@
                         </select>
                     </div>
                     <div class="card-row" x-data><span class="card-lbl" data-t="downPayment">Down Payment<span class="lock-toggle" id="lockDownBtn"
-                                onclick="toggleLock('down')" @click="toggleLock('down')"
+                                onclick="toggleLock('down')"
                                 :class="{ locked: $store.app.lockDown }"
                                 x-text="$store.app.lockDown ? 'Locked' : 'Free'">Free</span></span> <span class="card-val"
                             id="dDown">30%</span></div>
@@ -200,7 +200,7 @@
                     </div>
                     <div class="card-row" style="margin-top:10px; gap:8px; align-items:center;" x-data>
                         <span class="card-lbl" data-t="mortgageTerm">Mortgage Term <span class="lock-toggle" id="lockTermBtn"
-                                onclick="toggleLock('term')" @click="toggleLock('term')"
+                                onclick="toggleLock('term')"
                                 :class="{ locked: $store.app.lockTerm }"
                                 x-text="$store.app.lockTerm ? 'Locked' : 'Free'">Free</span></span>
                         <span class="card-val" id="dDur">25 Yr</span>
@@ -265,7 +265,7 @@
 
                 <div class="control-card" style="border-left:3px solid var(--secondary); margin-top:15px;" x-data>
                     <div class="card-row"><span class="card-lbl" data-t="simTimeframe">Simulation Timeframe <span class="lock-toggle"
-                                id="lockHorBtn" onclick="toggleLock('hor')" @click="toggleLock('hor')"
+                                id="lockHorBtn" onclick="toggleLock('hor')"
                                 :class="{ locked: $store.app.lockHor }"
                                 x-text="$store.app.lockHor ? 'Locked' : 'Free'">Locked</span></span> <span class="card-val"
                             id="dHor">Auto</span></div>
