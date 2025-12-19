@@ -960,6 +960,89 @@ input[type="checkbox"] {
     }
 }
 
+/* Mobile styles */
+@media (max-width: 600px) {
+    header {
+        padding: 0 12px;
+        height: 50px;
+    }
+    
+    h1 { font-size: 0.95rem; }
+    
+    .header-controls { gap: 6px; }
+    
+    .view-toggles { display: none; }
+    
+    .sidebar-content { padding: 12px; }
+    
+    .control-card { padding: 10px; }
+    
+    .kpi-grid { 
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .kpi-box { padding: 10px; }
+    
+    .kpi-num { font-size: 1rem; }
+    
+    .main { padding: 12px; }
+    
+    .chart-wrapper { 
+        padding: 12px;
+        min-height: 250px;
+    }
+    
+    .mix-row {
+        flex-wrap: wrap;
+    }
+    
+    .mix-label { width: 65px; }
+    
+    .mix-rate-box { 
+        min-width: 60px;
+    }
+    
+    .inline-summary {
+        gap: 8px;
+    }
+    
+    .inline-spec {
+        padding: 8px;
+        flex: 1 1 45%;
+    }
+    
+    .specs-top {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .spec-item {
+        flex: 1 1 45%;
+    }
+    
+    .prepay-item {
+        flex-wrap: wrap;
+    }
+    
+    .prepay-item select,
+    .prepay-item input[type="number"] {
+        width: 60px;
+    }
+    
+    .scenario-grid {
+        flex-wrap: wrap;
+    }
+    
+    .scen-btn {
+        flex: 1 1 30%;
+    }
+    
+    .pills {
+        flex-wrap: wrap;
+    }
+}
+
 
 /* ========== DARK MODE - MUST BE LAST ========== */
 body.dark {
@@ -1094,6 +1177,311 @@ body.dark .meter-seg[style*="#fca5a5"] { background: #fca5a5 !important; }
 /* KPI borders */
 body.dark .kpi-re, body.dark .kpi-re-border { border-bottom-color: var(--success) !important; }
 body.dark .kpi-sp, body.dark .kpi-sp-border { border-bottom-color: var(--primary) !important; }
+
+/* ========== MOBILE LAYOUT ========== */
+@media (max-width: 768px) {
+    /* Phase 1: Foundation - Hide desktop layout on mobile */
+    .sidebar,
+    .main {
+        display: none !important;
+    }
+    
+    .layout {
+        display: block;
+    }
+    
+    header {
+        height: 50px;
+        padding: 0 12px;
+    }
+    
+    .view-toggles {
+        display: none !important;
+    }
+    
+    h1 {
+        font-size: 1rem;
+    }
+    
+    /* Mobile content visible */
+    .mobile-content {
+        display: block;
+    }
+    
+    .mobile-tabs {
+        display: flex;
+    }
+    
+    /* Phase 2: Tab Navigation */
+    .mobile-tabs {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: #fff;
+        border-top: 1px solid var(--border);
+        z-index: 100;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    body.dark .mobile-tabs {
+        background: #1e293b !important;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        border: none;
+        background: none;
+        color: #64748b;
+        font-size: 0.65rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 4px;
+    }
+    
+    .tab-btn .tab-icon {
+        font-size: 1.25rem;
+    }
+    
+    .tab-btn.active {
+        color: var(--primary);
+    }
+    
+    .tab-btn.active .tab-icon {
+        transform: scale(1.1);
+    }
+    
+    /* Tab Panels */
+    .tab-panel {
+        display: none;
+        padding: 12px;
+        padding-bottom: 70px; /* Space for tab bar */
+        overflow-y: auto;
+        height: calc(100vh - 50px - 56px);
+    }
+    
+    .tab-panel.active {
+        display: block;
+    }
+    
+    /* Phase 3: Results Tab */
+    .mobile-kpi-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    .mobile-kpi-grid .kpi-box {
+        padding: 12px;
+    }
+    
+    .mobile-kpi-grid .kpi-num {
+        font-size: 1.3rem;
+    }
+    
+    .mobile-deal-summary {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    body.dark .mobile-deal-summary {
+        background: #1e293b !important;
+    }
+    
+    .mobile-deal-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.85rem;
+    }
+    
+    .mobile-deal-row:last-child {
+        border-bottom: none;
+    }
+    
+    .mobile-deal-label {
+        color: #64748b;
+    }
+    
+    .mobile-deal-value {
+        font-weight: 700;
+        font-family: monospace;
+    }
+    
+    .mobile-more-kpis-btn {
+        width: 100%;
+        padding: 10px;
+        background: none;
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        color: #64748b;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-bottom: 12px;
+    }
+    
+    .mobile-secondary-kpis {
+        display: none;
+        margin-bottom: 12px;
+    }
+    
+    .mobile-secondary-kpis.show {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .mobile-secondary-kpis .kpi-box {
+        padding: 10px;
+    }
+    
+    .mobile-secondary-kpis .kpi-num {
+        font-size: 0.95rem;
+    }
+    
+    /* Phase 4: Settings Tab - Accordion */
+    .mobile-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .accordion-section {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    body.dark .accordion-section {
+        background: #1e293b !important;
+    }
+    
+    .accordion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .accordion-header::after {
+        content: '+';
+        font-size: 1.2rem;
+        color: #94a3b8;
+        transition: transform 0.2s;
+    }
+    
+    .accordion-section.open .accordion-header::after {
+        content: '−';
+    }
+    
+    .accordion-content {
+        display: none;
+        padding: 0 14px 14px;
+    }
+    
+    .accordion-section.open .accordion-content {
+        display: block;
+    }
+    
+    /* Phase 5: Charts Tab */
+    .mobile-chart-container {
+        position: relative;
+        height: calc(100vh - 50px - 56px - 60px);
+    }
+    
+    .mobile-chart {
+        display: none;
+        height: 100%;
+    }
+    
+    .mobile-chart.active {
+        display: block;
+    }
+    
+    .mobile-chart canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .chart-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .chart-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        cursor: pointer;
+    }
+    
+    .chart-dot.active {
+        background: var(--primary);
+    }
+    
+    .chart-swipe-hint {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+    
+    /* Phase 6: More Tab */
+    .mobile-advanced-settings {
+        margin-bottom: 16px;
+    }
+    
+    .mobile-reset-btn {
+        width: 100%;
+        padding: 14px;
+        background: #fef2f2;
+        border: 1px solid #fecdd3;
+        border-radius: 10px;
+        color: #dc2626;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 16px;
+    }
+    
+    /* Touch-friendly controls */
+    .accordion-content input[type="range"] {
+        height: 44px;
+        padding: 16px 0;
+    }
+    
+    .accordion-content select {
+        height: 44px;
+        font-size: 1rem;
+    }
+}
+
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+    .mobile-tabs,
+    .mobile-content,
+    .tab-panel {
+        display: none !important;
+    }
+}
 
 /* RTL Override - must be at end */
 body.rtl .sidebar { border-right: none; border-left: 1px solid var(--border); }

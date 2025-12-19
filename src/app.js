@@ -281,7 +281,7 @@ function checkMix() {
     
     $('mixWarn')?.style && ($('mixWarn').style.display = sum === 100 ? 'none' : 'block');
     $('chartsContainer')?.classList.toggle('charts-dim', sum !== 100 || !fixedOk);
-    const chartsWarn = $('chartsWarn'), msg = sum !== 100 ? 'Mix must total 100% of mortgage to view charts' : !fixedOk ? 'Min 33% fixed rate required (Kalatz/ Katz)' : '';
+    const chartsWarn = $('chartsWarn'), msg = sum !== 100 ? t('mixWarning') : !fixedOk ? t('fixedRateWarning') : '';
     if (chartsWarn) { chartsWarn.textContent = msg; chartsWarn.style.display = msg ? 'block' : 'none'; }
     updateTrackTermEnabled();
     runSim();
@@ -511,7 +511,197 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
             series.flowRent, series.flowInt, series.flowPrinc, series.flowNet, series.surplusVal, series.surplusPct,
             { reTax: res.totalRETax, spTax: res.spTax, netRE: lRE, netSP: lSP, invested: res.totalCashInvested, surplusTax: res.reSideTax, surplusGross: res.reSideStockValue, entryCosts, equity },
             { mode, surplusMode, t, fmt, fmtNum });
+        updateMobileCharts();
     }
+    
+    // Update mobile KPIs
+    if (detectMobile()) {
+        updateMobileKpis({
+            reCAGR: res.cagrRE / 100,
+            spCAGR: res.cagrSP / 100,
+            reNet: lRE,
+            spNet: lSP,
+            totalInterest: res.totalInterestWasted,
+            totalRent: res.totalRentCollected,
+            assetPrice: assetPriceStart,
+            mortgage: params.mortgage,
+            leverage: params.mortgage / (parseFloat($('inpEquity').value) || 400000),
+            entryCosts: (params.fees.purchaseTax || 0) + (assetPriceStart * (params.fees.buy || 0))
+        });
+    }
+}
+
+// ========== MOBILE FUNCTIONS ==========
+function detectMobile() {
+    const isMobile = window.innerWidth <= 768;
+    document.body.classList.toggle('is-mobile', isMobile);
+    return isMobile;
+}
+
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.dataset.tab === tabName));
+    localStorage.setItem('activeTab', tabName);
+    if (tabName === 'charts') initMobileCharts();
+}
+
+function toggleAccordion(section) {
+    const el = document.querySelector(`.accordion-section[data-section="${section}"]`);
+    if (!el) return;
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.accordion-section').forEach(s => s.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+}
+
+function toggleMobileSecondaryKpis() {
+    const el = $('mobileSecondaryKpis');
+    if (el) el.classList.toggle('show');
+}
+
+function syncMobileSlider(desktopId, value) {
+    const el = $(desktopId);
+    if (el) { el.value = value; el.dispatchEvent(new Event('input')); }
+    updateMobileDisplays();
+}
+
+function syncMobileMix(track, value) {
+    const slider = $('slider' + track);
+    const pct = $('pct' + track);
+    if (slider) slider.value = value;
+    if (pct) pct.value = value;
+    syncMixInput(track);
+    updateMobileDisplays();
+}
+
+function syncMobileCheckbox(desktopId, checked) {
+    const el = $(desktopId);
+    if (el) { el.checked = checked; el.dispatchEvent(new Event('change')); }
+}
+
+function syncMobileToDesktop() {
+    // Sync buyer type
+    const mBuyer = $('mBuyerType');
+    const dBuyer = $('buyerType');
+    if (mBuyer && dBuyer) dBuyer.value = mBuyer.value;
+}
+
+function syncDesktopToMobile() {
+    // Sync sliders
+    const syncSlider = (dId, mId) => { const d = $(dId), m = $(mId); if (d && m) m.value = d.value; };
+    syncSlider('rDown', 'mRDown');
+    syncSlider('rDur', 'mRDur');
+    syncSlider('sApp', 'mSApp');
+    syncSlider('sSP', 'mSSP');
+    syncSlider('sInf', 'mSInf');
+    syncSlider('rBuyCost', 'mRBuyCost');
+    syncSlider('rSellCost', 'mRSellCost');
+    syncSlider('rMaint', 'mRMaint');
+    
+    // Sync mix
+    ['Prime', 'Kalats', 'Malatz'].forEach(t => {
+        const d = $('slider' + t), m = $('mSlider' + t);
+        if (d && m) m.value = d.value;
+    });
+    
+    // Sync checkboxes
+    const syncChk = (dId, mId) => { const d = $(dId), m = $(mId); if (d && m) m.checked = d.checked; };
+    syncChk('cTaxSP', 'mCTaxSP');
+    syncChk('cPurchaseTax', 'mCPurchaseTax');
+    syncChk('cRentTax', 'mCRentTax');
+    
+    // Sync buyer type
+    const dBuyer = $('buyerType'), mBuyer = $('mBuyerType');
+    if (dBuyer && mBuyer) mBuyer.value = dBuyer.value;
+    
+    updateMobileDisplays();
+}
+
+function updateMobileDisplays() {
+    // Update display values
+    const setDisp = (id, val, suffix = '') => { const el = $(id); if (el) el.textContent = val + suffix; };
+    setDisp('mDDown', $('rDown')?.value || 30, '%');
+    setDisp('mDDur', $('rDur')?.value || 25, ' Yr');
+    setDisp('mVApp', $('sApp')?.value || 4, '%');
+    setDisp('mVSP', $('sSP')?.value || 9, '%');
+    setDisp('mVInf', $('sInf')?.value || 2.5, '%');
+    setDisp('mVBuy', $('rBuyCost')?.value || 2, '%');
+    setDisp('mVSell', $('rSellCost')?.value || 2, '%');
+    setDisp('mVMaint', $('rMaint')?.value || 8, '%');
+    
+    // Mix displays
+    ['Prime', 'Kalats', 'Malatz'].forEach(t => {
+        setDisp('mDisp' + t, $('pct' + t)?.value || 0, '%');
+    });
+}
+
+function updateMobileKpis(data) {
+    if (!data) return;
+    const fmt = v => mode === 'percent' ? (v * 100).toFixed(1) + '%' : '₪' + Math.round(v / 1000) + 'k';
+    
+    // Primary KPIs
+    const setKpi = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+    setKpi('mKpiReRoiVal', (data.reCAGR * 100).toFixed(1) + '%');
+    setKpi('mKpiSpRoiVal', (data.spCAGR * 100).toFixed(1) + '%');
+    setKpi('mKpiReNet', fmt(data.reNet));
+    setKpi('mKpiSpNet', fmt(data.spNet));
+    
+    // Secondary KPIs
+    setKpi('mKpiDiff', ((data.reCAGR - data.spCAGR) * 100).toFixed(1) + '%');
+    setKpi('mKpiInt', '₪' + Math.round(data.totalInterest / 1000) + 'k');
+    setKpi('mKpiRent', '₪' + Math.round(data.totalRent / 1000) + 'k');
+    
+    // Deal summary
+    setKpi('mValAsset', '₪' + (data.assetPrice / 1000000).toFixed(2) + 'M');
+    setKpi('mValMortgage', '₪' + (data.mortgage / 1000000).toFixed(2) + 'M');
+    setKpi('mValLev', 'x' + data.leverage.toFixed(1));
+    setKpi('mValEntry', '₪' + Math.round(data.entryCosts / 1000) + 'k');
+}
+
+let mWealthChart, mFlowChart;
+
+function initMobileCharts() {
+    if (!detectMobile()) return;
+    const wCtx = $('mWealthChart')?.getContext('2d');
+    const fCtx = $('mFlowChart')?.getContext('2d');
+    if (!wCtx || !fCtx) return;
+    
+    if (!mWealthChart && window.wealthChartInstance) {
+        mWealthChart = new Chart(wCtx, { type: 'line', data: window.wealthChartInstance.data, options: { ...window.wealthChartInstance.options, maintainAspectRatio: false } });
+    }
+    if (!mFlowChart && window.flowChartInstance) {
+        mFlowChart = new Chart(fCtx, { type: 'bar', data: window.flowChartInstance.data, options: { ...window.flowChartInstance.options, maintainAspectRatio: false } });
+    }
+}
+
+function updateMobileCharts() {
+    if (mWealthChart && window.wealthChartInstance) {
+        mWealthChart.data = window.wealthChartInstance.data;
+        mWealthChart.update('none');
+    }
+    if (mFlowChart && window.flowChartInstance) {
+        mFlowChart.data = window.flowChartInstance.data;
+        mFlowChart.update('none');
+    }
+}
+
+function switchMobileChart(chartName) {
+    document.querySelectorAll('.mobile-chart').forEach(c => c.classList.toggle('active', c.dataset.chart === chartName));
+    document.querySelectorAll('.chart-dot').forEach(d => d.classList.toggle('active', d.dataset.chart === chartName));
+}
+
+// Add swipe support for charts
+function initMobileSwipe() {
+    const container = document.querySelector('.mobile-chart-container');
+    if (!container) return;
+    let startX;
+    container.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    container.addEventListener('touchend', e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            const current = document.querySelector('.mobile-chart.active')?.dataset.chart;
+            switchMobileChart(diff > 0 ? 'flow' : 'wealth');
+        }
+    });
 }
 
 const STORAGE_KEY = 'mortgageCalcState';
@@ -572,6 +762,11 @@ function loadState() {
 function bootstrap() {
     S.set('bootstrapping', true);
     bootstrapping = true;
+    
+    // Mobile detection
+    detectMobile();
+    window.addEventListener('resize', () => { detectMobile(); syncDesktopToMobile(); });
+    
     window.Prepayments?.init(runSim);
     if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
     if (lang === 'he') { document.documentElement.lang = 'he'; document.documentElement.dir = 'rtl'; document.body.classList.add('rtl'); }
@@ -591,6 +786,13 @@ function bootstrap() {
     checkMix();
     window.Prepayments?.renderPrepayments();
     if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); TRACKS.forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
+    
+    // Mobile init
+    syncDesktopToMobile();
+    initMobileSwipe();
+    const savedTab = localStorage.getItem('activeTab');
+    if (savedTab) switchTab(savedTab);
+    
     S.set('bootstrapping', false);
     bootstrapping = false;
     runSim();
@@ -608,7 +810,10 @@ Object.assign(window, {
     setMode, tgl, setGlobalMode, applyScenario, applyTamheel, tglHor, setTaxMode, updMeter, checkMix, syncPrime,
     calcPmt: AppLogic.calcPmt, calcCAGR: AppLogic.calcCAGR, updateSweetSpots, runSim, setCreditScore, toggleLock,
     setBuyerType, syncTrackTermsToMain, showTermVal, toggleAdvancedTerms, setSurplusMode, syncMixInput,
-    toggleRateEdit, toggleLang, resetAll, toggleDarkMode, printResults
+    toggleRateEdit, toggleLang, resetAll, toggleDarkMode, printResults,
+    // Mobile functions
+    switchTab, toggleAccordion, toggleMobileSecondaryKpis, syncMobileSlider, syncMobileMix, syncMobileCheckbox,
+    syncMobileToDesktop, switchMobileChart
 });
 
 document.addEventListener('DOMContentLoaded', bootstrap);

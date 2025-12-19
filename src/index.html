@@ -558,6 +558,215 @@
         </div>
     </div>
 
+    <!-- Mobile Content -->
+    <div class="mobile-content">
+        <!-- Results Tab Panel -->
+        <div class="tab-panel active" data-tab="results">
+            <div class="mobile-kpi-grid">
+                <div class="kpi-box kpi-re" id="mKpiReRoi">
+                    <div class="kpi-num" style="color:var(--success)" id="mKpiReRoiVal">0%</div>
+                    <div class="kpi-lbl" data-t="reAnnualRoi">RE Annual ROI</div>
+                </div>
+                <div class="kpi-box kpi-sp" id="mKpiSpRoi">
+                    <div class="kpi-num" style="color:var(--primary)" id="mKpiSpRoiVal">0%</div>
+                    <div class="kpi-lbl" data-t="spAnnualRoi">S&P Annual ROI</div>
+                </div>
+                <div class="kpi-box kpi-re-border">
+                    <div class="kpi-num" style="color:var(--success)" id="mKpiReNet">0</div>
+                    <div class="kpi-lbl" data-t="reNet">Real Estate Net</div>
+                </div>
+                <div class="kpi-box kpi-sp-border">
+                    <div class="kpi-num" style="color:var(--primary)" id="mKpiSpNet">0</div>
+                    <div class="kpi-lbl" data-t="spNet">S&P 500 Net</div>
+                </div>
+            </div>
+            
+            <button class="mobile-more-kpis-btn" onclick="toggleMobileSecondaryKpis()">
+                <span data-t="moreDetails">More Details</span> ▼
+            </button>
+            
+            <div class="mobile-secondary-kpis" id="mobileSecondaryKpis">
+                <div class="kpi-box">
+                    <div class="kpi-num" style="color:#64748b" id="mKpiDiff">0</div>
+                    <div class="kpi-lbl" data-t="roiDiff">ROI Diff</div>
+                </div>
+                <div class="kpi-box kpi-bad">
+                    <div class="kpi-num" style="color:#e11d48" id="mKpiInt">0</div>
+                    <div class="kpi-lbl" data-t="totalInterest">Interest</div>
+                </div>
+                <div class="kpi-box kpi-good">
+                    <div class="kpi-num" style="color:#15803d" id="mKpiRent">0</div>
+                    <div class="kpi-lbl" data-t="rentIncome">Rent</div>
+                </div>
+            </div>
+            
+            <div class="mobile-deal-summary">
+                <div class="mobile-deal-row">
+                    <span class="mobile-deal-label" data-t="asset">Asset</span>
+                    <span class="mobile-deal-value" id="mValAsset">₪0</span>
+                </div>
+                <div class="mobile-deal-row">
+                    <span class="mobile-deal-label" data-t="mortgage">Mortgage</span>
+                    <span class="mobile-deal-value" id="mValMortgage">₪0</span>
+                </div>
+                <div class="mobile-deal-row">
+                    <span class="mobile-deal-label" data-t="leverage">Leverage</span>
+                    <span class="mobile-deal-value" id="mValLev">x0</span>
+                </div>
+                <div class="mobile-deal-row">
+                    <span class="mobile-deal-label" data-t="entryCosts">Entry Costs</span>
+                    <span class="mobile-deal-value" id="mValEntry">₪0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab Panel -->
+        <div class="tab-panel" data-tab="settings">
+            <div class="mobile-accordion">
+                <div class="accordion-section open" data-section="deal">
+                    <div class="accordion-header" data-section="deal" onclick="toggleAccordion('deal')">
+                        <span data-t="dealStructure">Deal Structure</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="card-row" style="margin-bottom:12px;">
+                            <span class="card-lbl" data-t="buyerType">Buyer Type</span>
+                            <select id="mBuyerType" onchange="setBuyerType(this.value); syncMobileToDesktop();"
+                                style="padding:8px; border-radius:6px; border:1px solid var(--border); font-weight:600;">
+                                <option value="first" data-t="firstHome">First Home</option>
+                                <option value="replacement" data-t="replacement">Replacement</option>
+                                <option value="investor" data-t="investor">Investment</option>
+                            </select>
+                        </div>
+                        <div class="card-row"><span class="card-lbl" data-t="downPayment">Down Payment</span><span class="card-val" id="mDDown">30%</span></div>
+                        <input type="range" id="mRDown" min="25" max="100" step="5" value="30" oninput="syncMobileSlider('rDown', this.value)">
+                        
+                        <div class="card-row" style="margin-top:12px;"><span class="card-lbl" data-t="mortgageTerm">Term</span><span class="card-val" id="mDDur">25 Yr</span></div>
+                        <input type="range" id="mRDur" min="1" max="30" step="1" value="25" oninput="syncMobileSlider('rDur', this.value)">
+                    </div>
+                </div>
+                
+                <div class="accordion-section" data-section="mix">
+                    <div class="accordion-header" data-section="mix" onclick="toggleAccordion('mix')">
+                        <span data-t="mortgageMix">Mortgage Mix</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="scenario-grid" style="margin-bottom:12px;">
+                            <div class="scen-btn" onclick="applyTamheel('defaultEven')" data-t="tamheelDefault">🧭 Default</div>
+                            <div class="scen-btn" onclick="applyTamheel('arbitrage')">📉</div>
+                            <div class="scen-btn" onclick="applyTamheel('shield')">🛡️</div>
+                        </div>
+                        <div class="mix-row">
+                            <span class="track-badge" style="background:#3b82f6"></span>
+                            <div class="mix-label">Prime</div>
+                            <input type="range" id="mSliderPrime" min="0" max="100" step="5" value="34" oninput="syncMobileMix('Prime', this.value)">
+                            <div class="mix-pct-val" id="mDispPrime">34%</div>
+                        </div>
+                        <div class="mix-row">
+                            <span class="track-badge" style="background:#a855f7"></span>
+                            <div class="mix-label">Kalatz</div>
+                            <input type="range" id="mSliderKalats" min="0" max="100" step="5" value="33" oninput="syncMobileMix('Kalats', this.value)">
+                            <div class="mix-pct-val" id="mDispKalats">33%</div>
+                        </div>
+                        <div class="mix-row">
+                            <span class="track-badge" style="background:#14b8a6"></span>
+                            <div class="mix-label">Malatz</div>
+                            <input type="range" id="mSliderMalatz" min="0" max="100" step="5" value="33" oninput="syncMobileMix('Malatz', this.value)">
+                            <div class="mix-pct-val" id="mDispMalatz">33%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-section" data-section="market">
+                    <div class="accordion-header" data-section="market" onclick="toggleAccordion('market')">
+                        <span data-t="assumptions">Market Variables</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="card-row"><span class="card-lbl" data-t="appreciation">Appreciation</span><span class="card-val" id="mVApp">4%</span></div>
+                        <input type="range" id="mSApp" min="0" max="10" step="0.5" value="4" oninput="syncMobileSlider('sApp', this.value)">
+                        
+                        <div class="card-row" style="margin-top:10px;"><span class="card-lbl" data-t="spReturn">S&P Return</span><span class="card-val" id="mVSP">9%</span></div>
+                        <input type="range" id="mSSP" min="4" max="15" step="0.5" value="9" oninput="syncMobileSlider('sSP', this.value)">
+                        
+                        <div class="card-row" style="margin-top:10px;"><span class="card-lbl" data-t="inflation">Inflation</span><span class="card-val" id="mVInf">2.5%</span></div>
+                        <input type="range" id="mSInf" min="0" max="6" step="0.5" value="2.5" oninput="syncMobileSlider('sInf', this.value)">
+                    </div>
+                </div>
+                
+                <div class="accordion-section" data-section="costs">
+                    <div class="accordion-header" data-section="costs" onclick="toggleAccordion('costs')">
+                        <span data-t="costs">Costs & Fees</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="card-row"><span class="card-lbl" data-t="buyCost">Buy Friction</span><span class="card-val" id="mVBuy">2%</span></div>
+                        <input type="range" id="mRBuyCost" min="0" max="15" step="0.5" value="2" oninput="syncMobileSlider('rBuyCost', this.value)">
+                        
+                        <div class="card-row" style="margin-top:10px;"><span class="card-lbl" data-t="sellCost">Sell Friction</span><span class="card-val" id="mVSell">2%</span></div>
+                        <input type="range" id="mRSellCost" min="0" max="10" step="0.5" value="2" oninput="syncMobileSlider('rSellCost', this.value)">
+                        
+                        <div class="card-row" style="margin-top:10px;"><span class="card-lbl" data-t="maintenance">Maintenance</span><span class="card-val" id="mVMaint">8%</span></div>
+                        <input type="range" id="mRMaint" min="0" max="30" step="1" value="8" oninput="syncMobileSlider('rMaint', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Tab Panel -->
+        <div class="tab-panel" data-tab="charts">
+            <div class="chart-swipe-hint" data-t="swipeCharts">← Swipe to switch charts →</div>
+            <div class="mobile-chart-container">
+                <div class="mobile-chart active" data-chart="wealth">
+                    <canvas id="mWealthChart"></canvas>
+                </div>
+                <div class="mobile-chart" data-chart="flow">
+                    <canvas id="mFlowChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-dots">
+                <div class="chart-dot active" data-chart="wealth" onclick="switchMobileChart('wealth')"></div>
+                <div class="chart-dot" data-chart="flow" onclick="switchMobileChart('flow')"></div>
+            </div>
+        </div>
+        
+        <!-- More Tab Panel -->
+        <div class="tab-panel" data-tab="more">
+            <div class="mobile-advanced-settings">
+                <div class="accordion-section" data-section="tax">
+                    <div class="accordion-header" onclick="toggleAccordion('tax')">
+                        <span data-t="advancedConfig">Advanced Settings</span>
+                    </div>
+                    <div class="accordion-content">
+                        <label class="chk-row"><input type="checkbox" id="mCTaxSP" checked onchange="syncMobileCheckbox('cTaxSP', this.checked)"><span data-t="applyTaxSP">S&P Capital Gains 25%</span></label>
+                        <label class="chk-row"><input type="checkbox" id="mCPurchaseTax" checked onchange="syncMobileCheckbox('cPurchaseTax', this.checked)"><span data-t="includePurchaseTax">Include Purchase Tax</span></label>
+                        <label class="chk-row"><input type="checkbox" id="mCRentTax" checked onchange="syncMobileCheckbox('cRentTax', this.checked)"><span data-t="rentTax">Rent Tax</span></label>
+                    </div>
+                </div>
+            </div>
+            <button class="mobile-reset-btn" onclick="resetAll()">
+                <span data-t="resetDefaults">↺ Reset to Defaults</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Mobile Tab Bar -->
+    <nav class="mobile-tabs">
+        <button class="tab-btn active" data-tab="results" onclick="switchTab('results')">
+            <span class="tab-icon">📊</span>
+            <span data-t="results">Results</span>
+        </button>
+        <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+            <span class="tab-icon">⚙️</span>
+            <span data-t="settings">Settings</span>
+        </button>
+        <button class="tab-btn" data-tab="charts" onclick="switchTab('charts')">
+            <span class="tab-icon">📈</span>
+            <span data-t="charts">Charts</span>
+        </button>
+        <button class="tab-btn" data-tab="more" onclick="switchTab('more')">
+            <span class="tab-icon">☰</span>
+            <span data-t="more">More</span>
+        </button>
+    </nav>
+
     <script src="./logic.js"></script>
     <script src="./app.js"></script>
 </body>

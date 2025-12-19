@@ -1,0 +1,10 @@
+node_modules
+tests
+*.test.js
+.git
+.gitignore
+*.md
+package*.json
+jest.config.js
+babel.config.js
+docs
