@@ -682,7 +682,7 @@ function initMobileCharts() {
     const wCtx = $('mWealthChart')?.getContext('2d');
     const fCtx = $('mFlowChart')?.getContext('2d');
     if (!wCtx || !fCtx) return;
-    if (!window.wealthChartInstance || !window.flowChartInstance) return;
+    if (!window.wealthChartInstance?.data || !window.flowChartInstance?.data) return;
 
     if (mWealthChart) mWealthChart.destroy();
     if (mFlowChart) mFlowChart.destroy();
@@ -701,7 +701,7 @@ function initMobileCharts() {
 }
 
 function updateMobileCharts() {
-    if (!window.wealthChartInstance || !window.flowChartInstance) return;
+    if (!window.wealthChartInstance?.data || !window.flowChartInstance?.data) return;
     if (!mWealthChart || !mFlowChart) { initMobileCharts(); return; }
 
     mWealthChart.data = JSON.parse(JSON.stringify(window.wealthChartInstance.data));

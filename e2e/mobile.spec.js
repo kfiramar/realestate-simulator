@@ -1,185 +1,180 @@
 const { test, expect } = require('@playwright/test');
 
-// Mobile viewport
-const mobile = { width: 375, height: 667 }; // iPhone SE
+// Viewports
+const mobile = { width: 375, height: 667 };
+const desktop = { width: 1280, height: 800 };
 
 test.describe('Mobile Layout', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(mobile);
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
   });
 
-  // Phase 1: Foundation
-  test.describe('Phase 1 - Foundation', () => {
-    test('body has is-mobile class on mobile viewport', async ({ page }) => {
-      await expect(page.locator('body')).toHaveClass(/is-mobile/);
-    });
-
-    test('sidebar is hidden on mobile', async ({ page }) => {
-      await expect(page.locator('.sidebar')).not.toBeVisible();
-    });
-
-    test('desktop main content is hidden on mobile', async ({ page }) => {
-      await expect(page.locator('.main')).not.toBeVisible();
-    });
-  });
-
-  // Phase 2: Tab Navigation
-  test.describe('Phase 2 - Tab Navigation', () => {
-    test('mobile tab bar is visible', async ({ page }) => {
+  test.describe('Foundation', () => {
+    test('shows mobile layout on small screens', async ({ page }) => {
+      await expect(page.locator('.mobile-content')).toBeVisible();
       await expect(page.locator('.mobile-tabs')).toBeVisible();
     });
 
-    test('has 4 tabs', async ({ page }) => {
+    test('hides desktop layout on mobile', async ({ page }) => {
+      await expect(page.locator('.sidebar')).not.toBeVisible();
+      await expect(page.locator('.main')).not.toBeVisible();
+    });
+
+    test('has compact header', async ({ page }) => {
+      const header = page.locator('header');
+      const box = await header.boundingBox();
+      expect(box.height).toBeLessThanOrEqual(56);
+    });
+  });
+
+  test.describe('Tab Navigation', () => {
+    test('has 2 tabs (Results and Settings)', async ({ page }) => {
       const tabs = page.locator('.mobile-tabs .tab-btn');
-      await expect(tabs).toHaveCount(4);
+      await expect(tabs).toHaveCount(2);
     });
 
     test('Results tab is active by default', async ({ page }) => {
       await expect(page.locator('.tab-btn[data-tab="results"]')).toHaveClass(/active/);
+      await expect(page.locator('.tab-panel[data-tab="results"]')).toBeVisible();
     });
 
-    test('clicking Settings tab shows settings panel', async ({ page }) => {
+    test('clicking Settings tab switches view', async ({ page }) => {
       await page.click('.tab-btn[data-tab="settings"]');
+      await expect(page.locator('.tab-btn[data-tab="settings"]')).toHaveClass(/active/);
       await expect(page.locator('.tab-panel[data-tab="settings"]')).toBeVisible();
       await expect(page.locator('.tab-panel[data-tab="results"]')).not.toBeVisible();
     });
 
-    test('clicking Charts tab shows charts panel', async ({ page }) => {
-      await page.click('.tab-btn[data-tab="charts"]');
-      await expect(page.locator('.tab-panel[data-tab="charts"]')).toBeVisible();
-    });
-
-    test('clicking More tab shows more panel', async ({ page }) => {
-      await page.click('.tab-btn[data-tab="more"]');
-      await expect(page.locator('.tab-panel[data-tab="more"]')).toBeVisible();
+    test('tab state persists after reload', async ({ page }) => {
+      await page.click('.tab-btn[data-tab="settings"]');
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+      await expect(page.locator('.tab-btn[data-tab="settings"]')).toHaveClass(/active/);
     });
   });
 
-  // Phase 3: Results Tab
-  test.describe('Phase 3 - Results Tab', () => {
-    test('shows 4 primary KPIs', async ({ page }) => {
+  test.describe('Results Tab', () => {
+    test('shows 4 KPI boxes', async ({ page }) => {
       const kpis = page.locator('.mobile-kpi-grid .kpi-box');
       await expect(kpis).toHaveCount(4);
     });
 
-    test('shows RE ROI KPI', async ({ page }) => {
-      await expect(page.locator('.mobile-kpi-grid #mKpiReRoi')).toBeVisible();
+    test('KPIs display numeric values', async ({ page }) => {
+      // Wait for simulation to complete
+      await page.waitForTimeout(1000);
+      const reRoi = await page.locator('#mKpiReRoiVal').textContent();
+      expect(reRoi).toMatch(/\d+\.?\d*%/);
+    });
+
+    test('shows both charts', async ({ page }) => {
+      await expect(page.locator('.mobile-charts-stack')).toBeVisible();
+      await expect(page.locator('#mWealthChart')).toBeVisible();
+      await expect(page.locator('#mFlowChart')).toBeVisible();
     });
 
     test('shows deal summary', async ({ page }) => {
       await expect(page.locator('.mobile-deal-summary')).toBeVisible();
-    });
-
-    test('has expandable "More details" section', async ({ page }) => {
-      const moreBtn = page.locator('.mobile-more-kpis-btn');
-      await expect(moreBtn).toBeVisible();
-      await moreBtn.click();
-      await expect(page.locator('.mobile-secondary-kpis')).toBeVisible();
+      await expect(page.locator('#mValAsset')).toBeVisible();
+      await expect(page.locator('#mValMortgage')).toBeVisible();
     });
   });
 
-  // Phase 4: Settings Tab
-  test.describe('Phase 4 - Settings Tab', () => {
+  test.describe('Settings Tab', () => {
     test.beforeEach(async ({ page }) => {
       await page.click('.tab-btn[data-tab="settings"]');
     });
 
     test('has accordion sections', async ({ page }) => {
       await expect(page.locator('.mobile-accordion')).toBeVisible();
+      const sections = page.locator('.accordion-section');
+      await expect(sections).toHaveCount(5); // deal, mix, market, costs, advanced
     });
 
-    test('Deal Structure section is open by default', async ({ page }) => {
+    test('Deal Structure is open by default', async ({ page }) => {
       await expect(page.locator('.accordion-section[data-section="deal"]')).toHaveClass(/open/);
     });
 
-    test('clicking closed section opens it', async ({ page }) => {
-      await page.click('.accordion-header[data-section="mix"]');
+    test('clicking section header toggles it', async ({ page }) => {
+      // Close deal section
+      await page.click('.accordion-section[data-section="deal"] .accordion-header');
+      await expect(page.locator('.accordion-section[data-section="deal"]')).not.toHaveClass(/open/);
+      
+      // Open mix section
+      await page.click('.accordion-section[data-section="mix"] .accordion-header');
       await expect(page.locator('.accordion-section[data-section="mix"]')).toHaveClass(/open/);
     });
 
-    test('has buyer type selector', async ({ page }) => {
-      await expect(page.locator('.accordion-section[data-section="deal"] #mBuyerType')).toBeVisible();
+    test('has Starting Cash input', async ({ page }) => {
+      await expect(page.locator('#mInpEquity')).toBeVisible();
     });
 
-    test('has down payment slider', async ({ page }) => {
-      await expect(page.locator('.accordion-section[data-section="deal"] #mRDown')).toBeVisible();
-    });
-  });
-
-  // Phase 5: Charts Tab
-  test.describe('Phase 5 - Charts Tab', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.click('.tab-btn[data-tab="charts"]');
+    test('has Buyer Type selector', async ({ page }) => {
+      await expect(page.locator('#mBuyerType')).toBeVisible();
     });
 
-    test('shows chart container', async ({ page }) => {
-      await expect(page.locator('.mobile-chart-container')).toBeVisible();
+    test('has Down Payment slider', async ({ page }) => {
+      await expect(page.locator('#mRDown')).toBeVisible();
     });
 
-    test('has swipe indicators', async ({ page }) => {
-      await expect(page.locator('.chart-dots')).toBeVisible();
-    });
-
-    test('shows wealth chart by default', async ({ page }) => {
-      await expect(page.locator('.mobile-chart[data-chart="wealth"]')).toBeVisible();
-    });
-  });
-
-  // Phase 6: More Tab
-  test.describe('Phase 6 - More Tab', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.click('.tab-btn[data-tab="more"]');
-    });
-
-    test('has reset button', async ({ page }) => {
+    test('has Reset button in Advanced section', async ({ page }) => {
+      await page.click('.accordion-section[data-section="advanced"] .accordion-header');
       await expect(page.locator('.mobile-reset-btn')).toBeVisible();
     });
-
-    test('has advanced settings section', async ({ page }) => {
-      await expect(page.locator('.mobile-advanced-settings')).toBeVisible();
-    });
   });
 
-  // Phase 7: Header
-  test.describe('Phase 7 - Header', () => {
-    test('header is compact', async ({ page }) => {
-      const header = page.locator('header');
-      const box = await header.boundingBox();
-      expect(box.height).toBeLessThanOrEqual(56); // Allow some padding
-    });
-
-    test('view toggles are hidden', async ({ page }) => {
-      await expect(page.locator('.view-toggles')).not.toBeVisible();
-    });
-
-    test('language and dark mode buttons visible', async ({ page }) => {
-      await expect(page.locator('button:has-text("🌐")')).toBeVisible();
-      await expect(page.locator('button:has-text("🌙")')).toBeVisible();
+  test.describe('Mobile-Desktop Sync', () => {
+    test('changing mobile equity updates simulation', async ({ page }) => {
+      await page.click('.tab-btn[data-tab="settings"]');
+      await page.fill('#mInpEquity', '500000');
+      await page.waitForTimeout(500);
+      
+      // Switch to results and check values updated
+      await page.click('.tab-btn[data-tab="results"]');
+      const asset = await page.locator('#mValAsset').textContent();
+      expect(asset).not.toBe('₪0');
     });
   });
 });
 
-// Desktop should remain unchanged
-test.describe('Desktop Layout (unchanged)', () => {
+test.describe('Desktop Layout', () => {
   test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize(desktop);
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
   });
 
-  test('body does not have is-mobile class', async ({ page }) => {
-    await expect(page.locator('body')).not.toHaveClass(/is-mobile/);
-  });
-
-  test('sidebar is visible', async ({ page }) => {
+  test('shows desktop layout on large screens', async ({ page }) => {
     await expect(page.locator('.sidebar')).toBeVisible();
+    await expect(page.locator('.main')).toBeVisible();
   });
 
-  test('mobile tabs are hidden', async ({ page }) => {
+  test('hides mobile layout on desktop', async ({ page }) => {
+    await expect(page.locator('.mobile-content')).not.toBeVisible();
     await expect(page.locator('.mobile-tabs')).not.toBeVisible();
   });
 
-  test('main content is visible', async ({ page }) => {
-    await expect(page.locator('.main')).toBeVisible();
+  test('shows KPI grid', async ({ page }) => {
+    await expect(page.locator('.kpi-grid')).toBeVisible();
+  });
+
+  test('shows charts', async ({ page }) => {
+    await expect(page.locator('#wealthChart')).toBeVisible();
+    await expect(page.locator('#flowChart')).toBeVisible();
+  });
+});
+
+test.describe('Responsive Breakpoint', () => {
+  test('switches to mobile at 768px', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.mobile-content')).toBeVisible();
+  });
+
+  test('stays desktop at 769px', async ({ page }) => {
+    await page.setViewportSize({ width: 769, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.sidebar')).toBeVisible();
   });
 });
