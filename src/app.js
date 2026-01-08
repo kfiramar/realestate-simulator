@@ -37,7 +37,7 @@ function applyTranslations() {
     runSim();
 }
 
-const S = window.AppState || { get: () => null, set: () => {}, getAll: () => ({}), setAll: () => {} };
+const S = window.AppState || { get: () => null, set: () => { }, getAll: () => ({}), setAll: () => { } };
 
 let mode, exMode, taxMode, horMode, lockDown, lockTerm, lockHor, buyerType, advancedTermMode, bootstrapping, creditScore, surplusMode, repayMethod, optimizeMode, rateEditMode;
 
@@ -45,7 +45,7 @@ const syncState = () => ({ mode, exMode, taxMode, horMode, lockDown, lockTerm, l
 const setState = (k, v) => { S.set(k, v); syncState(); };
 syncState();
 
-const cfg = Object.fromEntries(['SP','App','Int','Yld','Inf'].map(k => [k, { is: false, b: 'b'+k, s: 's'+k, v: 'v'+k, p: 'p'+k }]));
+const cfg = Object.fromEntries(['SP', 'App', 'Int', 'Yld', 'Inf'].map(k => [k, { is: false, b: 'b' + k, s: 's' + k, v: 'v' + k, p: 'p' + k }]));
 
 function setMode(m, opts = {}) {
     setState('mode', m);
@@ -68,21 +68,21 @@ function setGlobalMode(isHist, opts = {}) {
 }
 function applyScenario(type, opts = {}) {
     const s = SCENARIOS[type];
-    ['SP','App','Int','Inf','Yld'].forEach(k => $('s' + k).value = s[k.toLowerCase()]);
-    ['bear','base','bull'].forEach(t => $('scen' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', type === t));
+    ['SP', 'App', 'Int', 'Inf', 'Yld'].forEach(k => $('s' + k).value = s[k.toLowerCase()]);
+    ['bear', 'base', 'bull'].forEach(t => $('scen' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', type === t));
     refreshRatesForProfile(); updateRateLabels(); updateCreditUI(); applyLtvCaps(); updMeter();
     if (!opts.skipSim) runSim();
 }
 
 function applyTamheel(type) {
-    const p = TAMHEEL_PROFILES[type], map = {Prime: ['p','tP'], Kalats: ['k','tK'], Katz: ['z','tZ'], Malatz: ['m','tM'], Matz: ['mt','tMt']};
+    const p = TAMHEEL_PROFILES[type], map = { Prime: ['p', 'tP'], Kalats: ['k', 'tK'], Katz: ['z', 'tZ'], Malatz: ['m', 'tM'], Matz: ['mt', 'tMt'] };
     Object.entries(map).forEach(([track, [pctKey, termKey]]) => { $('pct' + track).value = p[pctKey] || 0; $('term' + track).value = p[termKey]; $('term' + track + 'Val').textContent = p[termKey] + 'y'; });
     if (!advancedTermMode) toggleAdvancedTerms();
     checkMix();
 }
 
 function mapScoreToTierKey(score) {
-    const thresholds = [[950,'A'],[900,'B'],[850,'C'],[800,'D'],[750,'E'],[700,'F'],[660,'G']];
+    const thresholds = [[950, 'A'], [900, 'B'], [850, 'C'], [800, 'D'], [750, 'E'], [700, 'F'], [660, 'G']];
     return thresholds.find(([t]) => (score || 0) >= t)?.[1] || 'H';
 }
 
@@ -112,7 +112,7 @@ function updateCreditUI() {
 
 function refreshRatesForProfile() {
     const tier = getCreditTier(parseInt(creditScore, 10)), base = parseFloat($('sInt').value) || 4.25;
-    Object.entries({Prime: ['prime', 'riskP'], Kalats: ['kalats', 'riskK'], Malatz: ['malatz', 'riskK'], Katz: ['katz', 'riskZ'], Matz: ['matz', 'riskZ']}).forEach(([track, [anchor, risk]]) => { const el = $('rate' + track); if (el && tier[risk] !== null) el.value = Math.max(0.1, base + ANCHORS[anchor] + tier[risk]).toFixed(2); });
+    Object.entries({ Prime: ['prime', 'riskP'], Kalats: ['kalats', 'riskK'], Malatz: ['malatz', 'riskK'], Katz: ['katz', 'riskZ'], Matz: ['matz', 'riskZ'] }).forEach(([track, [anchor, risk]]) => { const el = $('rate' + track); if (el && tier[risk] !== null) el.value = Math.max(0.1, base + ANCHORS[anchor] + tier[risk]).toFixed(2); });
 }
 
 function setCreditScore(v) {
@@ -136,10 +136,10 @@ function setTaxMode(m) {
     runSim();
 }
 function updateLockUI() {
-    const locks = {Down: lockDown, Term: lockTerm, Hor: lockHor};
+    const locks = { Down: lockDown, Term: lockTerm, Hor: lockHor };
     Object.entries(locks).forEach(([k, v]) => { const el = $('lock' + k + 'Btn'); if (el) { el.classList.toggle('locked', v); el.innerText = v ? t('locked') : t('free'); } });
     const summaryEl = $('optModeLabel');
-    if (summaryEl) summaryEl.innerText = Object.entries(locks).filter(([,v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k).join(' & ') || t('free');
+    if (summaryEl) summaryEl.innerText = Object.entries(locks).filter(([, v]) => v).map(([k]) => k === 'Hor' ? 'Horizon' : k).join(' & ') || t('free');
 }
 function toggleLock(target) {
     const map = { down: ['lockDown', lockDown], term: ['lockTerm', lockTerm], hor: ['lockHor', lockHor] };
@@ -185,16 +185,16 @@ function fmtNum(v) { return v.toLocaleString('en-US', { maximumFractionDigits: 0
 function fmtVal(v) { return mode === 'percent' ? v.toFixed(1) + '%' : fmt(v) + ' ₪'; }
 
 function updateSliderLabels() {
-    Object.entries({Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1}).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
+    Object.entries({ Trade: 1, Mer: 2, Discount: 0, BuyCost: 1, Maint: 0, SellCost: 1 }).forEach(([k, dec]) => $('v' + k).innerText = parseFloat($('r' + k).value).toFixed(dec) + '%');
 }
 
 function updateDealDisplay(eq, downPct, initialLoan) {
     const entryCostsFromEquity = $('cEntryCostsFromEquity')?.checked ?? false;
     const buyCostPct = $pct('rBuyCost') || 0;
-    
+
     let assetPriceStart, effectiveLoan;
     const purchaseTaxEnabled = $('cPurchaseTax')?.checked ?? true;
-    
+
     if (entryCostsFromEquity) {
         // Entry costs come from equity - need to solve for asset price
         // First estimate without purchase tax to get asset price
@@ -209,7 +209,7 @@ function updateDealDisplay(eq, downPct, initialLoan) {
         assetPriceStart = eq / downPct;
         effectiveLoan = initialLoan;
     }
-    
+
     const lev = assetPriceStart / eq;
     $('valAsset').dataset.initial = assetPriceStart; // Store for later
     $('valAsset').innerText = fmt(assetPriceStart) + ' ₪';
@@ -221,15 +221,15 @@ function updateDealDisplay(eq, downPct, initialLoan) {
     const entryCosts = purchaseTax + (assetPriceStart * buyCostPct);
     $('valPurchaseTax')?.innerText && ($('valPurchaseTax').innerText = fmt(purchaseTax) + ' ₪');
     $('valEntryCosts')?.innerText && ($('valEntryCosts').innerText = fmt(entryCosts) + ' ₪');
-    
+
     // Show equity split: down payment vs entry costs
     const equitySplit = $('equitySplit');
     if (equitySplit) {
         const downPayment = entryCostsFromEquity ? (eq - entryCosts) : eq;
         equitySplit.innerHTML = `↳ ${fmt(downPayment)} ₪ ${t('downPayment')} + ${fmt(entryCosts)} ₪ ${t('entryCosts')}`;
     }
-    
-    TRACKS.forEach(track => { const pct = parseFloat($('pct'+track)?.value) || 0, el = $('disp'+track), amt = effectiveLoan * pct / 100; if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${fmt(amt)}</span>`; });
+
+    TRACKS.forEach(track => { const pct = parseFloat($('pct' + track)?.value) || 0, el = $('disp' + track), amt = effectiveLoan * pct / 100; if (el) el.innerHTML = `${pct}%<br><span style="font-size:0.55rem;color:#64748b;font-weight:400">₪${fmt(amt)}</span>`; });
     return { assetPriceStart, purchaseTax };
 }
 
@@ -278,10 +278,10 @@ function checkMix() {
     el.innerText = sum + "%";
     el.style.display = sum === 100 ? 'none' : 'block';
     el.style.color = sum === 100 ? '#16a34a' : '#ef4444';
-    
+
     $('mixWarn')?.style && ($('mixWarn').style.display = sum === 100 ? 'none' : 'block');
     $('chartsContainer')?.classList.toggle('charts-dim', sum !== 100 || !fixedOk);
-    const chartsWarn = $('chartsWarn'), msg = sum !== 100 ? 'Mix must total 100% of mortgage to view charts' : !fixedOk ? 'Min 33% fixed rate required (Kalatz/ Katz)' : '';
+    const chartsWarn = $('chartsWarn'), msg = sum !== 100 ? t('mixWarning') : !fixedOk ? t('fixedRateWarning') : '';
     if (chartsWarn) { chartsWarn.textContent = msg; chartsWarn.style.display = msg ? 'block' : 'none'; }
     updateTrackTermEnabled();
     runSim();
@@ -351,8 +351,10 @@ function updateSweetSpots() {
         useRentTax: $('cRentTax')?.checked ?? false, useMasShevach: $('cMasShevach')?.checked ?? false,
         masShevachType: buyerType === 'investor' ? 'none' : 'single',
         tradeFee: $pct('rTrade'), merFee: $pct('rMer'), buyCostPct: $pct('rBuyCost'), maintPct: $pct('rMaint'), sellCostPct: $pct('rSellCost'),
-        overrides: { SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
-            RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'), RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz') },
+        overrides: {
+            SP: $pct('sSP'), App: $pct('sApp'), Int: $pct('sInt'), Inf: $pct('sInf'), Yld: $pct('sYld'),
+            RateP: $pct('ratePrime'), RateK: $pct('rateKalats'), RateZ: $pct('rateKatz'), RateM: $pct('rateMalatz'), RateMT: $pct('rateMatz')
+        },
         mix: getMix(),
         termMix: { p: $int('termPrime') || curDur, k: $int('termKalats') || curDur, z: $int('termKatz') || curDur, m: $int('termMalatz') || curDur, mt: $int('termMatz') || curDur },
         drift: -0.5, lockDown, lockTerm, lockHor, horMode, cfg, exMode, taxMode,
@@ -398,8 +400,8 @@ function runSim(opts = {}) {
         TRACKS.forEach(t => { $('term' + t).value = termP; showTermVal('term' + t + 'Val', termP); });
     }
 
-    const termMap = {Prime: termP, Kalats: termK, Katz: termZ, Malatz: termM, Matz: termMT};
-    const activeTerms = Object.entries(termMap).filter(([t]) => $pct('pct' + t) > 0).map(([,v]) => v);
+    const termMap = { Prime: termP, Kalats: termK, Katz: termZ, Malatz: termM, Matz: termMT };
+    const activeTerms = Object.entries(termMap).filter(([t]) => $pct('pct' + t) > 0).map(([, v]) => v);
     if (activeTerms.length === 0) activeTerms.push(mortDur);
 
     const maxTrackYears = Math.max(...activeTerms);
@@ -441,11 +443,11 @@ function buildSimParams(eq, downPct, mortDur, simDur, termP, termK, termZ, termM
 
 function updateKPIs(res, assetPriceStart, skipCharts, params) {
     const { netRE: lRE, netSP: lSP, series } = res;
-    
+
     // Update asset price to show initial → final
     const valAsset = $('valAsset');
     if (valAsset) valAsset.innerText = fmt(assetPriceStart) + ' → ' + fmt(res.finalAssetValue) + ' ₪';
-    
+
     $('kRE').innerText = fmtVal(mode === 'percent' ? (series?.reDataPct[series.reDataPct.length - 1] || 0) : lRE);
     $('kSP').innerText = fmtVal(mode === 'percent' ? (series?.spDataPct[series.spDataPct.length - 1] || 0) : lSP);
 
@@ -511,7 +513,217 @@ function updateKPIs(res, assetPriceStart, skipCharts, params) {
             series.flowRent, series.flowInt, series.flowPrinc, series.flowNet, series.surplusVal, series.surplusPct,
             { reTax: res.totalRETax, spTax: res.spTax, netRE: lRE, netSP: lSP, invested: res.totalCashInvested, surplusTax: res.reSideTax, surplusGross: res.reSideStockValue, entryCosts, equity },
             { mode, surplusMode, t, fmt, fmtNum });
+        updateMobileCharts();
     }
+
+    // Always update mobile (elements exist even if hidden)
+    updateMobileKpis({
+        reCAGR: res.cagrRE / 100,
+        spCAGR: res.cagrSP / 100,
+        reNet: lRE,
+        spNet: lSP,
+        totalInterest: res.totalInterestWasted,
+        totalRent: res.totalRentCollected,
+        assetPrice: assetPriceStart,
+        mortgage: params.mortgage,
+        leverage: params.mortgage / (parseFloat($('inpEquity').value) || 400000),
+        entryCosts: (params.fees.purchaseTax || 0) + (assetPriceStart * (params.fees.buy || 0))
+    });
+    syncDesktopToMobile();
+}
+
+// ========== MOBILE FUNCTIONS ==========
+function detectMobile() {
+    const isMobile = window.innerWidth <= 768;
+    document.body.classList.toggle('is-mobile', isMobile);
+    return isMobile;
+}
+
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.dataset.tab === tabName));
+    localStorage.setItem('activeTab', tabName);
+    if (tabName === 'charts') setTimeout(initMobileCharts, 100); // Delay for DOM
+}
+
+function toggleAccordion(section) {
+    const el = document.querySelector(`.accordion-section[data-section="${section}"]`);
+    if (!el) return;
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.accordion-section').forEach(s => s.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+}
+
+function toggleMobileSecondaryKpis() {
+    const el = $('mobileSecondaryKpis');
+    const btn = document.querySelector('.mobile-more-kpis-btn');
+    if (el) {
+        const isShowing = el.classList.toggle('show');
+        if (btn) btn.innerHTML = `<span data-t="moreDetails">${t('moreDetails')}</span> ${isShowing ? '▲' : '▼'}`;
+    }
+}
+
+function syncMobileSlider(desktopId, value) {
+    const el = $(desktopId);
+    if (el) { el.value = value; el.dispatchEvent(new Event('input')); }
+    updateMobileDisplays();
+}
+
+function syncMobileMix(track, value) {
+    const slider = $('slider' + track);
+    const pct = $('pct' + track);
+    if (slider) slider.value = value;
+    if (pct) pct.value = value;
+    syncMixInput(track);
+    updateMobileDisplays();
+}
+
+function syncMobileCheckbox(desktopId, checked) {
+    const el = $(desktopId);
+    if (el) { el.checked = checked; el.dispatchEvent(new Event('change')); }
+}
+
+function syncMobileToDesktop() {
+    // Sync buyer type
+    const mBuyer = $('mBuyerType');
+    const dBuyer = $('buyerType');
+    if (mBuyer && dBuyer) dBuyer.value = mBuyer.value;
+}
+
+function syncDesktopToMobile() {
+    // Sync equity
+    const equity = $('inpEquity'), mEquity = $('mInpEquity');
+    if (equity && mEquity) mEquity.value = equity.value;
+
+    // Sync sliders
+    const syncSlider = (dId, mId) => { const d = $(dId), m = $(mId); if (d && m) m.value = d.value; };
+    syncSlider('rDown', 'mRDown');
+    syncSlider('rDur', 'mRDur');
+    syncSlider('sApp', 'mSApp');
+    syncSlider('sSP', 'mSSP');
+    syncSlider('sInf', 'mSInf');
+    syncSlider('rBuyCost', 'mRBuyCost');
+    syncSlider('rSellCost', 'mRSellCost');
+    syncSlider('rMaint', 'mRMaint');
+
+    // Sync mix
+    ['Prime', 'Kalats', 'Malatz'].forEach(t => {
+        const pct = $('pct' + t), m = $('mSlider' + t), disp = $('mDisp' + t);
+        if (pct && m) m.value = pct.value;
+        if (disp && pct) disp.textContent = pct.value + '%';
+    });
+
+    // Sync checkboxes
+    const syncChk = (dId, mId) => { const d = $(dId), m = $(mId); if (d && m) m.checked = d.checked; };
+    syncChk('cTaxSP', 'mCTaxSP');
+    syncChk('cPurchaseTax', 'mCPurchaseTax');
+    syncChk('cRentTax', 'mCRentTax');
+
+    // Sync buyer type
+    const dBuyer = $('buyerType'), mBuyer = $('mBuyerType');
+    if (dBuyer && mBuyer) mBuyer.value = dBuyer.value;
+
+    updateMobileDisplays();
+}
+
+function updateMobileDisplays() {
+    // Update display values
+    const setDisp = (id, val, suffix = '') => { const el = $(id); if (el) el.textContent = val + suffix; };
+    setDisp('mDDown', $('rDown')?.value || 30, '%');
+    setDisp('mDDur', $('rDur')?.value || 25, ' Yr');
+    setDisp('mVApp', $('sApp')?.value || 4, '%');
+    setDisp('mVSP', $('sSP')?.value || 9, '%');
+    setDisp('mVInf', $('sInf')?.value || 2.5, '%');
+    setDisp('mVBuy', $('rBuyCost')?.value || 2, '%');
+    setDisp('mVSell', $('rSellCost')?.value || 2, '%');
+    setDisp('mVMaint', $('rMaint')?.value || 8, '%');
+
+    // Mix displays
+    ['Prime', 'Kalats', 'Malatz'].forEach(t => {
+        setDisp('mDisp' + t, $('pct' + t)?.value || 0, '%');
+    });
+}
+
+function updateMobileKpis(data) {
+    if (!data) return;
+
+    // Safe number formatting
+    const safeNum = v => (typeof v === 'number' && !isNaN(v) && isFinite(v)) ? v : 0;
+    const fmtPct = v => safeNum(v * 100).toFixed(1) + '%';
+    const fmtMoney = v => {
+        const n = safeNum(v);
+        if (Math.abs(n) >= 1000000) return '₪' + (n / 1000000).toFixed(2) + 'M';
+        return '₪' + Math.round(n / 1000) + 'k';
+    };
+
+    const setKpi = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+
+    // Primary KPIs
+    setKpi('mKpiReRoiVal', fmtPct(data.reCAGR));
+    setKpi('mKpiSpRoiVal', fmtPct(data.spCAGR));
+    setKpi('mKpiReNet', fmtMoney(data.reNet));
+    setKpi('mKpiSpNet', fmtMoney(data.spNet));
+
+    // Secondary KPIs
+    setKpi('mKpiDiff', fmtPct(safeNum(data.reCAGR) - safeNum(data.spCAGR)));
+    setKpi('mKpiInt', fmtMoney(data.totalInterest));
+    setKpi('mKpiRent', fmtMoney(data.totalRent));
+
+    // Deal summary
+    setKpi('mValAsset', fmtMoney(data.assetPrice));
+    setKpi('mValMortgage', fmtMoney(data.mortgage));
+    setKpi('mValLev', 'x' + safeNum(data.leverage).toFixed(1));
+    setKpi('mValEntry', fmtMoney(data.entryCosts));
+}
+
+let mWealthChart, mFlowChart;
+
+function initMobileCharts() {
+    const wCtx = $('mWealthChart')?.getContext('2d');
+    const fCtx = $('mFlowChart')?.getContext('2d');
+    if (!wCtx || !fCtx) return;
+    if (!window.wealthChartInstance?.data || !window.flowChartInstance?.data) return;
+
+    if (mWealthChart) mWealthChart.destroy();
+    if (mFlowChart) mFlowChart.destroy();
+
+    mWealthChart = new Chart(wCtx, {
+        type: 'line',
+        data: JSON.parse(JSON.stringify(window.wealthChartInstance.data)),
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    mFlowChart = new Chart(fCtx, {
+        type: 'bar',
+        data: JSON.parse(JSON.stringify(window.flowChartInstance.data)),
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+function updateMobileCharts() {
+    if (!window.wealthChartInstance?.data || !window.flowChartInstance?.data) return;
+    if (!mWealthChart || !mFlowChart) { initMobileCharts(); return; }
+
+    mWealthChart.data = JSON.parse(JSON.stringify(window.wealthChartInstance.data));
+    mWealthChart.update('none');
+    mFlowChart.data = JSON.parse(JSON.stringify(window.flowChartInstance.data));
+    mFlowChart.update('none');
+}
+
+function switchMobileChart(chartName) {
+    document.querySelectorAll('.mobile-chart').forEach(c => c.classList.toggle('active', c.dataset.chart === chartName));
+    document.querySelectorAll('.chart-dot').forEach(d => d.classList.toggle('active', d.dataset.chart === chartName));
+}
+
+function initMobileSwipe() {
+    const container = document.querySelector('.mobile-chart-container');
+    if (!container) return;
+    let startX;
+    container.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    container.addEventListener('touchend', e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) switchMobileChart(diff > 0 ? 'flow' : 'wealth');
+    });
 }
 
 const STORAGE_KEY = 'mortgageCalcState';
@@ -530,7 +742,7 @@ function saveState() {
         usePurchaseTax: $('cPurchaseTax')?.checked ?? true, useMasShevach: $('cMasShevach')?.checked ?? false,
         useTaxSP: $('cTaxSP')?.checked ?? true, useRentTax: $('cRentTax')?.checked ?? false, entryCostsFromEquity: $('cEntryCostsFromEquity')?.checked ?? true
     };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { }
 }
 
 function loadState() {
@@ -566,12 +778,17 @@ function loadState() {
         if (s.mode) setState('mode', s.mode);
         if (s.prepayments) window.Prepayments?.setPrepayments(s.prepayments);
         return true;
-    } catch(e) { return false; }
+    } catch (e) { return false; }
 }
 
 function bootstrap() {
     S.set('bootstrapping', true);
     bootstrapping = true;
+
+    // Mobile detection
+    detectMobile();
+    window.addEventListener('resize', () => { detectMobile(); syncDesktopToMobile(); });
+
     window.Prepayments?.init(runSim);
     if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
     if (lang === 'he') { document.documentElement.lang = 'he'; document.documentElement.dir = 'rtl'; document.body.classList.add('rtl'); }
@@ -591,9 +808,19 @@ function bootstrap() {
     checkMix();
     window.Prepayments?.renderPrepayments();
     if (advancedTermMode) { $('advancedTermBox').style.display = 'block'; $('basicTermBox').style.display = 'none'; $('btnAdvancedTerm')?.classList.add('active'); TRACKS.forEach(t => showTermVal('term' + t + 'Val', $('term' + t)?.value)); }
+
+    // Mobile init
+    syncDesktopToMobile();
+    initMobileSwipe();
+    const savedTab = localStorage.getItem('activeTab');
+    if (savedTab) switchTab(savedTab);
+
     S.set('bootstrapping', false);
     bootstrapping = false;
     runSim();
+
+    // Init mobile charts after first render
+    setTimeout(initMobileCharts, 500);
 }
 
 function updateRateLabels() {
@@ -608,7 +835,10 @@ Object.assign(window, {
     setMode, tgl, setGlobalMode, applyScenario, applyTamheel, tglHor, setTaxMode, updMeter, checkMix, syncPrime,
     calcPmt: AppLogic.calcPmt, calcCAGR: AppLogic.calcCAGR, updateSweetSpots, runSim, setCreditScore, toggleLock,
     setBuyerType, syncTrackTermsToMain, showTermVal, toggleAdvancedTerms, setSurplusMode, syncMixInput,
-    toggleRateEdit, toggleLang, resetAll, toggleDarkMode, printResults
+    toggleRateEdit, toggleLang, resetAll, toggleDarkMode, printResults,
+    // Mobile functions
+    switchTab, toggleAccordion, toggleMobileSecondaryKpis, syncMobileSlider, syncMobileMix, syncMobileCheckbox,
+    syncMobileToDesktop, switchMobileChart
 });
 
 document.addEventListener('DOMContentLoaded', bootstrap);
